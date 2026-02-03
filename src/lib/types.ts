@@ -12,6 +12,10 @@ export interface AIAgent {
     usageCount: number;
     performanceRating: number;
     totalInteractionMetric: number; // minutos para voz, mensajes para texto
+    latency?: string;
+    tokens?: string;
+    transfers?: number;
+    abandoned?: number;
   };
   feedback?: string[];
 }
