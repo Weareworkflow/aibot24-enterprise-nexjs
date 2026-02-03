@@ -6,11 +6,7 @@ import { AIAgent } from "@/lib/types";
 import { AgentChat } from "@/components/agents/AgentChat";
 import { 
   ArrowLeft, 
-  Zap, 
   Database, 
-  PhoneIncoming, 
-  PhoneForwarded, 
-  PhoneOff, 
   MessageCircle, 
   ArrowRightLeft, 
   UserX, 
@@ -28,7 +24,10 @@ import {
   Search,
   Cloud,
   PhoneCall,
-  Clock
+  Clock,
+  PhoneIncoming,
+  PhoneForwarded,
+  PhoneOff
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
@@ -37,6 +36,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAgentStore } from "@/lib/store";
+import { Switch } from "@/components/ui/switch";
 
 export default function AgentConsolePage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
@@ -45,6 +45,13 @@ export default function AgentConsolePage({ params }: { params: Promise<{ id: str
   const [agent, setAgent] = useState<AIAgent | null>(null);
   const [isMounted, setIsMounted] = useState(false);
   const router = useRouter();
+
+  // Local state for integration toggles
+  const [activeIntegrations, setActiveIntegrations] = useState<Record<string, boolean>>({
+    "Calls API": true,
+    "Drive Bitrix24": true,
+    "Catálogo Bitrix24": true
+  });
 
   useEffect(() => {
     setIsMounted(true);
@@ -67,6 +74,13 @@ export default function AgentConsolePage({ params }: { params: Promise<{ id: str
   );
 
   const isVoice = agent.type === 'voice';
+
+  const toggleIntegration = (title: string) => {
+    setActiveIntegrations(prev => ({
+      ...prev,
+      [title]: !prev[title]
+    }));
+  };
 
   return (
     <div className="flex flex-col min-h-screen bg-[#F0F3F5]">
@@ -237,22 +251,33 @@ export default function AgentConsolePage({ params }: { params: Promise<{ id: str
                   <CardContent className="p-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {[
-                        { title: "WhatsApp Business", icon: Smartphone, status: "Configurar" },
-                        { title: "Calendario Bitrix24", icon: Calendar, status: "Configurar" },
-                        { title: "Catálogo Bitrix24", icon: LayoutGrid, status: "Disponible" },
-                        { title: "Documentos Bitrix24", icon: FilePlus, status: "Configurar" },
-                        { title: "Analizador Documento", icon: Search, status: "Configurar" },
-                        { title: "Drive Bitrix24", icon: Cloud, status: "Disponible" },
-                        { title: "Calls API", icon: PhoneCall, status: "Activo" },
+                        { title: "WhatsApp Business", icon: Smartphone },
+                        { title: "Calendario Bitrix24", icon: Calendar },
+                        { title: "Catálogo Bitrix24", icon: LayoutGrid },
+                        { title: "Documentos Bitrix24", icon: FilePlus },
+                        { title: "Analizador Documento", icon: Search },
+                        { title: "Drive Bitrix24", icon: Cloud },
+                        { title: "Calls API", icon: PhoneCall },
                       ].map((int, i) => (
-                        <div key={i} className="flex items-center justify-between p-4 border rounded-2xl hover:bg-muted/30 transition-colors group cursor-pointer">
+                        <div 
+                          key={i} 
+                          className="flex items-center justify-between p-4 border rounded-2xl hover:bg-muted/30 transition-colors group"
+                        >
                           <div className="flex items-center gap-3">
-                            <div className="p-2 bg-muted rounded-full group-hover:bg-primary/10 group-hover:text-primary transition-colors">
+                            <div className={cn(
+                              "p-2 bg-muted rounded-full transition-colors",
+                              activeIntegrations[int.title] ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
+                            )}>
                               <int.icon className="h-4 w-4" />
                             </div>
-                            <span className="text-xs font-bold">{int.title}</span>
+                            <span className={cn("text-xs font-bold", !activeIntegrations[int.title] && "text-muted-foreground")}>
+                              {int.title}
+                            </span>
                           </div>
-                          <Badge variant="outline" className="text-[8px] font-black uppercase">{int.status}</Badge>
+                          <Switch 
+                            checked={activeIntegrations[int.title] || false} 
+                            onCheckedChange={() => toggleIntegration(int.title)}
+                          />
                         </div>
                       ))}
                     </div>
