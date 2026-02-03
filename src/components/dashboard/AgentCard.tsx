@@ -4,7 +4,7 @@
 import { AIAgent } from "@/lib/types";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Power, Trash2, Zap, Database, Mic2, MessageSquareText, PhoneIncoming, PhoneForwarded, PhoneOff } from "lucide-react";
+import { Power, Trash2, Zap, Database, Mic2, MessageSquareText, PhoneIncoming, PhoneForwarded, PhoneOff, MessageCircle, ArrowRightLeft, UserX } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
@@ -146,8 +146,12 @@ export function AgentCard({ agent, onDelete, onToggleActive }: AgentCardProps) {
             <Zap className="h-3 w-3" />
           </div>
           <div>
-            <p className={cn("text-[8px] font-black uppercase", isActive ? "text-muted-foreground" : "text-slate-600")}>Minutos</p>
-            <p className={cn("text-sm font-headline font-black", isActive ? "text-primary" : "text-slate-800")}>{agent.metrics.latency || "0m"}</p>
+            <p className={cn("text-[8px] font-black uppercase", isActive ? "text-muted-foreground" : "text-slate-600")}>
+              {isVoice ? "Minutos" : "Mensajes"}
+            </p>
+            <p className={cn("text-sm font-headline font-black", isActive ? "text-primary" : "text-slate-800")}>
+              {isVoice ? (agent.metrics.latency || "0m") : (agent.metrics.totalInteractionMetric || "0")}
+            </p>
           </div>
         </div>
         <div className={cn(
@@ -167,9 +171,24 @@ export function AgentCard({ agent, onDelete, onToggleActive }: AgentCardProps) {
       {/* CORE ANALYTICS ROW */}
       <div className="grid grid-cols-3 gap-2">
         {[
-          { label: "INBOUND", val: agent.metrics.usageCount, color: isActive ? "text-primary" : "text-slate-700", icon: PhoneIncoming },
-          { label: "TRANSF", val: agent.metrics.transfers || 0, color: isActive ? "text-secondary" : "text-slate-700", icon: PhoneForwarded },
-          { label: "ABAND", val: agent.metrics.abandoned || 0, color: isActive ? "text-destructive" : "text-slate-700", icon: PhoneOff },
+          { 
+            label: isVoice ? "LLAMADAS" : "CHATS", 
+            val: agent.metrics.usageCount, 
+            color: isActive ? "text-primary" : "text-slate-700", 
+            icon: isVoice ? PhoneIncoming : MessageCircle 
+          },
+          { 
+            label: "TRANSF", 
+            val: agent.metrics.transfers || 0, 
+            color: isActive ? "text-secondary" : "text-slate-700", 
+            icon: isVoice ? PhoneForwarded : ArrowRightLeft 
+          },
+          { 
+            label: "ABAND", 
+            val: agent.metrics.abandoned || 0, 
+            color: isActive ? "text-destructive" : "text-slate-700", 
+            icon: isVoice ? PhoneOff : UserX 
+          },
         ].map((m, i) => (
           <div key={i} className={cn(
             "text-center py-2 border pill-rounded flex flex-col items-center justify-center",

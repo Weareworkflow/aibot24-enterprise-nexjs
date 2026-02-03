@@ -1,10 +1,11 @@
+
 "use client";
 
 import { use, useState, useEffect } from "react";
 import { Navbar } from "@/components/layout/Navbar";
 import { AIAgent } from "@/lib/types";
 import { AgentChat } from "@/components/agents/AgentChat";
-import { ArrowLeft, Zap, Database, PhoneIncoming, PhoneForwarded, PhoneOff } from "lucide-react";
+import { ArrowLeft, Zap, Database, PhoneIncoming, PhoneForwarded, PhoneOff, MessageCircle, ArrowRightLeft, UserX } from "lucide-react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -77,8 +78,12 @@ export default function AgentConsolePage({ params }: { params: Promise<{ id: str
                     <Zap className="h-3 w-3" />
                   </div>
                   <div>
-                    <p className="text-[8px] font-black uppercase text-muted-foreground">Minutos</p>
-                    <p className="text-sm font-headline font-black text-primary">{agent.metrics.latency || "0m"}</p>
+                    <p className="text-[8px] font-black uppercase text-muted-foreground">
+                      {isVoice ? "Minutos" : "Mensajes"}
+                    </p>
+                    <p className="text-sm font-headline font-black text-primary">
+                      {isVoice ? (agent.metrics.latency || "0m") : (agent.metrics.totalInteractionMetric || "0")}
+                    </p>
                   </div>
                 </div>
                 <div className="p-3 pill-rounded border bg-white flex items-center gap-3 shadow-sm">
@@ -94,14 +99,29 @@ export default function AgentConsolePage({ params }: { params: Promise<{ id: str
 
               <div className="grid grid-cols-3 gap-2">
                 {[
-                  { label: "INBOUND", val: agent.metrics.usageCount, color: "text-primary", icon: PhoneIncoming },
-                  { label: "TRANSF", val: agent.metrics.transfers || 0, color: "text-secondary", icon: PhoneForwarded },
-                  { label: "ABAND", val: agent.metrics.abandoned || 0, color: "text-destructive", icon: PhoneOff },
+                  { 
+                    label: isVoice ? "INBOUND" : "CHATS", 
+                    val: agent.metrics.usageCount, 
+                    color: "text-primary", 
+                    icon: isVoice ? PhoneIncoming : MessageCircle 
+                  },
+                  { 
+                    label: "TRANSF", 
+                    val: agent.metrics.transfers || 0, 
+                    color: "text-secondary", 
+                    icon: isVoice ? PhoneForwarded : ArrowRightLeft 
+                  },
+                  { 
+                    label: "ABAND", 
+                    val: agent.metrics.abandoned || 0, 
+                    color: "text-destructive", 
+                    icon: isVoice ? PhoneOff : UserX 
+                  },
                 ].map((m, i) => (
                   <div key={i} className="text-center py-2 border bg-white pill-rounded shadow-sm flex flex-col items-center justify-center">
                     <m.icon className={cn("h-3 w-3 mb-0.5", m.color)} />
                     <p className="text-[7px] font-black uppercase tracking-widest mb-0.5 text-muted-foreground">{m.label}</p>
-                    <p className={cn("text-xs font-headline font-black", m.color)}>{m.val}</p>
+                    <p className={cn("text-sm font-headline font-black", m.color)}>{m.val}</p>
                   </div>
                 ))}
               </div>
