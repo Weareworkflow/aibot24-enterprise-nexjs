@@ -7,17 +7,10 @@ import { getAuth, Auth } from 'firebase/auth';
 import { firebaseConfig } from './config';
 
 /**
- * Inicializa las instancias de Firebase de forma segura.
- * Retorna null si la configuración es inválida o no estamos en el cliente.
+ * Inicializa las instancias de Firebase utilizando la configuración del proyecto.
  */
 export function initializeFirebase() {
   if (typeof window === 'undefined') {
-    return null;
-  }
-
-  // Verificamos que al menos la API Key esté presente para evitar errores de inicialización
-  if (!firebaseConfig.apiKey || firebaseConfig.apiKey === 'undefined') {
-    console.warn('Firebase: Configuración incompleta detectada. Verifica tus variables de entorno.');
     return null;
   }
 
@@ -35,7 +28,8 @@ export function initializeFirebase() {
 
     return { firebaseApp, firestore, auth };
   } catch (error) {
-    console.error('Error al inicializar Firebase:', error);
+    // Los errores de inicialización se manejan silenciosamente para que el 
+    // componente ClientProvider pueda mostrar un mensaje de error amigable.
     return null;
   }
 }
