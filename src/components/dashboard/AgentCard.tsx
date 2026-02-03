@@ -21,13 +21,18 @@ import {
 interface AgentCardProps {
   agent: AIAgent;
   onDelete?: () => void;
+  onToggleActive?: () => void;
 }
 
-export function AgentCard({ agent, onDelete }: AgentCardProps) {
+export function AgentCard({ agent, onDelete, onToggleActive }: AgentCardProps) {
   const isVoice = agent.type === 'voice';
+  const isActive = agent.isActive !== false;
 
   return (
-    <Card className="card-rounded relative hover:border-secondary/40 transition-all duration-300 border-none bg-white pill-shadow overflow-hidden p-8 flex flex-col gap-6 group">
+    <Card className={cn(
+      "card-rounded relative hover:border-secondary/40 transition-all duration-300 border-none pill-shadow overflow-hidden p-8 flex flex-col gap-6 group",
+      isActive ? "bg-white" : "bg-slate-200 grayscale-[0.5]"
+    )}>
       {/* Enlace de fondo para toda la tarjeta */}
       <Link 
         href={`/agents/${agent.id}`} 
@@ -41,17 +46,31 @@ export function AgentCard({ agent, onDelete }: AgentCardProps) {
         {/* HEADER AREA */}
         <div className="flex justify-between items-start w-full">
           <div className="space-y-4">
-            <div className="flex items-center gap-2 text-[10px] font-black text-muted-foreground uppercase tracking-widest">
-              <div className={cn("p-1.5 rounded flex items-center justify-center", isVoice ? "bg-primary/10 text-primary" : "bg-secondary/10 text-secondary")}>
+            <div className={cn(
+              "flex items-center gap-2 text-[10px] font-black uppercase tracking-widest",
+              isActive ? "text-muted-foreground" : "text-slate-500"
+            )}>
+              <div className={cn(
+                "p-1.5 rounded flex items-center justify-center", 
+                isActive 
+                  ? (isVoice ? "bg-primary/10 text-primary" : "bg-secondary/10 text-secondary")
+                  : "bg-slate-300 text-slate-600"
+              )}>
                 {isVoice ? <Mic2 className="h-3 w-3" /> : <MessageSquareText className="h-3 w-3" />}
               </div>
               {isVoice ? "VOICE AGENT" : "TEXT AGENT"}
             </div>
             <div className="space-y-1">
-              <h3 className="text-xl font-headline font-black text-primary leading-tight group-hover:text-secondary transition-colors">
+              <h3 className={cn(
+                "text-xl font-headline font-black leading-tight transition-colors",
+                isActive ? "text-primary group-hover:text-secondary" : "text-slate-700"
+              )}>
                 {agent.name}
               </h3>
-              <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest line-clamp-1">
+              <p className={cn(
+                "text-[10px] font-black uppercase tracking-widest line-clamp-1",
+                isActive ? "text-muted-foreground" : "text-slate-500"
+              )}>
                 {agent.personality}
               </p>
             </div>
@@ -62,10 +81,16 @@ export function AgentCard({ agent, onDelete }: AgentCardProps) {
             <Button 
               variant="outline" 
               size="icon" 
-              className="h-9 w-9 pill-rounded border-muted bg-muted/20 hover:bg-primary hover:text-white transition-all"
+              className={cn(
+                "h-9 w-9 pill-rounded border-muted transition-all",
+                isActive 
+                  ? "bg-muted/20 hover:bg-primary hover:text-white" 
+                  : "bg-slate-400 text-slate-800 hover:bg-slate-500"
+              )}
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
+                onToggleActive?.();
               }}
             >
               <Power className="h-4 w-4" />
@@ -76,7 +101,12 @@ export function AgentCard({ agent, onDelete }: AgentCardProps) {
                 <Button 
                   variant="outline" 
                   size="icon" 
-                  className="h-9 w-9 pill-rounded border-muted bg-muted/20 hover:bg-destructive hover:text-white transition-all"
+                  className={cn(
+                    "h-9 w-9 pill-rounded border-muted transition-all",
+                    isActive 
+                      ? "bg-muted/20 hover:bg-destructive hover:text-white" 
+                      : "bg-slate-300 text-slate-600 hover:bg-destructive hover:text-white"
+                  )}
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
@@ -112,22 +142,28 @@ export function AgentCard({ agent, onDelete }: AgentCardProps) {
 
         {/* METRICS GRID */}
         <div className="grid grid-cols-2 gap-3">
-          <div className="p-3 bg-muted/30 pill-rounded border border-white flex items-center gap-3">
-            <div className="p-1.5 bg-white rounded-full text-primary">
+          <div className={cn(
+            "p-3 pill-rounded border flex items-center gap-3",
+            isActive ? "bg-muted/30 border-white" : "bg-slate-300/50 border-slate-400/20"
+          )}>
+            <div className={cn("p-1.5 rounded-full", isActive ? "bg-white text-primary" : "bg-slate-400 text-slate-700")}>
               <Zap className="h-3 w-3" />
             </div>
             <div>
-              <p className="text-[8px] font-black text-muted-foreground uppercase">Latencia</p>
-              <p className="text-sm font-headline font-black text-primary">{agent.metrics.latency || "0.0s"}</p>
+              <p className={cn("text-[8px] font-black uppercase", isActive ? "text-muted-foreground" : "text-slate-600")}>Latencia</p>
+              <p className={cn("text-sm font-headline font-black", isActive ? "text-primary" : "text-slate-800")}>{agent.metrics.latency || "0.0s"}</p>
             </div>
           </div>
-          <div className="p-3 bg-muted/30 pill-rounded border border-white flex items-center gap-3">
-            <div className="p-1.5 bg-white rounded-full text-secondary">
+          <div className={cn(
+            "p-3 pill-rounded border flex items-center gap-3",
+            isActive ? "bg-muted/30 border-white" : "bg-slate-300/50 border-slate-400/20"
+          )}>
+            <div className={cn("p-1.5 rounded-full", isActive ? "bg-white text-secondary" : "bg-slate-400 text-slate-700")}>
               <Database className="h-3 w-3" />
             </div>
             <div>
-              <p className="text-[8px] font-black text-muted-foreground uppercase">Tokens</p>
-              <p className="text-sm font-headline font-black text-secondary">{agent.metrics.tokens || "0"}</p>
+              <p className={cn("text-[8px] font-black uppercase", isActive ? "text-muted-foreground" : "text-slate-600")}>Tokens</p>
+              <p className={cn("text-sm font-headline font-black", isActive ? "text-secondary" : "text-slate-800")}>{agent.metrics.tokens || "0"}</p>
             </div>
           </div>
         </div>
@@ -135,12 +171,15 @@ export function AgentCard({ agent, onDelete }: AgentCardProps) {
         {/* CORE ANALYTICS ROW */}
         <div className="grid grid-cols-3 gap-2">
           {[
-            { label: "INBOUND", val: agent.metrics.usageCount, color: "text-primary" },
-            { label: "TRANSF", val: agent.metrics.transfers || 0, color: "text-secondary" },
-            { label: "ABAND", val: agent.metrics.abandoned || 0, color: "text-destructive" },
+            { label: "INBOUND", val: agent.metrics.usageCount, color: isActive ? "text-primary" : "text-slate-700" },
+            { label: "TRANSF", val: agent.metrics.transfers || 0, color: isActive ? "text-secondary" : "text-slate-700" },
+            { label: "ABAND", val: agent.metrics.abandoned || 0, color: isActive ? "text-destructive" : "text-slate-700" },
           ].map((m, i) => (
-            <div key={i} className="text-center py-2.5 bg-white border border-border/50 pill-rounded">
-              <p className="text-[7px] font-black text-muted-foreground uppercase tracking-widest mb-0.5">{m.label}</p>
+            <div key={i} className={cn(
+              "text-center py-2.5 border pill-rounded",
+              isActive ? "bg-white border-border/50" : "bg-slate-100 border-slate-300"
+            )}>
+              <p className={cn("text-[7px] font-black uppercase tracking-widest mb-0.5", isActive ? "text-muted-foreground" : "text-slate-500")}>{m.label}</p>
               <p className={cn("text-xs font-headline font-black", m.color)}>{m.val}</p>
             </div>
           ))}

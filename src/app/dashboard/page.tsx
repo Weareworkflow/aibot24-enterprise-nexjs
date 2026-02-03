@@ -11,6 +11,7 @@ const INITIAL_AGENTS: AIAgent[] = [
     id: "1",
     name: "AIV-SALES-MASTER",
     type: "voice",
+    isActive: true,
     personality: "ESPECIALISTA VENTAS B2B",
     responseStyle: "Directo y profesional",
     initialContext: "Ventas corporativas",
@@ -30,6 +31,7 @@ const INITIAL_AGENTS: AIAgent[] = [
     id: "2",
     name: "SUPPORT-CORE-01",
     type: "voice",
+    isActive: true,
     personality: "SOPORTE TÉCNICO NIVEL 1",
     responseStyle: "Paciente y resolutivo",
     initialContext: "Soporte técnico de software",
@@ -49,6 +51,7 @@ const INITIAL_AGENTS: AIAgent[] = [
     id: "3",
     name: "WHATSAPP-BOT-PRO",
     type: "text",
+    isActive: true,
     personality: "ASISTENTE DE CITAS",
     responseStyle: "Informal pero eficiente",
     initialContext: "Gestión de calendario médico",
@@ -79,6 +82,20 @@ export default function DashboardPage() {
     });
   };
 
+  const handleToggleActive = (id: string) => {
+    setAgents(prev => prev.map(agent => {
+      if (agent.id === id) {
+        const newState = !agent.isActive;
+        toast({
+          title: newState ? "Agente activado" : "Agente desactivado",
+          description: `El agente ${agent.name} ha sido ${newState ? 'encendido' : 'apagado'}.`,
+        });
+        return { ...agent, isActive: newState };
+      }
+      return agent;
+    }));
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-[#F7F9FB]">
       <Navbar />
@@ -89,6 +106,7 @@ export default function DashboardPage() {
               key={agent.id} 
               agent={agent} 
               onDelete={() => handleDeleteAgent(agent.id)}
+              onToggleActive={() => handleToggleActive(agent.id)}
             />
           ))}
           {agents.length === 0 && (

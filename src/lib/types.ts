@@ -8,6 +8,7 @@ export interface AIAgent {
   responseStyle: string;
   initialContext: string;
   createdAt: string;
+  isActive?: boolean;
   metrics: {
     usageCount: number;
     performanceRating: number;
