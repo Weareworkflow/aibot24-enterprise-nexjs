@@ -1,6 +1,9 @@
-export interface VoiceAgent {
+export type AgentType = 'voice' | 'text';
+
+export interface AIAgent {
   id: string;
   name: string;
+  type: AgentType;
   personality: string;
   responseStyle: string;
   initialContext: string;
@@ -8,7 +11,7 @@ export interface VoiceAgent {
   metrics: {
     usageCount: number;
     performanceRating: number;
-    totalChatTime: number; // in minutes
+    totalInteractionMetric: number; // minutos para voz, mensajes para texto
   };
   feedback?: string[];
 }

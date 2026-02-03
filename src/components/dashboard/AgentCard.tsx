@@ -1,18 +1,20 @@
 "use client";
 
-import { VoiceAgent } from "@/lib/types";
+import { AIAgent } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Activity, Star, MoreVertical } from "lucide-react";
+import { Activity, Star, MoreVertical, Mic2, MessageSquareText } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 
 interface AgentCardProps {
-  agent: VoiceAgent;
+  agent: AIAgent;
 }
 
 export function AgentCard({ agent }: AgentCardProps) {
+  const isVoice = agent.type === 'voice';
+
   return (
     <Link href={`/agents/${agent.id}`} className="block group">
       <Card className="hover:border-primary/40 transition-all duration-200 border-border group bg-white shadow-sm hover:shadow-md rounded-lg overflow-hidden h-full flex flex-col">
@@ -30,9 +32,16 @@ export function AgentCard({ agent }: AgentCardProps) {
               <CardTitle className="text-xs font-headline font-bold text-[#333] group-hover:text-primary transition-colors truncate">
                 {agent.name}
               </CardTitle>
-              <p className="text-[9px] text-muted-foreground uppercase font-black tracking-tight leading-none mt-0.5">
-                ID: {agent.id.padStart(4, '0')}
-              </p>
+              <div className="flex items-center gap-1 mt-0.5">
+                {isVoice ? (
+                  <Mic2 className="h-2.5 w-2.5 text-primary" />
+                ) : (
+                  <MessageSquareText className="h-2.5 w-2.5 text-secondary" />
+                )}
+                <span className="text-[8px] text-muted-foreground uppercase font-black tracking-tighter">
+                  {isVoice ? 'Agente de Voz' : 'Agente de Texto'}
+                </span>
+              </div>
             </div>
           </div>
           <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground hover:bg-muted opacity-0 group-hover:opacity-100 transition-opacity" onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}>
@@ -57,7 +66,7 @@ export function AgentCard({ agent }: AgentCardProps) {
               </div>
             </div>
             <Badge variant="outline" className="bg-green-50 text-green-600 border-green-100/50 text-[8px] font-black h-3.5 px-1 uppercase tracking-tighter">
-              OK
+              {isVoice ? 'ACTIVO' : 'CONECTADO'}
             </Badge>
           </div>
         </CardContent>
