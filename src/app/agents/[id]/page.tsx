@@ -1,3 +1,4 @@
+
 "use client";
 
 import { use, useState, useEffect } from "react";
@@ -7,7 +8,7 @@ import { AgentChat } from "@/components/agents/AgentChat";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, MessageSquare, Sparkles, Zap, Database } from "lucide-react";
+import { ArrowLeft, MessageSquare, Sparkles, Zap, Database, PhoneIncoming, PhoneForwarded, PhoneOff } from "lucide-react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { summarizeAgentFeedback } from "@/ai/flows/summarize-agent-feedback";
@@ -117,11 +118,12 @@ export default function AgentConsolePage({ params }: { params: Promise<{ id: str
 
               <div className="grid grid-cols-3 gap-2">
                 {[
-                  { label: "INBOUND", val: agent.metrics.usageCount, color: "text-primary" },
-                  { label: "TRANSF", val: agent.metrics.transfers || 0, color: "text-secondary" },
-                  { label: "ABAND", val: agent.metrics.abandoned || 0, color: "text-destructive" },
+                  { label: "INBOUND", val: agent.metrics.usageCount, color: "text-primary", icon: PhoneIncoming },
+                  { label: "TRANSF", val: agent.metrics.transfers || 0, color: "text-secondary", icon: PhoneForwarded },
+                  { label: "ABAND", val: agent.metrics.abandoned || 0, color: "text-destructive", icon: PhoneOff },
                 ].map((m, i) => (
-                  <div key={i} className="text-center py-2.5 border bg-white pill-rounded shadow-sm">
+                  <div key={i} className="text-center py-2 border bg-white pill-rounded shadow-sm flex flex-col items-center justify-center">
+                    <m.icon className={cn("h-3 w-3 mb-0.5", m.color)} />
                     <p className="text-[7px] font-black uppercase tracking-widest mb-0.5 text-muted-foreground">{m.label}</p>
                     <p className={cn("text-xs font-headline font-black", m.color)}>{m.val}</p>
                   </div>

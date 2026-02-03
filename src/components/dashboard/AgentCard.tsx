@@ -1,9 +1,10 @@
+
 "use client";
 
 import { AIAgent } from "@/lib/types";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Power, Trash2, Zap, Database, Mic2, MessageSquareText } from "lucide-react";
+import { Power, Trash2, Zap, Database, Mic2, MessageSquareText, PhoneIncoming, PhoneForwarded, PhoneOff } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
@@ -166,14 +167,15 @@ export function AgentCard({ agent, onDelete, onToggleActive }: AgentCardProps) {
       {/* CORE ANALYTICS ROW */}
       <div className="grid grid-cols-3 gap-2">
         {[
-          { label: "INBOUND", val: agent.metrics.usageCount, color: isActive ? "text-primary" : "text-slate-700" },
-          { label: "TRANSF", val: agent.metrics.transfers || 0, color: isActive ? "text-secondary" : "text-slate-700" },
-          { label: "ABAND", val: agent.metrics.abandoned || 0, color: isActive ? "text-destructive" : "text-slate-700" },
+          { label: "INBOUND", val: agent.metrics.usageCount, color: isActive ? "text-primary" : "text-slate-700", icon: PhoneIncoming },
+          { label: "TRANSF", val: agent.metrics.transfers || 0, color: isActive ? "text-secondary" : "text-slate-700", icon: PhoneForwarded },
+          { label: "ABAND", val: agent.metrics.abandoned || 0, color: isActive ? "text-destructive" : "text-slate-700", icon: PhoneOff },
         ].map((m, i) => (
           <div key={i} className={cn(
-            "text-center py-2.5 border pill-rounded",
+            "text-center py-2 border pill-rounded flex flex-col items-center justify-center",
             isActive ? "bg-white border-border/50" : "bg-slate-100 border-slate-300"
           )}>
+            <m.icon className={cn("h-3 w-3 mb-0.5", m.color)} />
             <p className={cn("text-[7px] font-black uppercase tracking-widest mb-0.5", isActive ? "text-muted-foreground" : "text-slate-500")}>{m.label}</p>
             <p className={cn("text-xs font-headline font-black", m.color)}>{m.val}</p>
           </div>
