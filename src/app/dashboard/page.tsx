@@ -5,7 +5,7 @@ import { Navbar } from "@/components/layout/Navbar";
 import { AgentCard } from "@/components/dashboard/AgentCard";
 import { VoiceAgent } from "@/lib/types";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, Search, Filter, TrendingUp, Users, Clock, Star } from "lucide-react";
+import { Plus, Search, Filter, TrendingUp, Users, Clock, Star } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
@@ -61,83 +61,67 @@ export default function DashboardPage() {
   );
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#F5F7F8]">
+    <div className="flex flex-col min-h-screen bg-[#F0F3F5]">
       <Navbar />
-      <main className="container mx-auto px-6 py-8 space-y-8">
-        {/* Header Section */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="space-y-1">
-            <h1 className="text-2xl font-headline font-bold text-[#333]">Escritorio de Agentes</h1>
-            <p className="text-sm text-muted-foreground font-medium">Gestiona y monitorea tus agentes de voz inteligentes.</p>
+      <main className="container mx-auto px-4 py-6 space-y-6">
+        {/* Compact Header */}
+        <div className="flex items-center justify-between border-b pb-4 border-border/60">
+          <div>
+            <h1 className="text-xl font-headline font-bold text-[#333]">Panel de Agentes</h1>
+            <p className="text-[11px] text-muted-foreground font-bold uppercase tracking-tight">Gestión total de voz IA</p>
           </div>
-          <Button asChild className="rounded-md h-10 px-6 bg-secondary hover:bg-secondary/90 shadow-sm font-bold text-xs uppercase tracking-wider">
+          <Button asChild size="sm" className="bg-secondary hover:bg-secondary/90 text-white font-bold h-8 px-4">
             <Link href="/agents/new">
-              <PlusCircle className="mr-2 h-4 w-4" />
-              Crear Nuevo Agente
+              <Plus className="mr-1.5 h-4 w-4" />
+              NUEVO AGENTE
             </Link>
           </Button>
         </div>
 
-        {/* Quick Stats Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Dense Stats Row */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           {[
-            { label: "Agentes Activos", value: "12", icon: Users, color: "text-primary" },
-            { label: "Sesiones Hoy", value: "4,190", icon: TrendingUp, color: "text-secondary" },
-            { label: "Resolución Prom.", value: "2.4m", icon: Clock, color: "text-blue-500" },
-            { label: "Satisfacción", value: "4.82/5", icon: Star, color: "text-orange-400" },
+            { label: "Activos", value: "12", icon: Users, color: "text-primary" },
+            { label: "Hoy", value: "4.1k", icon: TrendingUp, color: "text-secondary" },
+            { label: "T. Med", value: "2.4m", icon: Clock, color: "text-blue-500" },
+            { label: "CSAT", value: "4.8", icon: Star, color: "text-orange-400" },
           ].map((stat, i) => (
-            <Card key={i} className="border-none shadow-sm overflow-hidden bg-white">
-              <CardContent className="p-5 flex items-center justify-between">
-                <div>
-                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">{stat.label}</p>
-                  <p className="text-2xl font-headline font-bold text-[#333]">{stat.value}</p>
+            <Card key={i} className="border-none shadow-sm bg-white">
+              <CardContent className="p-3 flex items-center gap-3">
+                <div className={`h-8 w-8 rounded bg-muted flex items-center justify-center flex-shrink-0 ${stat.color}`}>
+                  <stat.icon className="h-4 w-4" />
                 </div>
-                <div className={`h-10 w-10 rounded-full bg-muted flex items-center justify-center ${stat.color}`}>
-                  <stat.icon className="h-5 w-5" />
+                <div>
+                  <p className="text-[9px] font-black text-muted-foreground uppercase tracking-wider">{stat.label}</p>
+                  <p className="text-lg font-headline font-bold leading-none">{stat.value}</p>
                 </div>
               </CardContent>
             </Card>
           ))}
         </div>
 
-        {/* Toolbar */}
-        <div className="flex flex-col sm:flex-row gap-4 items-center">
-          <div className="relative flex-1 w-full">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        {/* Compact Toolbar */}
+        <div className="flex gap-2">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
             <Input 
-              placeholder="Buscar por nombre..." 
-              className="pl-10 h-10 bg-white border-border rounded-md shadow-sm text-sm"
+              placeholder="Buscar..." 
+              className="pl-9 h-9 bg-white border-border rounded shadow-none text-xs"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          <div className="flex gap-2 w-full sm:w-auto">
-            <Button variant="outline" className="h-10 px-4 rounded-md border-border bg-white text-xs font-bold uppercase">
-              <Filter className="mr-2 h-4 w-4" />
-              Filtros
-            </Button>
-          </div>
+          <Button variant="outline" size="sm" className="h-9 rounded bg-white border-border text-[10px] font-black uppercase">
+            <Filter className="mr-1.5 h-3.5 w-3.5" />
+            FILTROS
+          </Button>
         </div>
 
         {/* Agent Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {filteredAgents.map(agent => (
             <AgentCard key={agent.id} agent={agent} />
           ))}
-          {filteredAgents.length === 0 && (
-            <div className="col-span-full py-20 text-center space-y-4 bg-white rounded-xl border border-dashed border-border">
-              <div className="mx-auto h-16 w-16 rounded-full bg-muted flex items-center justify-center">
-                <Search className="h-8 w-8 text-muted-foreground" />
-              </div>
-              <div className="space-y-1">
-                <h3 className="text-lg font-headline font-semibold text-[#333]">No se encontraron agentes</h3>
-                <p className="text-sm text-muted-foreground">Prueba ajustando tu búsqueda o crea uno nuevo.</p>
-              </div>
-              <Button asChild variant="outline" className="font-bold">
-                <Link href="/agents/new">Crear mi primer agente</Link>
-              </Button>
-            </div>
-          )}
         </div>
       </main>
     </div>
