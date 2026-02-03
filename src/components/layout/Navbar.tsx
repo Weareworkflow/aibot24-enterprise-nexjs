@@ -1,15 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { Mic2, Plus, Bell, MoreVertical, Search } from "lucide-react";
+import { Plus, Bell, MoreVertical, Search } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { Logo } from "./Logo";
 
-// Nota: En una app real, usaríamos un Context o un State manager para compartir la búsqueda.
-// Para este prototipo, simulamos el comportamiento visual.
 export function Navbar() {
   const pathname = usePathname();
   const [searchValue, setSearchValue] = useState("");
@@ -19,13 +18,8 @@ export function Navbar() {
       <div className="container mx-auto px-4 flex items-center justify-between gap-4">
         {/* LOGO AREA */}
         <div className="flex items-center gap-6 flex-shrink-0">
-          <Link href="/dashboard" className="flex items-center gap-2 group transition-opacity hover:opacity-80">
-            <div className="bg-primary p-1.5 rounded-lg shadow-sm">
-              <Mic2 className="h-4 w-4 text-white" />
-            </div>
-            <span className="font-headline text-lg font-bold text-[#333] hidden sm:inline tracking-tight">
-              AI<span className="text-secondary">Bot</span>24
-            </span>
+          <Link href="/dashboard" className="transition-opacity hover:opacity-90">
+            <Logo />
           </Link>
         </div>
 
