@@ -4,9 +4,6 @@ import { useState } from "react";
 import { Navbar } from "@/components/layout/Navbar";
 import { AgentCard } from "@/components/dashboard/AgentCard";
 import { AIAgent } from "@/lib/types";
-import { Search } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
 
 const INITIAL_AGENTS: AIAgent[] = [
   {
@@ -68,7 +65,8 @@ const INITIAL_AGENTS: AIAgent[] = [
 ];
 
 export default function DashboardPage() {
-  const [searchQuery, setSearchQuery] = useState("");
+  // En una versión final, este estado vendría de un Context conectado al Navbar
+  const [searchQuery] = useState("");
 
   const filteredAgents = INITIAL_AGENTS.filter(agent => 
     agent.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -78,19 +76,6 @@ export default function DashboardPage() {
     <div className="flex flex-col min-h-screen bg-[#F7F9FB]">
       <Navbar />
       <main className="container mx-auto px-4 py-8 space-y-8">
-        {/* COMPACT SEARCH AREA */}
-        <div className="max-w-6xl mx-auto">
-          <div className="relative w-full max-w-md ml-0">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input 
-              placeholder="Buscar por nombre de agente..." 
-              className="w-full h-11 pl-11 pill-rounded border-none bg-white pill-shadow text-xs"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-        </div>
-
         {/* AGENTS GRID */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
           {filteredAgents.map(agent => (
