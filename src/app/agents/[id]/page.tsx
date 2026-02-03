@@ -7,7 +7,7 @@ import { AgentChat } from "@/components/agents/AgentChat";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, MessageSquare, Play, Sparkles, Settings } from "lucide-react";
+import { ArrowLeft, MessageSquare, Sparkles, Zap, Database } from "lucide-react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { summarizeAgentFeedback } from "@/ai/flows/summarize-agent-feedback";
@@ -25,7 +25,11 @@ const MOCK_AGENTS: Record<string, AIAgent> = {
     metrics: {
       usageCount: 1240,
       performanceRating: 4.8,
-      totalInteractionMetric: 5200
+      totalInteractionMetric: 5200,
+      latency: "1.2s",
+      tokens: "120k",
+      transfers: 45,
+      abandoned: 12
     },
     feedback: [
       "Muy útil con mi problema de login.",
@@ -87,19 +91,42 @@ export default function AgentConsolePage({ params }: { params: Promise<{ id: str
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           <div className="lg:col-span-7 space-y-6">
-            <div className="grid grid-cols-3 gap-3">
-              {[
-                { label: isVoice ? "Minutos" : "Mensajes", val: agent.metrics.totalInteractionMetric },
-                { label: "Consultas", val: agent.metrics.usageCount },
-                { label: "Rating", val: `${agent.metrics.performanceRating}/5` }
-              ].map((m, i) => (
-                <Card key={i} className="shadow-none border-border">
-                  <CardContent className="p-3 text-center">
-                    <p className="text-[9px] font-black text-muted-foreground uppercase">{m.label}</p>
-                    <p className="text-xl font-headline font-bold">{m.val}</p>
-                  </CardContent>
-                </Card>
-              ))}
+            
+            {/* ANALYTICS SECTION */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="p-3 pill-rounded border bg-white flex items-center gap-3 shadow-sm">
+                  <div className="p-1.5 rounded-full bg-muted/50 text-primary">
+                    <Zap className="h-3 w-3" />
+                  </div>
+                  <div>
+                    <p className="text-[8px] font-black uppercase text-muted-foreground">Latencia</p>
+                    <p className="text-sm font-headline font-black text-primary">{agent.metrics.latency || "0.0s"}</p>
+                  </div>
+                </div>
+                <div className="p-3 pill-rounded border bg-white flex items-center gap-3 shadow-sm">
+                  <div className="p-1.5 rounded-full bg-muted/50 text-secondary">
+                    <Database className="h-3 w-3" />
+                  </div>
+                  <div>
+                    <p className="text-[8px] font-black uppercase text-muted-foreground">Tokens</p>
+                    <p className="text-sm font-headline font-black text-secondary">{agent.metrics.tokens || "0"}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-3 gap-2">
+                {[
+                  { label: "INBOUND", val: agent.metrics.usageCount, color: "text-primary" },
+                  { label: "TRANSF", val: agent.metrics.transfers || 0, color: "text-secondary" },
+                  { label: "ABAND", val: agent.metrics.abandoned || 0, color: "text-destructive" },
+                ].map((m, i) => (
+                  <div key={i} className="text-center py-2.5 border bg-white pill-rounded shadow-sm">
+                    <p className="text-[7px] font-black uppercase tracking-widest mb-0.5 text-muted-foreground">{m.label}</p>
+                    <p className={cn("text-xs font-headline font-black", m.color)}>{m.val}</p>
+                  </div>
+                ))}
+              </div>
             </div>
 
             <Tabs defaultValue="personality" className="w-full">
