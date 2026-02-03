@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Mic2, LayoutDashboard, Plus, Bell, MoreVertical } from "lucide-react";
+import { Mic2, Plus, Bell, MoreVertical } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -13,7 +13,7 @@ export function Navbar() {
     <nav className="border-b bg-white border-border/60 sticky top-0 z-50 h-14 flex items-center shadow-sm">
       <div className="container mx-auto px-4 flex items-center justify-between">
         <div className="flex items-center gap-6">
-          <Link href="/dashboard" className="flex items-center gap-2">
+          <Link href="/dashboard" className="flex items-center gap-2 group transition-opacity hover:opacity-80">
             <div className="bg-primary p-1.5 rounded-lg shadow-sm">
               <Mic2 className="h-4 w-4 text-white" />
             </div>
@@ -24,18 +24,6 @@ export function Navbar() {
           
           <div className="flex items-center gap-1">
             <Link
-              href="/dashboard"
-              className={cn(
-                "flex items-center gap-1.5 px-3 py-1.5 rounded text-[10px] font-black uppercase transition-all tracking-wider",
-                pathname === "/dashboard" 
-                  ? "bg-primary/5 text-primary" 
-                  : "text-muted-foreground hover:text-primary"
-              )}
-            >
-              <LayoutDashboard className="h-3.5 w-3.5" />
-              Dashboard
-            </Link>
-            <Link
               href="/agents/new"
               className={cn(
                 "flex items-center gap-1.5 px-3 py-1.5 rounded text-[10px] font-black uppercase transition-all tracking-wider",
@@ -45,7 +33,7 @@ export function Navbar() {
               )}
             >
               <Plus className="h-3.5 w-3.5" />
-              Nuevo
+              Nuevo Agente
             </Link>
           </div>
         </div>
