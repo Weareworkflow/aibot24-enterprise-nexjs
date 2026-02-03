@@ -1,4 +1,3 @@
-
 "use client";
 
 import { use, useState, useEffect } from "react";
@@ -28,7 +27,8 @@ import {
   FilePlus,
   Search,
   Cloud,
-  PhoneCall
+  PhoneCall,
+  Clock
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
@@ -55,7 +55,16 @@ export default function AgentConsolePage({ params }: { params: Promise<{ id: str
   }, [agentId, agents]);
 
   if (!isMounted) return null;
-  if (!agent) return <div className="p-8 text-center font-black uppercase tracking-widest text-muted-foreground">Agente no encontrado</div>;
+  if (!agent) return (
+    <div className="flex flex-col min-h-screen bg-[#F0F3F5]">
+      <Navbar />
+      <div className="flex-1 flex items-center justify-center">
+        <div className="p-8 text-center font-black uppercase tracking-widest text-muted-foreground animate-pulse">
+          Agente no encontrado
+        </div>
+      </div>
+    </div>
+  );
 
   const isVoice = agent.type === 'voice';
 
@@ -92,14 +101,14 @@ export default function AgentConsolePage({ params }: { params: Promise<{ id: str
               <div className="grid grid-cols-2 gap-3">
                 <div className="p-3 pill-rounded border bg-white flex items-center gap-3 shadow-sm">
                   <div className="p-1.5 rounded-full bg-muted/50 text-primary">
-                    <Zap className="h-3 w-3" />
+                    {isVoice ? <Clock className="h-3 w-3" /> : <MessageCircle className="h-3 w-3" />}
                   </div>
                   <div>
                     <p className="text-[8px] font-black uppercase text-muted-foreground">
                       {isVoice ? "Minutos" : "Mensajes"}
                     </p>
                     <p className="text-sm font-headline font-black text-primary">
-                      {isVoice ? (agent.metrics.latency || "0m") : (agent.metrics.totalInteractionMetric || "0")}
+                      {isVoice ? (agent.metrics.totalInteractionMetric || "0") : (agent.metrics.totalInteractionMetric || "0")}
                     </p>
                   </div>
                 </div>
@@ -206,7 +215,7 @@ export default function AgentConsolePage({ params }: { params: Promise<{ id: str
                   <CardContent className="p-6 space-y-6">
                     <div className="space-y-2">
                       <div className="flex items-center gap-2 text-[9px] font-black text-muted-foreground uppercase">
-                        Tono de Voz
+                        Tono de Voz / Personalidad
                       </div>
                       <p className="text-xs p-3 bg-muted/40 rounded-lg border italic">{agent.tone}</p>
                     </div>
@@ -215,7 +224,7 @@ export default function AgentConsolePage({ params }: { params: Promise<{ id: str
                       <div className="flex items-center gap-2 text-[9px] font-black text-muted-foreground uppercase">
                         Base de Conocimiento
                       </div>
-                      <div className="min-h-[150px] p-4 bg-muted/30 rounded-xl border-dashed border-2 text-[10px] leading-relaxed font-mono">
+                      <div className="min-h-[150px] p-4 bg-muted/30 rounded-xl border-dashed border-2 text-[10px] leading-relaxed font-mono whitespace-pre-wrap">
                         {agent.knowledge}
                       </div>
                     </div>

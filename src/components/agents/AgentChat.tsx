@@ -5,7 +5,7 @@ import { AIAgent, ChatMessage } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Send, User, Bot, Mic, Loader2, MessageSquareText } from "lucide-react";
+import { Send, Mic, Loader2, MessageSquareText } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface AgentChatProps {
@@ -22,7 +22,10 @@ export function AgentChat({ agent }: AgentChatProps) {
 
   useEffect(() => {
     if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+      const scrollContainer = scrollRef.current.querySelector('[data-radix-scroll-area-viewport]');
+      if (scrollContainer) {
+        scrollContainer.scrollTop = scrollContainer.scrollHeight;
+      }
     }
   }, [messages, isTyping]);
 
@@ -40,11 +43,12 @@ export function AgentChat({ agent }: AgentChatProps) {
     setInput("");
     setIsTyping(true);
 
+    // Simulación de respuesta del agente basada en su tono
     setTimeout(() => {
       const botMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: `Hola, soy ${agent.name}. Como agente de ${isVoice ? 'voz' : 'texto'}, he procesado tu mensaje siguiendo mi estilo: ${agent.responseStyle}.`,
+        content: `Hola, soy ${agent.name}. Como tu asistente de ${isVoice ? 'voz' : 'texto'}, estoy procesando tu solicitud manteniendo un tono ${agent.tone}. ¿En qué más puedo ayudarte hoy?`,
         timestamp: new Date().toISOString()
       };
       setMessages(prev => [...prev, botMessage]);
@@ -61,7 +65,7 @@ export function AgentChat({ agent }: AgentChatProps) {
           </div>
           <div>
             <h3 className="text-sm font-bold font-headline">{agent.name}</h3>
-            <span className="text-[10px] text-green-600 font-bold uppercase tracking-wider flex items-center gap-1">
+            <span className="text-[10px] text-green-600 font-black uppercase tracking-wider flex items-center gap-1">
               <span className="h-1.5 w-1.5 bg-green-600 rounded-full animate-pulse" />
               {isVoice ? 'Voice Ready' : 'Chat Online'}
             </span>
@@ -81,7 +85,7 @@ export function AgentChat({ agent }: AgentChatProps) {
             <div
               key={msg.id}
               className={cn(
-                "flex flex-col max-w-[85%] space-y-1",
+                "flex flex-col max-w-[85%] space-y-1 animate-in fade-in slide-in-from-bottom-1",
                 msg.role === 'user' ? "ml-auto items-end" : "items-start"
               )}
             >
@@ -98,7 +102,7 @@ export function AgentChat({ agent }: AgentChatProps) {
             </div>
           ))}
           {isTyping && (
-            <div className="flex items-start gap-2 max-w-[85%]">
+            <div className="flex items-start gap-2 max-w-[85%] animate-pulse">
               <div className="bg-muted px-4 py-2 rounded-2xl rounded-tl-none border flex items-center gap-2">
                 <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />
                 <span className="text-[10px] font-bold text-muted-foreground uppercase">IA pensando...</span>
