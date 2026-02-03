@@ -29,7 +29,10 @@ import {
   PhoneIncoming,
   PhoneForwarded,
   PhoneOff,
-  Loader2
+  Loader2,
+  Terminal,
+  Copy,
+  Check
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
@@ -42,12 +45,15 @@ import { useDoc, useFirestore } from "@/firebase";
 import { doc, updateDoc } from "firebase/firestore";
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
+import { useToast } from "@/hooks/use-toast";
 
 export default function AgentConsolePage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
   const agentId = resolvedParams.id;
   const db = useFirestore();
   const router = useRouter();
+  const { toast } = useToast();
+  const [copied, setCopied] = useState(false);
 
   const agentRef = useMemo(() => {
     if (!db || !agentId) return null;
@@ -74,6 +80,16 @@ export default function AgentConsolePage({ params }: { params: Promise<{ id: str
       });
   };
 
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    toast({
+      title: "Copiado",
+      description: "URL del endpoint copiada al portapapeles.",
+    });
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   if (loading) return (
     <div className="flex flex-col min-h-screen bg-[#F0F3F5]">
       <Navbar />
@@ -96,6 +112,7 @@ export default function AgentConsolePage({ params }: { params: Promise<{ id: str
   );
 
   const isVoice = agent.type === 'voice';
+  const apiUrl = typeof window !== 'undefined' ? `${window.location.origin}/api/agents/${agent.id}` : '';
 
   return (
     <div className="flex flex-col min-h-screen bg-[#F0F3F5]">
@@ -118,7 +135,7 @@ export default function AgentConsolePage({ params }: { params: Promise<{ id: str
                   {isVoice ? 'MODO VOZ' : 'MODO TEXTO'}
                 </Badge>
               </div>
-              <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">Activo desde {new Date(agent.createdAt).toLocaleDateString()}</p>
+              <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">ID: {agent.id} • Activo desde {new Date(agent.createdAt).toLocaleDateString()}</p>
             </div>
           </div>
         </div>
@@ -183,8 +200,8 @@ export default function AgentConsolePage({ params }: { params: Promise<{ id: str
             </div>
 
             <Tabs defaultValue="identidad" className="w-full">
-              <div className="flex mb-6">
-                <TabsList className="bg-white border pill-rounded h-12 p-1 gap-1 shadow-sm">
+              <div className="flex mb-6 overflow-x-auto pb-2 scrollbar-hide">
+                <TabsList className="bg-white border pill-rounded h-12 p-1 gap-1 shadow-sm shrink-0">
                   <TabsTrigger 
                     value="identidad" 
                     className="pill-rounded h-10 px-6 data-[state=active]:bg-primary data-[state=active]:text-white text-[10px] font-black uppercase tracking-[0.1em] gap-2 transition-all"
@@ -202,6 +219,12 @@ export default function AgentConsolePage({ params }: { params: Promise<{ id: str
                     className="pill-rounded h-10 px-6 data-[state=active]:bg-primary data-[state=active]:text-white text-[10px] font-black uppercase tracking-[0.1em] gap-2 transition-all"
                   >
                     <Share2 className="h-3.5 w-3.5" /> Integraciones
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="api" 
+                    className="pill-rounded h-10 px-6 data-[state=active]:bg-secondary data-[state=active]:text-white text-[10px] font-black uppercase tracking-[0.1em] gap-2 transition-all"
+                  >
+                    <Terminal className="h-3.5 w-3.5" /> API & Dev
                   </TabsTrigger>
                 </TabsList>
               </div>
@@ -295,6 +318,50 @@ export default function AgentConsolePage({ params }: { params: Promise<{ id: str
                           />
                         </div>
                       ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="api" className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+                <Card className="shadow-sm border-none bg-white">
+                  <CardContent className="p-6 space-y-6">
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <h4 className="text-[10px] font-black uppercase tracking-widest text-primary flex items-center gap-2">
+                          <Terminal className="h-3 w-3" /> Endpoint de Consulta
+                        </h4>
+                        <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-xl border">
+                          <code className="text-[10px] font-mono flex-1 overflow-x-auto whitespace-nowrap scrollbar-hide">
+                            GET {apiUrl}
+                          </code>
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-8 w-8 shrink-0"
+                            onClick={() => copyToClipboard(apiUrl)}
+                          >
+                            {copied ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
+                          </Button>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <h4 className="text-[10px] font-black uppercase tracking-widest text-primary">Ejemplo con cURL</h4>
+                        <div className="p-4 bg-[#1E293B] rounded-xl text-white font-mono text-[10px] overflow-x-auto shadow-inner">
+                          <pre className="whitespace-pre-wrap">
+{`curl -X GET "${apiUrl}" \\
+  -H "Accept: application/json"`}
+                          </pre>
+                        </div>
+                      </div>
+
+                      <div className="p-4 bg-secondary/5 rounded-xl border border-secondary/20">
+                        <p className="text-[9px] font-bold text-secondary uppercase mb-2">Integración en Iframe</p>
+                        <p className="text-[10px] leading-relaxed text-muted-foreground">
+                          Puedes embeber este panel de control directamente en tu Bitrix24 utilizando la URL de esta página en un widget de tipo Iframe.
+                        </p>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
