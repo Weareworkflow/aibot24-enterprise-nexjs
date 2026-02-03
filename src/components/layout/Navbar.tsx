@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Plus, Bell, MoreVertical, Search, LogIn, LogOut, User } from "lucide-react";
+import { Plus, Bell, Search, LogIn, LogOut, User } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -59,19 +59,17 @@ export function Navbar() {
         </div>
 
         <div className="flex items-center gap-2 flex-shrink-0">
-          {user && (
-            <Link
-              href="/agents/new"
-              className={cn(
-                "flex items-center gap-1.5 px-3 py-1.5 rounded text-[10px] font-black uppercase transition-all tracking-wider mr-2",
-                "bg-secondary/15 text-secondary hover:bg-secondary/25",
-                pathname === "/agents/new" && "bg-secondary/30"
-              )}
-            >
-              <Plus className="h-3.5 w-3.5" />
-              <span className="hidden lg:inline">Nuevo Agente</span>
-            </Link>
-          )}
+          <Link
+            href="/agents/new"
+            className={cn(
+              "flex items-center gap-1.5 px-3 py-1.5 rounded text-[10px] font-black uppercase transition-all tracking-wider mr-2",
+              "bg-secondary/15 text-secondary hover:bg-secondary/25",
+              pathname === "/agents/new" && "bg-secondary/30"
+            )}
+          >
+            <Plus className="h-3.5 w-3.5" />
+            <span className="hidden lg:inline">Nuevo Agente</span>
+          </Link>
 
           <div className="flex items-center gap-1.5 border-l pl-3">
             {!loading && (

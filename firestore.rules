@@ -2,12 +2,11 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Permitir lectura y escritura en la colección de agentes solo a usuarios autenticados
+    // Permitir acceso público total para integración embebida (Iframe)
     match /agents/{agentId} {
-      allow read, write: if request.auth != null;
+      allow read, write: if true;
     }
     
-    // Denegar cualquier otro acceso por defecto para mantener la seguridad
     match /{document=**} {
       allow read, write: if false;
     }
