@@ -1,5 +1,21 @@
-# Firebase Studio
 
-This is a NextJS starter in Firebase Studio.
+# AIBot24 - Arquitecto de Agentes para Bitrix24
 
-To get started, take a look at src/app/page.tsx.
+Esta es una solución profesional para la creación y gestión de agentes de IA (Voz y Texto) integrados en el ecosistema de Bitrix24.
+
+## Tecnologías Principales
+- **Framework**: Next.js 15 (App Router)
+- **Base de Datos**: Google Cloud Firestore (Firebase)
+- **IA**: Google Genkit + Gemini 2.5 Flash
+- **Estilos**: Tailwind CSS + ShadCN UI
+- **Estado**: Zustand
+
+## Estructura de Datos
+Los agentes se almacenan en la colección `agents` de Firestore con la siguiente estructura:
+- `identity`: Nombre, Rol, Empresa, Objetivo.
+- `instructions`: Tono de voz, Base de conocimiento (Large Text).
+- `metrics`: Uso, performance, tokens y transferencias.
+- `integrations`: Estado de conexión con servicios de Bitrix24.
+
+## Despliegue
+Configurado para funcionar como un Micro-App dentro del portal de Bitrix24.
