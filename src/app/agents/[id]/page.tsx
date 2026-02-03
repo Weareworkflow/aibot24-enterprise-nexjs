@@ -132,7 +132,7 @@ export default function AgentConsolePage({ params }: { params: Promise<{ id: str
               variant="ghost" 
               size="icon" 
               className="h-8 w-8 flex items-center justify-center bg-muted rounded-full hover:bg-muted/80"
-              onClick={() => router.push('/dashboard')}
+              onClick={() => router.push('/')}
             >
               <ArrowLeft className="h-4 w-4" />
             </Button>

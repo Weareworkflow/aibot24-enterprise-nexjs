@@ -1,97 +1,126 @@
-import Link from "next/link";
-import { ArrowRight, Shield, Zap, Sparkles } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Logo } from "@/components/layout/Logo";
 
-export default function Home() {
+"use client";
+
+import { useState } from "react";
+import { Navbar } from "@/components/layout/Navbar";
+import { AgentCard } from "@/components/dashboard/AgentCard";
+import { AIAgent } from "@/lib/types";
+import { useToast } from "@/hooks/use-toast";
+
+const INITIAL_AGENTS: AIAgent[] = [
+  {
+    id: "1",
+    name: "AIV-SALES-MASTER",
+    type: "voice",
+    isActive: true,
+    role: "Especialista Ventas B2B",
+    company: "TechSolutions Global",
+    objective: "Cierre de contratos y prospección",
+    tone: "Directo y altamente profesional",
+    knowledge: "Manual de ventas corporativas, manejo de objeciones y precios de licencias empresariales.",
+    createdAt: "2024-01-15T10:00:00Z",
+    metrics: {
+      usageCount: 215,
+      performanceRating: 4.8,
+      totalInteractionMetric: 934,
+      latency: "450m",
+      tokens: "120k",
+      transfers: 45,
+      abandoned: 12
+    }
+  },
+  {
+    id: "2",
+    name: "SUPPORT-CORE-01",
+    type: "voice",
+    isActive: true,
+    role: "Soporte Técnico Nivel 1",
+    company: "CloudServices Inc",
+    objective: "Resolución de incidencias técnicas",
+    tone: "Paciente, empático y resolutivo",
+    knowledge: "Guía de resolución de problemas comunes de software, acceso a base de conocimientos de red y servidores.",
+    createdAt: "2024-02-01T14:30:00Z",
+    metrics: {
+      usageCount: 540,
+      performanceRating: 4.5,
+      totalInteractionMetric: 1820,
+      latency: "1200m",
+      tokens: "245k",
+      transfers: 112,
+      abandoned: 9
+    }
+  },
+  {
+    id: "3",
+    name: "WHATSAPP-BOT-PRO",
+    type: "text",
+    isActive: true,
+    role: "Asistente de Citas",
+    company: "Clínica Dental Moderna",
+    objective: "Gestión de calendario y recordatorios",
+    tone: "Informal, amable y eficiente",
+    knowledge: "Horarios de médicos, políticas de cancelación y procedimientos disponibles.",
+    createdAt: "2024-02-10T09:15:00Z",
+    metrics: {
+      usageCount: 1250,
+      performanceRating: 4.9,
+      totalInteractionMetric: 5400,
+      latency: "850m",
+      tokens: "450k",
+      transfers: 22,
+      abandoned: 5
+    }
+  }
+];
+
+export default function HomePage() {
+  const [agents, setAgents] = useState<AIAgent[]>(INITIAL_AGENTS);
+  const { toast } = useToast();
+
+  const handleDeleteAgent = (id: string) => {
+    const agentToDelete = agents.find(a => a.id === id);
+    setAgents(prev => prev.filter(agent => agent.id !== id));
+    
+    toast({
+      title: "Agente eliminado",
+      description: `El agente ${agentToDelete?.name} ha sido removido correctamente.`,
+    });
+  };
+
+  const handleToggleActive = (id: string) => {
+    setAgents(prev => prev.map(agent => {
+      if (agent.id === id) {
+        const newState = !agent.isActive;
+        toast({
+          title: newState ? "Agente activado" : "Agente desactivado",
+          description: `El agente ${agent.name} ha sido ${newState ? 'encendido' : 'apagado'}.`,
+        });
+        return { ...agent, isActive: newState };
+      }
+      return agent;
+    }));
+  };
+
   return (
-    <div className="flex flex-col min-h-screen">
-      <nav className="container mx-auto px-4 h-16 flex items-center justify-between border-b border-border/40">
-        <Link href="/">
-          <Logo />
-        </Link>
-        <Button asChild variant="ghost" size="sm" className="font-bold">
-          <Link href="/dashboard">Entrar</Link>
-        </Button>
-      </nav>
-
-      <main className="flex-1">
-        <section className="py-16 lg:py-24 container mx-auto px-4">
-          <div className="max-w-4xl mx-auto text-center space-y-6">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-secondary/10 text-secondary text-[10px] font-black uppercase tracking-widest border border-secondary/20">
-              <Sparkles className="h-3 w-3" />
-              <span>Voz e Inteligencia de Siguiente Generación</span>
+    <div className="flex flex-col min-h-screen bg-[#F7F9FB]">
+      <Navbar />
+      <main className="container mx-auto px-4 py-8 space-y-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+          {agents.map(agent => (
+            <AgentCard 
+              key={agent.id} 
+              agent={agent} 
+              onDelete={() => handleDeleteAgent(agent.id)}
+              onToggleActive={() => handleToggleActive(agent.id)}
+            />
+          ))}
+          {agents.length === 0 && (
+            <div className="col-span-full py-20 text-center space-y-4">
+              <p className="text-muted-foreground font-headline font-bold">No tienes agentes activos.</p>
             </div>
-            <h1 className="text-4xl lg:text-6xl font-headline font-bold text-foreground leading-[1.1]">
-              Despliega Agentes de <span className="text-secondary italic">Voz IA</span> en segundos
-            </h1>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Optimiza tu negocio con agentes de voz y texto personalizables que suenan naturales y resuelven consultas al instante.
-            </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-4">
-              <Button size="lg" className="h-12 px-8 text-sm font-bold rounded-lg shadow-lg shadow-secondary/20 bg-secondary hover:bg-secondary/90" asChild>
-                <Link href="/dashboard">
-                  Ir al Panel <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
-              </Button>
-              <Button size="lg" variant="outline" className="h-12 px-8 text-sm font-bold rounded-lg" asChild>
-                <Link href="/agents/new">Crear Agente</Link>
-              </Button>
-            </div>
-          </div>
-        </section>
-
-        <section className="py-16 bg-muted/30">
-          <div className="container mx-auto px-4">
-            <div className="grid md:grid-cols-3 gap-6">
-              {[
-                { 
-                  title: "Configuración GenAI", 
-                  desc: "Define personalidades y bases de conocimiento usando herramientas avanzadas de LLM.",
-                  icon: Sparkles,
-                  color: "primary"
-                },
-                { 
-                  title: "Pruebas en Tiempo Real", 
-                  desc: "Prueba tus agentes inmediatamente en un entorno de chat interactivo antes del despliegue.",
-                  icon: Zap,
-                  color: "secondary"
-                },
-                { 
-                  title: "Métricas de Empresa", 
-                  desc: "Rastrea el rendimiento, uso y satisfacción con nuestro completo suite de analíticas.",
-                  icon: Shield,
-                  color: "green-600"
-                }
-              ].map((feature, i) => (
-                <div key={i} className="bg-card p-6 rounded-xl border border-border/50 shadow-sm">
-                  <div className={`h-10 w-10 bg-${feature.color}/10 rounded-lg flex items-center justify-center mb-4`}>
-                    <feature.icon className={`h-5 w-5 text-${feature.color}`} />
-                  </div>
-                  <h3 className="text-lg font-headline font-bold mb-2">{feature.title}</h3>
-                  <p className="text-sm text-muted-foreground">
-                    {feature.desc}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-      </main>
-
-      <footer className="border-t py-8 bg-white">
-        <div className="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-6">
-          <Logo showText={true} />
-          <p className="text-[10px] text-muted-foreground font-bold uppercase">
-            © {new Date().getFullYear()} AIBot24. Gestión Inteligente.
-          </p>
-          <div className="flex gap-6 text-[10px] font-black uppercase text-muted-foreground">
-            <Link href="#" className="hover:text-primary">Privacidad</Link>
-            <Link href="#" className="hover:text-primary">Términos</Link>
-            <Link href="#" className="hover:text-primary">Contacto</Link>
-          </div>
+          )}
         </div>
-      </footer>
+      </main>
     </div>
   );
 }

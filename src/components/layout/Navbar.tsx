@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -18,7 +19,7 @@ export function Navbar() {
       <div className="container mx-auto px-4 flex items-center justify-between gap-4">
         {/* LOGO AREA */}
         <div className="flex items-center gap-6 flex-shrink-0">
-          <Link href="/dashboard" className="transition-opacity hover:opacity-90">
+          <Link href="/" className="transition-opacity hover:opacity-90">
             <Logo />
           </Link>
         </div>

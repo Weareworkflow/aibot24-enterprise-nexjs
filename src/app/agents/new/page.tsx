@@ -111,7 +111,7 @@ export default function NewAgentPage() {
         title: "Agente Desplegado",
         description: `${config.name} ha sido activado correctamente.`,
       });
-      router.push("/dashboard");
+      router.push("/");
     }, 1500);
   };
 
