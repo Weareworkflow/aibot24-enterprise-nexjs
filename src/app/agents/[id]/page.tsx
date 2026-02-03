@@ -1,15 +1,37 @@
+
 "use client";
 
 import { use, useState, useEffect } from "react";
 import { Navbar } from "@/components/layout/Navbar";
 import { AIAgent } from "@/lib/types";
 import { AgentChat } from "@/components/agents/AgentChat";
-import { ArrowLeft, Zap, Database, PhoneIncoming, PhoneForwarded, PhoneOff, MessageCircle, ArrowRightLeft, UserX, Building2, Target, UserRound, Sparkles } from "lucide-react";
+import { 
+  ArrowLeft, 
+  Zap, 
+  Database, 
+  PhoneIncoming, 
+  PhoneForwarded, 
+  PhoneOff, 
+  MessageCircle, 
+  ArrowRightLeft, 
+  UserX, 
+  Building2, 
+  Target, 
+  UserRound, 
+  Sparkles,
+  Settings2,
+  Code2,
+  Share2,
+  Webhook,
+  Smartphone,
+  Globe
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const MOCK_AGENTS_DATA: AIAgent[] = [
   {
@@ -182,58 +204,111 @@ export default function AgentConsolePage({ params }: { params: Promise<{ id: str
               </div>
             </div>
 
-            {/* CONFIGURATION SECTION */}
-            <div className="space-y-4">
-              <div className="flex items-center gap-2">
-                <h2 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Configuración de Identidad</h2>
+            {/* TABBED CONFIGURATION SECTION */}
+            <Tabs defaultValue="identidad" className="w-full">
+              <div className="flex mb-6">
+                <TabsList className="bg-white border pill-rounded h-12 p-1 gap-1 shadow-sm">
+                  <TabsTrigger 
+                    value="identidad" 
+                    className="pill-rounded h-10 px-6 data-[state=active]:bg-primary data-[state=active]:text-white text-[10px] font-black uppercase tracking-[0.1em] gap-2 transition-all"
+                  >
+                    <Settings2 className="h-3.5 w-3.5" /> Identidad
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="instrucciones" 
+                    className="pill-rounded h-10 px-6 data-[state=active]:bg-primary data-[state=active]:text-white text-[10px] font-black uppercase tracking-[0.1em] gap-2 transition-all"
+                  >
+                    <Code2 className="h-3.5 w-3.5" /> Instrucciones
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="integraciones" 
+                    className="pill-rounded h-10 px-6 data-[state=active]:bg-primary data-[state=active]:text-white text-[10px] font-black uppercase tracking-[0.1em] gap-2 transition-all"
+                  >
+                    <Share2 className="h-3.5 w-3.5" /> Integraciones
+                  </TabsTrigger>
+                </TabsList>
               </div>
-              <Card className="shadow-sm border-none bg-white">
-                <CardContent className="p-6 space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2 text-[9px] font-black text-muted-foreground uppercase">
-                        <UserRound className="h-3 w-3" /> Nombre
-                      </div>
-                      <p className="text-sm font-bold border-b pb-1">{agent.name}</p>
-                    </div>
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2 text-[9px] font-black text-muted-foreground uppercase">
-                        <Sparkles className="h-3 w-3" /> Rol
-                      </div>
-                      <p className="text-sm font-bold border-b pb-1">{agent.role}</p>
-                    </div>
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2 text-[9px] font-black text-muted-foreground uppercase">
-                        <Building2 className="h-3 w-3" /> Empresa
-                      </div>
-                      <p className="text-sm font-bold border-b pb-1">{agent.company}</p>
-                    </div>
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2 text-[9px] font-black text-muted-foreground uppercase">
-                        <Target className="h-3 w-3" /> Objetivo
-                      </div>
-                      <p className="text-sm font-bold border-b pb-1">{agent.objective}</p>
-                    </div>
-                  </div>
 
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2 text-[9px] font-black text-muted-foreground uppercase">
-                      Tono de Voz
+              <TabsContent value="identidad" className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+                <Card className="shadow-sm border-none bg-white">
+                  <CardContent className="p-6 space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2 text-[9px] font-black text-muted-foreground uppercase">
+                          <UserRound className="h-3 w-3" /> Nombre
+                        </div>
+                        <p className="text-sm font-bold border-b pb-1">{agent.name}</p>
+                      </div>
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2 text-[9px] font-black text-muted-foreground uppercase">
+                          <Sparkles className="h-3 w-3" /> Rol
+                        </div>
+                        <p className="text-sm font-bold border-b pb-1">{agent.role}</p>
+                      </div>
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2 text-[9px] font-black text-muted-foreground uppercase">
+                          <Building2 className="h-3 w-3" /> Empresa
+                        </div>
+                        <p className="text-sm font-bold border-b pb-1">{agent.company}</p>
+                      </div>
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2 text-[9px] font-black text-muted-foreground uppercase">
+                          <Target className="h-3 w-3" /> Objetivo
+                        </div>
+                        <p className="text-sm font-bold border-b pb-1">{agent.objective}</p>
+                      </div>
                     </div>
-                    <p className="text-xs p-3 bg-muted/40 rounded-lg border">{agent.tone}</p>
-                  </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
 
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2 text-[9px] font-black text-muted-foreground uppercase">
-                      Conocimiento y Base de Datos
+              <TabsContent value="instrucciones" className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+                <Card className="shadow-sm border-none bg-white">
+                  <CardContent className="p-6 space-y-6">
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 text-[9px] font-black text-muted-foreground uppercase">
+                        Tono de Voz
+                      </div>
+                      <p className="text-xs p-3 bg-muted/40 rounded-lg border italic">{agent.tone}</p>
                     </div>
-                    <div className="min-h-[150px] p-4 bg-muted/30 rounded-xl border-dashed border-2 text-xs leading-relaxed">
-                      {agent.knowledge}
+
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 text-[9px] font-black text-muted-foreground uppercase">
+                        Base de Conocimiento
+                      </div>
+                      <div className="min-h-[150px] p-4 bg-muted/30 rounded-xl border-dashed border-2 text-[10px] leading-relaxed font-mono">
+                        {agent.knowledge}
+                      </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="integraciones" className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+                <Card className="shadow-sm border-none bg-white">
+                  <CardContent className="p-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {[
+                        { title: "Webhook API", icon: Webhook, status: "Disponible" },
+                        { title: "WhatsApp Business", icon: Smartphone, status: "Configurar" },
+                        { title: "Widget Web", icon: Globe, status: "Activo" },
+                        { title: "Telefonía IP", icon: PhoneIncoming, status: "Configurar" },
+                      ].map((int, i) => (
+                        <div key={i} className="flex items-center justify-between p-4 border rounded-2xl hover:bg-muted/30 transition-colors group cursor-pointer">
+                          <div className="flex items-center gap-3">
+                            <div className="p-2 bg-muted rounded-full group-hover:bg-primary/10 group-hover:text-primary transition-colors">
+                              <int.icon className="h-4 w-4" />
+                            </div>
+                            <span className="text-xs font-bold">{int.title}</span>
+                          </div>
+                          <Badge variant="outline" className="text-[8px] font-black uppercase">{int.status}</Badge>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
           </div>
 
           <div className="lg:col-span-5 h-[500px]">
