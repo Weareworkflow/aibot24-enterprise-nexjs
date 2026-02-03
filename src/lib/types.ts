@@ -1,3 +1,4 @@
+
 export type AgentType = 'voice' | 'text';
 
 export interface AIAgent {
@@ -11,6 +12,7 @@ export interface AIAgent {
   knowledge: string;
   createdAt: string;
   isActive?: boolean;
+  integrations?: Record<string, boolean>;
   metrics: {
     usageCount: number;
     performanceRating: number;

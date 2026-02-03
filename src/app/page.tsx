@@ -1,66 +1,48 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
 import { Navbar } from "@/components/layout/Navbar";
 import { AgentCard } from "@/components/dashboard/AgentCard";
-import { useAgentStore } from "@/lib/store";
-import { useToast } from "@/hooks/use-toast";
+import { useCollection, useFirestore } from "@/firebase";
+import { collection, query, orderBy } from "firebase/firestore";
+import { AIAgent } from "@/lib/types";
+import { useMemo } from "react";
+import { Loader2 } from "lucide-react";
 
 export default function HomePage() {
-  const { agents, deleteAgent, toggleAgentActive } = useAgentStore();
-  const { toast } = useToast();
-  const [isMounted, setIsMounted] = useState(false);
+  const db = useFirestore();
+  
+  const agentsQuery = useMemo(() => {
+    if (!db) return null;
+    return query(collection(db, "agents"), orderBy("createdAt", "desc"));
+  }, [db]);
 
-  // Evitar errores de hidratación con Zustand persist
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  if (!isMounted) return null;
-
-  const handleDeleteAgent = (id: string) => {
-    const agentToDelete = agents.find(a => a.id === id);
-    deleteAgent(id);
-    
-    toast({
-      title: "Agente eliminado",
-      description: `El agente ${agentToDelete?.name} ha sido removido correctamente.`,
-    });
-  };
-
-  const handleToggleActive = (id: string) => {
-    const agent = agents.find(a => a.id === id);
-    if (!agent) return;
-    
-    const nextState = !agent.isActive;
-    toggleAgentActive(id);
-    
-    toast({
-      title: nextState ? "Agente activado" : "Agente desactivado",
-      description: `El agente ${agent.name} ha sido ${nextState ? 'encendido' : 'apagado'}.`,
-    });
-  };
+  const { data: agents, loading } = useCollection<AIAgent>(agentsQuery);
 
   return (
     <div className="flex flex-col min-h-screen bg-[#F7F9FB]">
       <Navbar />
       <main className="container mx-auto px-4 py-8 space-y-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
-          {agents.map(agent => (
-            <AgentCard 
-              key={agent.id} 
-              agent={agent} 
-              onDelete={() => handleDeleteAgent(agent.id)}
-              onToggleActive={() => handleToggleActive(agent.id)}
-            />
-          ))}
-          {agents.length === 0 && (
-            <div className="col-span-full py-20 text-center space-y-4">
-              <p className="text-muted-foreground font-headline font-bold uppercase tracking-widest text-[10px]">No tienes agentes activos.</p>
-            </div>
-          )}
-        </div>
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-20 gap-4">
+            <Loader2 className="h-8 w-8 animate-spin text-secondary" />
+            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Sincronizando con Bitrix24...</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            {agents?.map(agent => (
+              <AgentCard 
+                key={agent.id} 
+                agent={agent} 
+              />
+            ))}
+            {(!agents || agents.length === 0) && (
+              <div className="col-span-full py-20 text-center space-y-4">
+                <p className="text-muted-foreground font-headline font-bold uppercase tracking-widest text-[10px]">No tienes agentes activos en este portal.</p>
+              </div>
+            )}
+          </div>
+        )}
       </main>
     </div>
   );

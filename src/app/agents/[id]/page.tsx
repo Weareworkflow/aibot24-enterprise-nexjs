@@ -1,6 +1,7 @@
+
 "use client";
 
-import { use, useState, useEffect } from "react";
+import { use, useState, useEffect, useMemo } from "react";
 import { Navbar } from "@/components/layout/Navbar";
 import { AIAgent } from "@/lib/types";
 import { AgentChat } from "@/components/agents/AgentChat";
@@ -27,7 +28,8 @@ import {
   Clock,
   PhoneIncoming,
   PhoneForwarded,
-  PhoneOff
+  PhoneOff,
+  Loader2
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
@@ -35,52 +37,65 @@ import { cn } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useAgentStore } from "@/lib/store";
 import { Switch } from "@/components/ui/switch";
+import { useDoc, useFirestore } from "@/firebase";
+import { doc, updateDoc } from "firebase/firestore";
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 export default function AgentConsolePage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
   const agentId = resolvedParams.id;
-  const { agents } = useAgentStore();
-  const [agent, setAgent] = useState<AIAgent | null>(null);
-  const [isMounted, setIsMounted] = useState(false);
+  const db = useFirestore();
   const router = useRouter();
 
-  // Local state for integration toggles
-  const [activeIntegrations, setActiveIntegrations] = useState<Record<string, boolean>>({
-    "Calls API": true,
-    "Drive Bitrix24": true,
-    "Catálogo Bitrix24": true
-  });
+  const agentRef = useMemo(() => {
+    if (!db || !agentId) return null;
+    return doc(db, "agents", agentId);
+  }, [db, agentId]);
 
-  useEffect(() => {
-    setIsMounted(true);
-    const foundAgent = agents.find(a => a.id === agentId);
-    if (foundAgent) {
-      setAgent(foundAgent);
-    }
-  }, [agentId, agents]);
+  const { data: agent, loading } = useDoc<AIAgent>(agentRef);
 
-  if (!isMounted) return null;
+  const toggleIntegration = (title: string) => {
+    if (!agentRef || !agent) return;
+    
+    const newIntegrations = {
+      ...(agent.integrations || {}),
+      [title]: !agent.integrations?.[title]
+    };
+
+    updateDoc(agentRef, { integrations: newIntegrations })
+      .catch(async (error) => {
+        errorEmitter.emit('permission-error', new FirestorePermissionError({
+          path: agentRef.path,
+          operation: 'update',
+          requestResourceData: { integrations: newIntegrations }
+        }));
+      });
+  };
+
+  if (loading) return (
+    <div className="flex flex-col min-h-screen bg-[#F0F3F5]">
+      <Navbar />
+      <div className="flex-1 flex flex-col items-center justify-center gap-4">
+        <Loader2 className="h-8 w-8 animate-spin text-secondary" />
+        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Cargando Unidad de Inteligencia...</p>
+      </div>
+    </div>
+  );
+
   if (!agent) return (
     <div className="flex flex-col min-h-screen bg-[#F0F3F5]">
       <Navbar />
       <div className="flex-1 flex items-center justify-center">
         <div className="p-8 text-center font-black uppercase tracking-widest text-muted-foreground animate-pulse">
-          Agente no encontrado
+          Agente no encontrado en el sistema
         </div>
       </div>
     </div>
   );
 
   const isVoice = agent.type === 'voice';
-
-  const toggleIntegration = (title: string) => {
-    setActiveIntegrations(prev => ({
-      ...prev,
-      [title]: !prev[title]
-    }));
-  };
 
   return (
     <div className="flex flex-col min-h-screen bg-[#F0F3F5]">
@@ -265,17 +280,17 @@ export default function AgentConsolePage({ params }: { params: Promise<{ id: str
                         >
                           <div className="flex items-center gap-3">
                             <div className={cn(
-                              "p-2 bg-muted rounded-full transition-colors",
-                              activeIntegrations[int.title] ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
+                              "p-2 rounded-full transition-colors",
+                              agent.integrations?.[int.title] ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
                             )}>
                               <int.icon className="h-4 w-4" />
                             </div>
-                            <span className={cn("text-xs font-bold", !activeIntegrations[int.title] && "text-muted-foreground")}>
+                            <span className={cn("text-xs font-bold", !agent.integrations?.[int.title] && "text-muted-foreground")}>
                               {int.title}
                             </span>
                           </div>
                           <Switch 
-                            checked={activeIntegrations[int.title] || false} 
+                            checked={agent.integrations?.[int.title] || false} 
                             onCheckedChange={() => toggleIntegration(int.title)}
                           />
                         </div>

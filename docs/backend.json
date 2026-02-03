@@ -1,0 +1,48 @@
+
+{
+  "entities": {
+    "AIAgent": {
+      "title": "AI Agent",
+      "description": "Configuración técnica y métricas operativas de un agente de IA.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "type": { "type": "string", "enum": ["voice", "text"] },
+        "role": { "type": "string" },
+        "company": { "type": "string" },
+        "objective": { "type": "string" },
+        "tone": { "type": "string" },
+        "knowledge": { "type": "string" },
+        "isActive": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "integrations": {
+          "type": "object",
+          "additionalProperties": { "type": "boolean" }
+        },
+        "metrics": {
+          "type": "object",
+          "properties": {
+            "usageCount": { "type": "number" },
+            "performanceRating": { "type": "number" },
+            "totalInteractionMetric": { "type": "number" },
+            "latency": { "type": "string" },
+            "tokens": { "type": "string" },
+            "transfers": { "type": "number" },
+            "abandoned": { "type": "number" }
+          }
+        }
+      },
+      "required": ["name", "type", "role", "company", "objective", "tone", "knowledge"]
+    }
+  },
+  "auth": {
+    "providers": ["google.com"]
+  },
+  "firestore": {
+    "/agents/{agentId}": {
+      "schema": "#/backend/entities/AIAgent",
+      "description": "Repositorio central de agentes inteligentes."
+    }
+  }
+}

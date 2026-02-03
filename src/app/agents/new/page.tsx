@@ -13,7 +13,10 @@ import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { AgentType, ChatMessage, AIAgent } from "@/lib/types";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useAgentStore } from "@/lib/store";
+import { useFirestore } from "@/firebase";
+import { collection, doc, setDoc } from "firebase/firestore";
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 
 const CONFIG_STEPS = [
   { key: 'name', question: "¡Hola! Soy tu Arquitecto Virtual. Vamos a diseñar tu agente de élite. Primero, ¿qué nombre llevará esta unidad?", label: "Nombre" },
@@ -25,7 +28,7 @@ const CONFIG_STEPS = [
 ];
 
 export default function NewAgentPage() {
-  const [step, setStep] = useState(1); // 1: Type selection, 2: Conversational Chat
+  const [step, setStep] = useState(1); 
   const [agentType, setAgentType] = useState<AgentType | null>(null);
   const [currentConfigIndex, setCurrentConfigIndex] = useState(0);
   const [isFinished, setIsFinished] = useState(false);
@@ -44,7 +47,7 @@ export default function NewAgentPage() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const router = useRouter();
-  const { addAgent } = useAgentStore();
+  const db = useFirestore();
 
   useEffect(() => {
     if (step === 2 && messages.length === 0) {
@@ -106,11 +109,12 @@ export default function NewAgentPage() {
   };
 
   const handleSave = async () => {
+    if (!db) return;
     setIsSaving(true);
     
-    // Crear el nuevo objeto de agente
+    const agentId = Date.now().toString();
     const newAgent: AIAgent = {
-      id: Date.now().toString(),
+      id: agentId,
       name: config.name,
       type: agentType || 'text',
       role: config.role,
@@ -120,6 +124,14 @@ export default function NewAgentPage() {
       knowledge: config.knowledge,
       isActive: true,
       createdAt: new Date().toISOString(),
+      integrations: {
+        "WhatsApp Business": false,
+        "Calendario Bitrix24": false,
+        "Catálogo Bitrix24": false,
+        "Documentos Bitrix24": false,
+        "Drive Bitrix24": false,
+        "Calls API": false
+      },
       metrics: {
         usageCount: 0,
         performanceRating: 5.0,
@@ -130,15 +142,24 @@ export default function NewAgentPage() {
       }
     };
 
-    setTimeout(() => {
-      addAgent(newAgent);
-      setIsSaving(false);
-      toast({
-        title: "Agente Desplegado",
-        description: `${config.name} ha sido activado correctamente.`,
+    const agentRef = doc(db, "agents", agentId);
+    setDoc(agentRef, newAgent)
+      .then(() => {
+        setIsSaving(false);
+        toast({
+          title: "Agente Desplegado",
+          description: `${config.name} ha sido activado correctamente en la nube.`,
+        });
+        router.push("/");
+      })
+      .catch(async (error) => {
+        setIsSaving(false);
+        errorEmitter.emit('permission-error', new FirestorePermissionError({
+          path: agentRef.path,
+          operation: 'create',
+          requestResourceData: newAgent
+        }));
       });
-      router.push("/");
-    }, 1500);
   };
 
   return (
@@ -156,7 +177,6 @@ export default function NewAgentPage() {
         </div>
 
         <div className="grid gap-6">
-          {/* STEP 1: SELECT TYPE */}
           {step === 1 && (
             <Card className="border-none shadow-sm animate-in fade-in zoom-in-95 duration-500 card-rounded p-8">
               <div className="text-center mb-8 space-y-2">
@@ -192,7 +212,6 @@ export default function NewAgentPage() {
             </Card>
           )}
 
-          {/* STEP 2: FULL CONVERSATIONAL INTERFACE */}
           {step === 2 && (
             <div className="space-y-6">
               <Card className="border-none shadow-lg animate-in slide-in-from-bottom-4 duration-500 overflow-hidden card-rounded bg-white">
@@ -238,7 +257,6 @@ export default function NewAgentPage() {
                         </div>
                       ))}
 
-                      {/* FINAL SUMMARY CARD INSIDE THE CHAT */}
                       {isFinished && (
                         <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 delay-300">
                           <Card className="bg-[#F8FAFC] border-2 border-dashed border-secondary/30 rounded-[2rem] overflow-hidden">
@@ -285,7 +303,7 @@ export default function NewAgentPage() {
                                 {isSaving ? (
                                   <>
                                     <Loader2 className="h-4 w-4 animate-spin" />
-                                    Inicializando Sistemas...
+                                    Sincronizando con la Nube...
                                   </>
                                 ) : (
                                   <>

@@ -1,3 +1,4 @@
+
 "use client";
 
 import { AIAgent } from "@/lib/types";
@@ -6,6 +7,11 @@ import { Button } from "@/components/ui/button";
 import { Power, Trash2, Zap, Database, Mic2, MessageSquareText, PhoneIncoming, PhoneForwarded, PhoneOff, MessageCircle, ArrowRightLeft, UserX, Building2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { useFirestore } from "@/firebase";
+import { doc, updateDoc, deleteDoc } from "firebase/firestore";
+import { useToast } from "@/hooks/use-toast";
+import { errorEmitter } from '@/firebase/error-emitter';
+import { FirestorePermissionError } from '@/firebase/errors';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,17 +26,60 @@ import {
 
 interface AgentCardProps {
   agent: AIAgent;
-  onDelete?: () => void;
-  onToggleActive?: () => void;
 }
 
-export function AgentCard({ agent, onDelete, onToggleActive }: AgentCardProps) {
+export function AgentCard({ agent }: AgentCardProps) {
   const router = useRouter();
+  const db = useFirestore();
+  const { toast } = useToast();
   const isVoice = agent.type === 'voice';
   const isActive = agent.isActive !== false;
 
   const handleCardClick = () => {
     router.push(`/agents/${agent.id}`);
+  };
+
+  const handleToggleActive = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!db) return;
+    
+    const agentRef = doc(db, "agents", agent.id);
+    const nextState = !isActive;
+    
+    updateDoc(agentRef, { isActive: nextState })
+      .then(() => {
+        toast({
+          title: nextState ? "Agente activado" : "Agente desactivado",
+          description: `El agente ${agent.name} ha sido ${nextState ? 'encendido' : 'apagado'}.`,
+        });
+      })
+      .catch(async (error) => {
+        errorEmitter.emit('permission-error', new FirestorePermissionError({
+          path: agentRef.path,
+          operation: 'update',
+          requestResourceData: { isActive: nextState }
+        }));
+      });
+  };
+
+  const handleDelete = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!db) return;
+    
+    const agentRef = doc(db, "agents", agent.id);
+    deleteDoc(agentRef)
+      .then(() => {
+        toast({
+          title: "Agente eliminado",
+          description: `El agente ${agent.name} ha sido removido correctamente.`,
+        });
+      })
+      .catch(async (error) => {
+        errorEmitter.emit('permission-error', new FirestorePermissionError({
+          path: agentRef.path,
+          operation: 'delete'
+        }));
+      });
   };
 
   return (
@@ -84,10 +133,7 @@ export function AgentCard({ agent, onDelete, onToggleActive }: AgentCardProps) {
                 ? "bg-muted/20 hover:bg-primary hover:text-white" 
                 : "bg-slate-400 text-slate-800 hover:bg-slate-500"
             )}
-            onClick={(e) => {
-              e.stopPropagation();
-              onToggleActive?.();
-            }}
+            onClick={handleToggleActive}
           >
             <Power className="h-4 w-4" />
           </Button>
@@ -112,18 +158,15 @@ export function AgentCard({ agent, onDelete, onToggleActive }: AgentCardProps) {
               <AlertDialogHeader>
                 <AlertDialogTitle className="font-headline font-bold">¿Eliminar este agente?</AlertDialogTitle>
                 <AlertDialogDescription className="text-xs">
-                  Esta acción no se puede deshacer. Se eliminarán permanentemente las configuraciones de <strong>{agent.name}</strong>.
+                  Esta acción no se puede deshacer. Se eliminarán permanentemente las configuraciones de <strong>{agent.name}</strong> en la nube.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel className="rounded-xl text-[10px] font-black uppercase">
+                <AlertDialogCancel className="rounded-xl text-[10px] font-black uppercase" onClick={(e) => e.stopPropagation()}>
                   Cancelar
                 </AlertDialogCancel>
                 <AlertDialogAction 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onDelete?.();
-                  }}
+                  onClick={handleDelete}
                   className="bg-destructive hover:bg-destructive/90 rounded-xl text-[10px] font-black uppercase"
                 >
                   Confirmar Eliminación
@@ -140,14 +183,14 @@ export function AgentCard({ agent, onDelete, onToggleActive }: AgentCardProps) {
           isActive ? "bg-muted/30 border-white" : "bg-slate-300/50 border-slate-400/20"
         )}>
           <div className={cn("p-1.5 rounded-full", isActive ? "bg-white text-primary" : "bg-slate-400 text-slate-700")}>
-            <Zap className="h-3 w-3" />
+            {isVoice ? <Clock className="h-3 w-3" /> : <MessageCircle className="h-3 w-3" />}
           </div>
           <div>
             <p className={cn("text-[8px] font-black uppercase", isActive ? "text-muted-foreground" : "text-slate-600")}>
               {isVoice ? "Minutos" : "Mensajes"}
             </p>
             <p className={cn("text-sm font-headline font-black", isActive ? "text-primary" : "text-slate-800")}>
-              {isVoice ? (agent.metrics.latency || "0m") : (agent.metrics.totalInteractionMetric || "0")}
+              {agent.metrics.totalInteractionMetric || "0"}
             </p>
           </div>
         </div>
