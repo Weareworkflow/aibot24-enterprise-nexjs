@@ -26,7 +26,7 @@ const MOCK_AGENTS: Record<string, AIAgent> = {
       usageCount: 1240,
       performanceRating: 4.8,
       totalInteractionMetric: 5200,
-      latency: "1.2s",
+      latency: "1450m",
       tokens: "120k",
       transfers: 45,
       abandoned: 12
@@ -100,8 +100,8 @@ export default function AgentConsolePage({ params }: { params: Promise<{ id: str
                     <Zap className="h-3 w-3" />
                   </div>
                   <div>
-                    <p className="text-[8px] font-black uppercase text-muted-foreground">Latencia</p>
-                    <p className="text-sm font-headline font-black text-primary">{agent.metrics.latency || "0.0s"}</p>
+                    <p className="text-[8px] font-black uppercase text-muted-foreground">Minutos</p>
+                    <p className="text-sm font-headline font-black text-primary">{agent.metrics.latency || "0m"}</p>
                   </div>
                 </div>
                 <div className="p-3 pill-rounded border bg-white flex items-center gap-3 shadow-sm">

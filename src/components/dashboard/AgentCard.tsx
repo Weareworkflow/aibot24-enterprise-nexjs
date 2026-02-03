@@ -145,8 +145,8 @@ export function AgentCard({ agent, onDelete, onToggleActive }: AgentCardProps) {
             <Zap className="h-3 w-3" />
           </div>
           <div>
-            <p className={cn("text-[8px] font-black uppercase", isActive ? "text-muted-foreground" : "text-slate-600")}>Latencia</p>
-            <p className={cn("text-sm font-headline font-black", isActive ? "text-primary" : "text-slate-800")}>{agent.metrics.latency || "0.0s"}</p>
+            <p className={cn("text-[8px] font-black uppercase", isActive ? "text-muted-foreground" : "text-slate-600")}>Minutos</p>
+            <p className={cn("text-sm font-headline font-black", isActive ? "text-primary" : "text-slate-800")}>{agent.metrics.latency || "0m"}</p>
           </div>
         </div>
         <div className={cn(

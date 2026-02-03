@@ -20,7 +20,7 @@ const INITIAL_AGENTS: AIAgent[] = [
       usageCount: 215,
       performanceRating: 4.8,
       totalInteractionMetric: 934,
-      latency: "1.2s",
+      latency: "450m",
       tokens: "120k",
       transfers: 45,
       abandoned: 12
@@ -40,7 +40,7 @@ const INITIAL_AGENTS: AIAgent[] = [
       usageCount: 540,
       performanceRating: 4.5,
       totalInteractionMetric: 1820,
-      latency: "0.8s",
+      latency: "1200m",
       tokens: "245k",
       transfers: 112,
       abandoned: 9
@@ -60,7 +60,7 @@ const INITIAL_AGENTS: AIAgent[] = [
       usageCount: 1250,
       performanceRating: 4.9,
       totalInteractionMetric: 5400,
-      latency: "0.4s",
+      latency: "850m",
       tokens: "450k",
       transfers: 22,
       abandoned: 5
