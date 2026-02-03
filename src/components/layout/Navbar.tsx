@@ -43,8 +43,8 @@ export function Navbar() {
             className={cn(
               "flex items-center gap-1.5 px-3 py-1.5 rounded text-[10px] font-black uppercase transition-all tracking-wider mr-2",
               pathname === "/agents/new" 
-                ? "bg-primary/5 text-primary" 
-                : "text-muted-foreground hover:text-primary"
+                ? "bg-secondary/15 text-secondary" 
+                : "text-secondary hover:bg-secondary/5"
             )}
           >
             <Plus className="h-3.5 w-3.5" />
