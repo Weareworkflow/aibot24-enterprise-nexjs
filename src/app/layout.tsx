@@ -1,8 +1,8 @@
-
 import type {Metadata} from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import { FirebaseClientProvider } from "@/firebase";
+import { FirebaseErrorListener } from "@/components/firebase/FirebaseErrorListener";
 
 export const metadata: Metadata = {
   title: 'AIBot24 - Intelligent Voice Agents',
@@ -25,6 +25,7 @@ export default function RootLayout({
         <FirebaseClientProvider>
           {children}
           <Toaster />
+          <FirebaseErrorListener />
         </FirebaseClientProvider>
       </body>
     </html>
