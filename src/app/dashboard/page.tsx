@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Navbar } from "@/components/layout/Navbar";
 import { AgentCard } from "@/components/dashboard/AgentCard";
 import { AIAgent } from "@/lib/types";
+import { useToast } from "@/hooks/use-toast";
 
 const INITIAL_AGENTS: AIAgent[] = [
   {
@@ -65,22 +66,36 @@ const INITIAL_AGENTS: AIAgent[] = [
 ];
 
 export default function DashboardPage() {
-  // En una versión final, este estado vendría de un Context conectado al Navbar
-  const [searchQuery] = useState("");
+  const [agents, setAgents] = useState<AIAgent[]>(INITIAL_AGENTS);
+  const { toast } = useToast();
 
-  const filteredAgents = INITIAL_AGENTS.filter(agent => 
-    agent.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const handleDeleteAgent = (id: string) => {
+    const agentToDelete = agents.find(a => a.id === id);
+    setAgents(prev => prev.filter(agent => agent.id !== id));
+    
+    toast({
+      title: "Agente eliminado",
+      description: `El agente ${agentToDelete?.name} ha sido removido correctamente.`,
+    });
+  };
 
   return (
     <div className="flex flex-col min-h-screen bg-[#F7F9FB]">
       <Navbar />
       <main className="container mx-auto px-4 py-8 space-y-8">
-        {/* AGENTS GRID */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
-          {filteredAgents.map(agent => (
-            <AgentCard key={agent.id} agent={agent} />
+          {agents.map(agent => (
+            <AgentCard 
+              key={agent.id} 
+              agent={agent} 
+              onDelete={() => handleDeleteAgent(agent.id)}
+            />
           ))}
+          {agents.length === 0 && (
+            <div className="col-span-full py-20 text-center space-y-4">
+              <p className="text-muted-foreground font-headline font-bold">No tienes agentes activos.</p>
+            </div>
+          )}
         </div>
       </main>
     </div>

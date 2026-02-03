@@ -3,22 +3,36 @@
 import { AIAgent } from "@/lib/types";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Power, Trash2, LayoutGrid, Zap, Database, Mic2, MessageSquareText } from "lucide-react";
+import { Power, Trash2, Zap, Database, Mic2, MessageSquareText } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface AgentCardProps {
   agent: AIAgent;
+  onDelete?: () => void;
 }
 
-export function AgentCard({ agent }: AgentCardProps) {
+export function AgentCard({ agent, onDelete }: AgentCardProps) {
   const isVoice = agent.type === 'voice';
 
   return (
-    <Link href={`/agents/${agent.id}`} className="block group">
-      <Card className="card-rounded hover:border-secondary/40 transition-all duration-300 border-none bg-white pill-shadow overflow-hidden p-8 flex flex-col gap-6">
+    <div className="block group relative">
+      <Link href={`/agents/${agent.id}`} className="absolute inset-0 z-0" />
+      
+      <Card className="card-rounded hover:border-secondary/40 transition-all duration-300 border-none bg-white pill-shadow overflow-hidden p-8 flex flex-col gap-6 relative z-10 pointer-events-none">
         {/* HEADER AREA */}
-        <div className="flex justify-between items-start">
+        <div className="flex justify-between items-start w-full">
           <div className="space-y-4">
             <div className="flex items-center gap-2 text-[10px] font-black text-muted-foreground uppercase tracking-widest">
               <div className={cn("p-1.5 rounded flex items-center justify-center", isVoice ? "bg-primary/10 text-primary" : "bg-secondary/10 text-secondary")}>
@@ -36,17 +50,58 @@ export function AgentCard({ agent }: AgentCardProps) {
             </div>
           </div>
           
-          <div className="flex gap-2">
-            <Button variant="outline" size="icon" className="h-9 w-9 pill-rounded border-muted bg-muted/20 hover:bg-primary hover:text-white transition-all">
+          <div className="flex gap-2 pointer-events-auto">
+            <Button 
+              variant="outline" 
+              size="icon" 
+              className="h-9 w-9 pill-rounded border-muted bg-muted/20 hover:bg-primary hover:text-white transition-all"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+              }}
+            >
               <Power className="h-4 w-4" />
             </Button>
-            <Button variant="outline" size="icon" className="h-9 w-9 pill-rounded border-muted bg-muted/20 hover:bg-destructive hover:text-white transition-all">
-              <Trash2 className="h-4 w-4" />
-            </Button>
+
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button 
+                  variant="outline" 
+                  size="icon" 
+                  className="h-9 w-9 pill-rounded border-muted bg-muted/20 hover:bg-destructive hover:text-white transition-all"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                  }}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent className="rounded-2xl border-none">
+                <AlertDialogHeader>
+                  <AlertDialogTitle className="font-headline font-bold">¿Eliminar este agente?</AlertDialogTitle>
+                  <AlertDialogDescription className="text-xs">
+                    Esta acción no se puede deshacer. Se eliminarán permanentemente las configuraciones y métricas de <strong>{agent.name}</strong>.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel className="rounded-xl text-[10px] font-black uppercase">Cancelar</AlertDialogCancel>
+                  <AlertDialogAction 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onDelete?.();
+                    }}
+                    className="bg-destructive hover:bg-destructive/90 rounded-xl text-[10px] font-black uppercase"
+                  >
+                    Confirmar Eliminación
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
         </div>
 
-        {/* METRICS GRID - INTEGRATED FROM MAIN DASHBOARD */}
+        {/* METRICS GRID */}
         <div className="grid grid-cols-2 gap-3">
           <div className="p-3 bg-muted/30 pill-rounded border border-white flex items-center gap-3">
             <div className="p-1.5 bg-white rounded-full text-primary">
@@ -82,6 +137,6 @@ export function AgentCard({ agent }: AgentCardProps) {
           ))}
         </div>
       </Card>
-    </Link>
+    </div>
   );
 }
