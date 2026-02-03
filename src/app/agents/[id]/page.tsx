@@ -7,7 +7,7 @@ import { AgentChat } from "@/components/agents/AgentChat";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, Settings, MessageSquare, Play, Sparkles, Mic2, MessageSquareText } from "lucide-react";
+import { ArrowLeft, MessageSquare, Play, Sparkles, Settings } from "lucide-react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { summarizeAgentFeedback } from "@/ai/flows/summarize-agent-feedback";
@@ -82,14 +82,6 @@ export default function AgentConsolePage({ params }: { params: Promise<{ id: str
               </div>
               <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">Activo desde {new Date(agent.createdAt).toLocaleDateString()}</p>
             </div>
-          </div>
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" className="h-8 text-[10px] font-black uppercase">
-              <Settings className="mr-1.5 h-3.5 w-3.5" /> Ajustes
-            </Button>
-            <Button size="sm" className="h-8 bg-secondary hover:bg-secondary/90 text-white font-black text-[10px] uppercase px-4">
-              <Play className="mr-1.5 h-3.5 w-3.5" /> Lanzar
-            </Button>
           </div>
         </div>
 
