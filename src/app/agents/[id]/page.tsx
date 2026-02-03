@@ -24,7 +24,12 @@ import {
   Share2,
   Webhook,
   Smartphone,
-  Globe
+  Calendar,
+  LayoutGrid,
+  FilePlus,
+  Search,
+  Cloud,
+  PhoneCall
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
@@ -147,7 +152,6 @@ export default function AgentConsolePage({ params }: { params: Promise<{ id: str
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           <div className="lg:col-span-7 space-y-6">
             
-            {/* ANALYTICS SECTION */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="grid grid-cols-2 gap-3">
                 <div className="p-3 pill-rounded border bg-white flex items-center gap-3 shadow-sm">
@@ -204,7 +208,6 @@ export default function AgentConsolePage({ params }: { params: Promise<{ id: str
               </div>
             </div>
 
-            {/* TABBED CONFIGURATION SECTION */}
             <Tabs defaultValue="identidad" className="w-full">
               <div className="flex mb-6">
                 <TabsList className="bg-white border pill-rounded h-12 p-1 gap-1 shadow-sm">
@@ -289,10 +292,13 @@ export default function AgentConsolePage({ params }: { params: Promise<{ id: str
                   <CardContent className="p-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {[
-                        { title: "Webhook API", icon: Webhook, status: "Disponible" },
                         { title: "WhatsApp Business", icon: Smartphone, status: "Configurar" },
-                        { title: "Widget Web", icon: Globe, status: "Activo" },
-                        { title: "Telefonía IP", icon: PhoneIncoming, status: "Configurar" },
+                        { title: "CRM Calendario", icon: Calendar, status: "Configurar" },
+                        { title: "Catálogo", icon: LayoutGrid, status: "Disponible" },
+                        { title: "Generador Documentos", icon: FilePlus, status: "Configurar" },
+                        { title: "Analizador Documento", icon: Search, status: "Configurar" },
+                        { title: "Google Drive", icon: Cloud, status: "Disponible" },
+                        { title: "Calls API", icon: PhoneCall, status: "Activo" },
                       ].map((int, i) => (
                         <div key={i} className="flex items-center justify-between p-4 border rounded-2xl hover:bg-muted/30 transition-colors group cursor-pointer">
                           <div className="flex items-center gap-3">
