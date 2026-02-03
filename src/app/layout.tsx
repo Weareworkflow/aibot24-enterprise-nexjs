@@ -3,7 +3,7 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
-  title: 'AIVoice24 - Intelligent Voice Agents',
+  title: 'AIBot24 - Intelligent Voice Agents',
   description: 'Create and manage customizable AI voice agents with advanced personality tuning.',
 };
 
