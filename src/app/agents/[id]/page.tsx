@@ -5,44 +5,91 @@ import { use, useState, useEffect } from "react";
 import { Navbar } from "@/components/layout/Navbar";
 import { AIAgent } from "@/lib/types";
 import { AgentChat } from "@/components/agents/AgentChat";
-import { ArrowLeft, Zap, Database, PhoneIncoming, PhoneForwarded, PhoneOff, MessageCircle, ArrowRightLeft, UserX } from "lucide-react";
-import Link from "next/link";
+import { ArrowLeft, Zap, Database, PhoneIncoming, PhoneForwarded, PhoneOff, MessageCircle, ArrowRightLeft, UserX, MessageSquareText, Mic2 } from "lucide-react";
+import Link from "next/navigation";
+import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
-const MOCK_AGENTS: Record<string, AIAgent> = {
-  "1": {
+const MOCK_AGENTS_DATA: AIAgent[] = [
+  {
     id: "1",
-    name: "Aria Soporte Técnico",
+    name: "AIV-SALES-MASTER",
     type: "voice",
-    personality: "Asistente paciente y experta en tecnología diseñada para resolver problemas complejos de software.",
-    responseStyle: "Concisa, instructiva y calmada.",
-    initialContext: "Expert en SaaS platforms, common troubleshooting steps, and empathetic communication.",
+    isActive: true,
+    personality: "ESPECIALISTA VENTAS B2B",
+    responseStyle: "Directo y profesional",
+    initialContext: "Ventas corporativas y cierre de tratos de alto valor.",
     createdAt: "2024-01-15T10:00:00Z",
     metrics: {
-      usageCount: 1240,
+      usageCount: 215,
       performanceRating: 4.8,
-      totalInteractionMetric: 5200,
-      latency: "1450m",
+      totalInteractionMetric: 934,
+      latency: "450m",
       tokens: "120k",
       transfers: 45,
       abandoned: 12
     }
+  },
+  {
+    id: "2",
+    name: "SUPPORT-CORE-01",
+    type: "voice",
+    isActive: true,
+    personality: "SOPORTE TÉCNICO NIVEL 1",
+    responseStyle: "Paciente y resolutivo",
+    initialContext: "Soporte técnico de software, resolución de incidencias comunes y guía paso a paso.",
+    createdAt: "2024-02-01T14:30:00Z",
+    metrics: {
+      usageCount: 540,
+      performanceRating: 4.5,
+      totalInteractionMetric: 1820,
+      latency: "1200m",
+      tokens: "245k",
+      transfers: 112,
+      abandoned: 9
+    }
+  },
+  {
+    id: "3",
+    name: "WHATSAPP-BOT-PRO",
+    type: "text",
+    isActive: true,
+    personality: "ASISTENTE DE CITAS",
+    responseStyle: "Informal pero eficiente",
+    initialContext: "Gestión de calendario médico, recordatorios y cancelación de citas.",
+    createdAt: "2024-02-10T09:15:00Z",
+    metrics: {
+      usageCount: 1250,
+      performanceRating: 4.9,
+      totalInteractionMetric: 5400,
+      latency: "850m",
+      tokens: "450k",
+      transfers: 22,
+      abandoned: 5
+    }
   }
-};
+];
 
 export default function AgentConsolePage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
   const agentId = resolvedParams.id;
   const [agent, setAgent] = useState<AIAgent | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
-    const foundAgent = MOCK_AGENTS[agentId] || Object.values(MOCK_AGENTS)[0];
-    setAgent(foundAgent);
+    const foundAgent = MOCK_AGENTS_DATA.find(a => a.id === agentId);
+    if (foundAgent) {
+      setAgent(foundAgent);
+    } else {
+      // Si no se encuentra, por defecto mostramos el primero o podrías redirigir
+      setAgent(MOCK_AGENTS_DATA[0]);
+    }
   }, [agentId]);
 
-  if (!agent) return <div className="p-8 text-center">Cargando consola...</div>;
+  if (!agent) return <div className="p-8 text-center font-black uppercase tracking-widest text-muted-foreground">Cargando consola...</div>;
 
   const isVoice = agent.type === 'voice';
 
@@ -52,9 +99,14 @@ export default function AgentConsolePage({ params }: { params: Promise<{ id: str
       <main className="container mx-auto px-4 py-6">
         <div className="flex items-center justify-between mb-6 bg-white p-4 rounded-lg border shadow-sm">
           <div className="flex items-center gap-4">
-            <Link href="/dashboard" className="h-8 w-8 flex items-center justify-center bg-muted rounded-full hover:bg-muted/80">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="h-8 w-8 flex items-center justify-center bg-muted rounded-full hover:bg-muted/80"
+              onClick={() => router.push('/dashboard')}
+            >
               <ArrowLeft className="h-4 w-4" />
-            </Link>
+            </Button>
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="text-xl font-headline font-bold">{agent.name}</h1>
