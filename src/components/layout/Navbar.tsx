@@ -1,41 +1,18 @@
+
 "use client";
 
 import Link from "next/link";
-import { Plus, Bell, Search, LogIn, LogOut, User } from "lucide-react";
+import { Plus, Bell, Search } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { Logo } from "./Logo";
-import { useAuth, useUser } from "@/firebase";
-import { GoogleAuthProvider, signInWithPopup, signOut } from "firebase/auth";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export function Navbar() {
   const pathname = usePathname();
   const [searchValue, setSearchValue] = useState("");
-  const auth = useAuth();
-  const { user, loading } = useUser();
-
-  const handleLogin = async () => {
-    if (!auth) return;
-    const provider = new GoogleAuthProvider();
-    try {
-      await signInWithPopup(auth, provider);
-    } catch (error) {
-      console.error("Error signing in", error);
-    }
-  };
-
-  const handleLogout = async () => {
-    if (!auth) return;
-    try {
-      await signOut(auth);
-    } catch (error) {
-      console.error("Error signing out", error);
-    }
-  };
 
   return (
     <nav className="border-b bg-white border-border/60 sticky top-0 z-50 h-12 flex items-center shadow-sm">
@@ -72,39 +49,6 @@ export function Navbar() {
           </Link>
 
           <div className="flex items-center gap-1.5 border-l pl-3">
-            {!loading && (
-              <>
-                {user ? (
-                  <div className="flex items-center gap-3">
-                    <Avatar className="h-7 w-7 border">
-                      <AvatarImage src={user.photoURL || ""} />
-                      <AvatarFallback className="text-[10px] font-black">
-                        {user.displayName?.charAt(0) || <User className="h-3 w-3" />}
-                      </AvatarFallback>
-                    </Avatar>
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      onClick={handleLogout}
-                      className="h-8 w-8 rounded-md bg-[#F8FAFC] text-slate-400 hover:bg-slate-100 transition-colors"
-                      title="Cerrar Sesión"
-                    >
-                      <LogOut className="h-4 w-4" />
-                    </Button>
-                  </div>
-                ) : (
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={handleLogin}
-                    className="h-8 px-3 rounded-md border-secondary text-secondary hover:bg-secondary/5 text-[10px] font-black uppercase tracking-wider gap-2"
-                  >
-                    <LogIn className="h-3.5 w-3.5" />
-                    Acceder
-                  </Button>
-                )}
-              </>
-            )}
             <Button 
               variant="ghost" 
               size="icon" 
