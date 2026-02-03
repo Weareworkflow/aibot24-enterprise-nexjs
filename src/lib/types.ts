@@ -4,9 +4,11 @@ export interface AIAgent {
   id: string;
   name: string;
   type: AgentType;
-  personality: string;
-  responseStyle: string;
-  initialContext: string;
+  role: string;
+  company: string;
+  objective: string;
+  tone: string;
+  knowledge: string;
   createdAt: string;
   isActive?: boolean;
   metrics: {

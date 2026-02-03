@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Sparkles, Loader2, Save, Mic2, Wand2, MessageSquareText, ChevronRight } from "lucide-react";
+import { Sparkles, Loader2, Save, Mic2, Wand2, MessageSquareText, ChevronRight, UserRound, Building2, Target } from "lucide-react";
 import { generateAgentConfig, type GenerateAgentConfigOutput } from "@/ai/flows/generate-agent-config";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
@@ -40,8 +40,8 @@ export default function NewAgentPage() {
       setConfig(result);
       setStep(3);
       toast({
-        title: "Configuración Generada",
-        description: "Los detalles han sido autocompletados con IA.",
+        title: "Arquitectura Generada",
+        description: "Hemos definido la identidad completa de tu agente con IA.",
       });
     } catch (error) {
       toast({
@@ -61,7 +61,7 @@ export default function NewAgentPage() {
       setIsSaving(false);
       toast({
         title: "Agente Creado",
-        description: `${config.agentName} ya está listo para ser desplegado.`,
+        description: `${config.name} ya está listo para ser desplegado.`,
       });
       router.push("/dashboard");
     }, 1500);
@@ -136,7 +136,7 @@ export default function NewAgentPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <Textarea 
-                  placeholder="Ej: Un asistente inmobiliario que agende citas y sea muy amable..."
+                  placeholder="Ej: Un asistente inmobiliario para TechProp que agende citas y sea muy amable..."
                   className="min-h-[120px] rounded-lg border-muted bg-white"
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value)}
@@ -146,7 +146,7 @@ export default function NewAgentPage() {
                   disabled={isGenerating}
                   className="w-full h-10 font-bold"
                 >
-                  {isGenerating ? <Loader2 className="h-4 w-4 animate-spin" /> : "AUTO-CONFIGURAR CON IA"}
+                  {isGenerating ? <Loader2 className="h-4 w-4 animate-spin" /> : "DISEÑAR AGENTE CON IA"}
                 </Button>
               </CardContent>
               <CardFooter>
@@ -160,8 +160,8 @@ export default function NewAgentPage() {
             <Card className="border-none shadow-sm animate-in slide-in-from-right-4 duration-500">
               <CardHeader className="flex flex-row items-center justify-between">
                 <div>
-                  <CardTitle className="text-lg">Ajustes Finales</CardTitle>
-                  <CardDescription>Revisa y personaliza la identidad de tu agente.</CardDescription>
+                  <CardTitle className="text-lg">Identidad del Agente</CardTitle>
+                  <CardDescription>Revisa y personaliza la arquitectura generada.</CardDescription>
                 </div>
                 <Badge className={cn(agentType === 'voice' ? 'bg-primary' : 'bg-secondary')}>
                   MODO {agentType?.toUpperCase()}
@@ -170,36 +170,52 @@ export default function NewAgentPage() {
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-1">
-                    <Label className="text-[10px] font-black uppercase">Nombre</Label>
+                    <Label className="text-[10px] font-black uppercase flex items-center gap-1"><UserRound className="h-3 w-3" /> Nombre</Label>
                     <Input 
-                      value={config.agentName} 
-                      onChange={(e) => setConfig({ ...config, agentName: e.target.value })}
+                      value={config.name} 
+                      onChange={(e) => setConfig({ ...config, name: e.target.value })}
                       className="h-9"
                     />
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-[10px] font-black uppercase">Persona</Label>
+                    <Label className="text-[10px] font-black uppercase flex items-center gap-1"><Sparkles className="h-3 w-3" /> Rol</Label>
                     <Input 
-                      value={config.agentPersonality} 
-                      onChange={(e) => setConfig({ ...config, agentPersonality: e.target.value })}
+                      value={config.role} 
+                      onChange={(e) => setConfig({ ...config, role: e.target.value })}
+                      className="h-9"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-[10px] font-black uppercase flex items-center gap-1"><Building2 className="h-3 w-3" /> Empresa</Label>
+                    <Input 
+                      value={config.company} 
+                      onChange={(e) => setConfig({ ...config, company: e.target.value })}
+                      className="h-9"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-[10px] font-black uppercase flex items-center gap-1"><Target className="h-3 w-3" /> Objetivo</Label>
+                    <Input 
+                      value={config.objective} 
+                      onChange={(e) => setConfig({ ...config, objective: e.target.value })}
                       className="h-9"
                     />
                   </div>
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-[10px] font-black uppercase">Estilo de Respuesta</Label>
+                  <Label className="text-[10px] font-black uppercase">Tono de Respuesta</Label>
                   <Textarea 
-                    value={config.agentResponseStyle} 
-                    onChange={(e) => setConfig({ ...config, agentResponseStyle: e.target.value })}
-                    className="min-h-[80px]"
+                    value={config.tone} 
+                    onChange={(e) => setConfig({ ...config, tone: e.target.value })}
+                    className="min-h-[60px]"
                   />
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-[10px] font-black uppercase">Conocimiento Base</Label>
+                  <Label className="text-[10px] font-black uppercase">Conocimiento (Base de Datos)</Label>
                   <Textarea 
-                    value={config.agentInitialContext} 
-                    onChange={(e) => setConfig({ ...config, agentInitialContext: e.target.value })}
-                    className="min-h-[100px]"
+                    value={config.knowledge} 
+                    onChange={(e) => setConfig({ ...config, knowledge: e.target.value })}
+                    className="min-h-[160px] font-mono text-[11px]"
                   />
                 </div>
               </CardContent>

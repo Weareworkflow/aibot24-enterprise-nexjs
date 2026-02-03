@@ -1,12 +1,10 @@
-
 "use client";
 
 import { use, useState, useEffect } from "react";
 import { Navbar } from "@/components/layout/Navbar";
 import { AIAgent } from "@/lib/types";
 import { AgentChat } from "@/components/agents/AgentChat";
-import { ArrowLeft, Zap, Database, PhoneIncoming, PhoneForwarded, PhoneOff, MessageCircle, ArrowRightLeft, UserX, MessageSquareText, Mic2 } from "lucide-react";
-import Link from "next/navigation";
+import { ArrowLeft, Zap, Database, PhoneIncoming, PhoneForwarded, PhoneOff, MessageCircle, ArrowRightLeft, UserX, Building2, Target, UserRound, Sparkles } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
@@ -19,9 +17,11 @@ const MOCK_AGENTS_DATA: AIAgent[] = [
     name: "AIV-SALES-MASTER",
     type: "voice",
     isActive: true,
-    personality: "ESPECIALISTA VENTAS B2B",
-    responseStyle: "Directo y profesional",
-    initialContext: "Ventas corporativas y cierre de tratos de alto valor.",
+    role: "Especialista Ventas B2B",
+    company: "TechSolutions Global",
+    objective: "Cierre de contratos y prospección",
+    tone: "Directo y altamente profesional",
+    knowledge: "Manual de ventas corporativas, manejo de objeciones y precios de licencias empresariales.",
     createdAt: "2024-01-15T10:00:00Z",
     metrics: {
       usageCount: 215,
@@ -38,9 +38,11 @@ const MOCK_AGENTS_DATA: AIAgent[] = [
     name: "SUPPORT-CORE-01",
     type: "voice",
     isActive: true,
-    personality: "SOPORTE TÉCNICO NIVEL 1",
-    responseStyle: "Paciente y resolutivo",
-    initialContext: "Soporte técnico de software, resolución de incidencias comunes y guía paso a paso.",
+    role: "Soporte Técnico Nivel 1",
+    company: "CloudServices Inc",
+    objective: "Resolución de incidencias técnicas",
+    tone: "Paciente, empático y resolutivo",
+    knowledge: "Guía de resolución de problemas comunes de software, acceso a base de conocimientos de red y servidores.",
     createdAt: "2024-02-01T14:30:00Z",
     metrics: {
       usageCount: 540,
@@ -57,9 +59,11 @@ const MOCK_AGENTS_DATA: AIAgent[] = [
     name: "WHATSAPP-BOT-PRO",
     type: "text",
     isActive: true,
-    personality: "ASISTENTE DE CITAS",
-    responseStyle: "Informal pero eficiente",
-    initialContext: "Gestión de calendario médico, recordatorios y cancelación de citas.",
+    role: "Asistente de Citas",
+    company: "Clínica Dental Moderna",
+    objective: "Gestión de calendario y recordatorios",
+    tone: "Informal, amable y eficiente",
+    knowledge: "Horarios de médicos, políticas de cancelación y procedimientos disponibles.",
     createdAt: "2024-02-10T09:15:00Z",
     metrics: {
       usageCount: 1250,
@@ -84,7 +88,6 @@ export default function AgentConsolePage({ params }: { params: Promise<{ id: str
     if (foundAgent) {
       setAgent(foundAgent);
     } else {
-      // Si no se encuentra, por defecto mostramos el primero o podrías redirigir
       setAgent(MOCK_AGENTS_DATA[0]);
     }
   }, [agentId]);
@@ -179,31 +182,54 @@ export default function AgentConsolePage({ params }: { params: Promise<{ id: str
               </div>
             </div>
 
+            {/* CONFIGURATION SECTION */}
             <div className="space-y-4">
               <div className="flex items-center gap-2">
-                <h2 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Configuración del Agente</h2>
+                <h2 className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Configuración de Identidad</h2>
               </div>
-              <Card className="shadow-sm border-none">
-                <CardContent className="p-4 space-y-4">
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <Badge variant="outline" className="text-[8px] font-black px-1.5 py-0">PERSONA</Badge>
+              <Card className="shadow-sm border-none bg-white">
+                <CardContent className="p-6 space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 text-[9px] font-black text-muted-foreground uppercase">
+                        <UserRound className="h-3 w-3" /> Nombre
                       </div>
-                      <p className="text-xs p-2 bg-muted/40 rounded border leading-relaxed">{agent.personality}</p>
+                      <p className="text-sm font-bold border-b pb-1">{agent.name}</p>
                     </div>
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <Badge variant="outline" className="text-[8px] font-black px-1.5 py-0">RESPUESTA</Badge>
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 text-[9px] font-black text-muted-foreground uppercase">
+                        <Sparkles className="h-3 w-3" /> Rol
                       </div>
-                      <p className="text-xs p-2 bg-muted/40 rounded border leading-relaxed">{agent.responseStyle}</p>
+                      <p className="text-sm font-bold border-b pb-1">{agent.role}</p>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 text-[9px] font-black text-muted-foreground uppercase">
+                        <Building2 className="h-3 w-3" /> Empresa
+                      </div>
+                      <p className="text-sm font-bold border-b pb-1">{agent.company}</p>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 text-[9px] font-black text-muted-foreground uppercase">
+                        <Target className="h-3 w-3" /> Objetivo
+                      </div>
+                      <p className="text-sm font-bold border-b pb-1">{agent.objective}</p>
                     </div>
                   </div>
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <Badge variant="outline" className="text-[8px] font-black px-1.5 py-0">CONOCIMIENTO</Badge>
+
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 text-[9px] font-black text-muted-foreground uppercase">
+                      Tono de Voz
                     </div>
-                    <p className="text-xs p-2 bg-muted/40 rounded border leading-relaxed">{agent.initialContext}</p>
+                    <p className="text-xs p-3 bg-muted/40 rounded-lg border">{agent.tone}</p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 text-[9px] font-black text-muted-foreground uppercase">
+                      Conocimiento y Base de Datos
+                    </div>
+                    <div className="min-h-[150px] p-4 bg-muted/30 rounded-xl border-dashed border-2 text-xs leading-relaxed">
+                      {agent.knowledge}
+                    </div>
                   </div>
                 </CardContent>
               </Card>

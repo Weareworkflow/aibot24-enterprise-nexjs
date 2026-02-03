@@ -1,11 +1,9 @@
 'use server';
 
 /**
- * @fileOverview Generates an initial configuration for an AI voice agent based on a user-provided prompt.
+ * @fileOverview Generates an initial configuration for an AI voice/text agent based on a user-provided prompt.
  *
  * - generateAgentConfig - A function that generates the agent configuration.
- * - GenerateAgentConfigInput - The input type for the generateAgentConfig function.
- * - GenerateAgentConfigOutput - The return type for the generateAgentConfig function.
  */
 
 import {ai} from '@/ai/genkit';
@@ -17,10 +15,12 @@ const GenerateAgentConfigInputSchema = z.object({
 export type GenerateAgentConfigInput = z.infer<typeof GenerateAgentConfigInputSchema>;
 
 const GenerateAgentConfigOutputSchema = z.object({
-  agentName: z.string().describe('The name of the AI voice agent.'),
-  agentPersonality: z.string().describe('A description of the AI voice agent\'s personality.'),
-  agentResponseStyle: z.string().describe('A description of the AI voice agent\'s response style.'),
-  agentInitialContext: z.string().describe('Initial context or knowledge base for the AI voice agent.'),
+  name: z.string().describe('The name of the AI agent.'),
+  role: z.string().describe('The specific role or job title of the agent.'),
+  company: z.string().describe('The company the agent represents.'),
+  objective: z.string().describe('The main objective or goal of the agent.'),
+  tone: z.string().describe('The tone of voice and communication style.'),
+  knowledge: z.string().describe('Extensive knowledge base and guidelines for the agent.'),
 });
 export type GenerateAgentConfigOutput = z.infer<typeof GenerateAgentConfigOutputSchema>;
 
@@ -32,21 +32,19 @@ const prompt = ai.definePrompt({
   name: 'generateAgentConfigPrompt',
   input: {schema: GenerateAgentConfigInputSchema},
   output: {schema: GenerateAgentConfigOutputSchema},
-  prompt: `You are an AI voice agent configuration expert. Based on the user\'s prompt, generate an initial configuration for their AI voice agent.
+  prompt: `You are an expert AI Agent Architect. Based on the user's prompt, generate a professional configuration for their AI agent.
 
 User Prompt: {{{prompt}}}
 
-Consider the prompt carefully and generate values for each of the following fields, that will be used to initialize the AI voice agent:
+Generate detailed values for:
+- name: A professional name.
+- role: A specific job title (e.g., "Customer Support Specialist", "Real Estate Sales Agent").
+- company: A placeholder or generated company name related to the prompt.
+- objective: What is the primary goal of this agent?
+- tone: Describe the tone (e.g., "Professional and empathetic", "Energetic and persuasive").
+- knowledge: A comprehensive knowledge base including instructions, FAQs, and business rules.
 
-- agentName: A suitable name for the AI voice agent.
-- agentPersonality: A detailed description of the agent\'s personality, including traits, tone, and demeanor.
-- agentResponseStyle: A description of the agent\'s response style, including the length of responses, level of formality, and use of humor.
-- agentInitialContext: Initial context or knowledge base for the AI voice agent, including key facts, information, and guidelines.
-
-Ensure that the configuration is coherent and aligned with the user\'s prompt. The agentInitialContext should include information that the agent can use to respond appropriately to user queries.
-
-Output the configuration in a JSON-like format that conforms to the GenerateAgentConfigOutputSchema. Do not include any explanation or conversational text, just the configuration.
-`,
+Ensure the configuration is cohesive and ready for deployment. Output only the JSON object.`,
 });
 
 const generateAgentConfigFlow = ai.defineFlow(

@@ -1,10 +1,9 @@
-
 "use client";
 
 import { AIAgent } from "@/lib/types";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Power, Trash2, Zap, Database, Mic2, MessageSquareText, PhoneIncoming, PhoneForwarded, PhoneOff, MessageCircle, ArrowRightLeft, UserX } from "lucide-react";
+import { Power, Trash2, Zap, Database, Mic2, MessageSquareText, PhoneIncoming, PhoneForwarded, PhoneOff, MessageCircle, ArrowRightLeft, UserX, Building2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
@@ -42,7 +41,6 @@ export function AgentCard({ agent, onDelete, onToggleActive }: AgentCardProps) {
         isActive ? "bg-white" : "bg-slate-200 grayscale-[0.5]"
       )}
     >
-      {/* HEADER AREA */}
       <div className="flex justify-between items-start w-full">
         <div className="space-y-4">
           <div className={cn(
@@ -66,16 +64,16 @@ export function AgentCard({ agent, onDelete, onToggleActive }: AgentCardProps) {
             )}>
               {agent.name}
             </h3>
-            <p className={cn(
-              "text-[10px] font-black uppercase tracking-widest line-clamp-1",
+            <div className={cn(
+              "flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest",
               isActive ? "text-muted-foreground" : "text-slate-500"
             )}>
-              {agent.personality}
-            </p>
+              <Building2 className="h-3 w-3" />
+              {agent.company}
+            </div>
           </div>
         </div>
         
-        {/* BOTONES DE ACCIÓN */}
         <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
           <Button 
             variant="outline" 
@@ -114,7 +112,7 @@ export function AgentCard({ agent, onDelete, onToggleActive }: AgentCardProps) {
               <AlertDialogHeader>
                 <AlertDialogTitle className="font-headline font-bold">¿Eliminar este agente?</AlertDialogTitle>
                 <AlertDialogDescription className="text-xs">
-                  Esta acción no se puede deshacer. Se eliminarán permanentemente las configuraciones y métricas de <strong>{agent.name}</strong>.
+                  Esta acción no se puede deshacer. Se eliminarán permanentemente las configuraciones de <strong>{agent.name}</strong>.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
@@ -136,7 +134,6 @@ export function AgentCard({ agent, onDelete, onToggleActive }: AgentCardProps) {
         </div>
       </div>
 
-      {/* METRICS GRID */}
       <div className="grid grid-cols-2 gap-3">
         <div className={cn(
           "p-3 pill-rounded border flex items-center gap-3",
@@ -168,7 +165,6 @@ export function AgentCard({ agent, onDelete, onToggleActive }: AgentCardProps) {
         </div>
       </div>
 
-      {/* CORE ANALYTICS ROW */}
       <div className="grid grid-cols-3 gap-2">
         {[
           { 

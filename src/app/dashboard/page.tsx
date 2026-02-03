@@ -12,9 +12,11 @@ const INITIAL_AGENTS: AIAgent[] = [
     name: "AIV-SALES-MASTER",
     type: "voice",
     isActive: true,
-    personality: "ESPECIALISTA VENTAS B2B",
-    responseStyle: "Directo y profesional",
-    initialContext: "Ventas corporativas",
+    role: "Especialista Ventas B2B",
+    company: "TechSolutions Global",
+    objective: "Cierre de contratos y prospección",
+    tone: "Directo y altamente profesional",
+    knowledge: "Manual de ventas corporativas, manejo de objeciones y precios de licencias empresariales.",
     createdAt: "2024-01-15T10:00:00Z",
     metrics: {
       usageCount: 215,
@@ -24,17 +26,18 @@ const INITIAL_AGENTS: AIAgent[] = [
       tokens: "120k",
       transfers: 45,
       abandoned: 12
-    },
-    feedback: ["Excelente capacidad de cierre", "Tono muy profesional"]
+    }
   },
   {
     id: "2",
     name: "SUPPORT-CORE-01",
     type: "voice",
     isActive: true,
-    personality: "SOPORTE TÉCNICO NIVEL 1",
-    responseStyle: "Paciente y resolutivo",
-    initialContext: "Soporte técnico de software",
+    role: "Soporte Técnico Nivel 1",
+    company: "CloudServices Inc",
+    objective: "Resolución de incidencias técnicas",
+    tone: "Paciente, empático y resolutivo",
+    knowledge: "Guía de resolución de problemas comunes de software, acceso a base de conocimientos de red y servidores.",
     createdAt: "2024-02-01T14:30:00Z",
     metrics: {
       usageCount: 540,
@@ -44,17 +47,18 @@ const INITIAL_AGENTS: AIAgent[] = [
       tokens: "245k",
       transfers: 112,
       abandoned: 9
-    },
-    feedback: ["Resuelve dudas rápido", "Muy amable"]
+    }
   },
   {
     id: "3",
     name: "WHATSAPP-BOT-PRO",
     type: "text",
     isActive: true,
-    personality: "ASISTENTE DE CITAS",
-    responseStyle: "Informal pero eficiente",
-    initialContext: "Gestión de calendario médico",
+    role: "Asistente de Citas",
+    company: "Clínica Dental Moderna",
+    objective: "Gestión de calendario y recordatorios",
+    tone: "Informal, amable y eficiente",
+    knowledge: "Horarios de médicos, políticas de cancelación y procedimientos disponibles.",
     createdAt: "2024-02-10T09:15:00Z",
     metrics: {
       usageCount: 1250,
