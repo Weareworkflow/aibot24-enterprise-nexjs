@@ -27,11 +27,17 @@ export function AgentCard({ agent, onDelete }: AgentCardProps) {
   const isVoice = agent.type === 'voice';
 
   return (
-    <div className="block group relative">
-      {/* Invisible link overlay for the whole card */}
-      <Link href={`/agents/${agent.id}`} className="absolute inset-0 z-0" />
+    <Card className="card-rounded relative hover:border-secondary/40 transition-all duration-300 border-none bg-white pill-shadow overflow-hidden p-8 flex flex-col gap-6 group">
+      {/* Enlace de fondo para toda la tarjeta */}
+      <Link 
+        href={`/agents/${agent.id}`} 
+        className="absolute inset-0 z-0"
+        aria-label={`Ver consola de ${agent.name}`}
+      />
       
-      <Card className="card-rounded hover:border-secondary/40 transition-all duration-300 border-none bg-white pill-shadow overflow-hidden p-8 flex flex-col gap-6 relative z-10 pointer-events-none">
+      {/* CONTENIDO INTERACTIVO (Z-10 para estar sobre el link) */}
+      <div className="relative z-10 flex flex-col gap-6 pointer-events-none">
+        
         {/* HEADER AREA */}
         <div className="flex justify-between items-start w-full">
           <div className="space-y-4">
@@ -51,6 +57,7 @@ export function AgentCard({ agent, onDelete }: AgentCardProps) {
             </div>
           </div>
           
+          {/* BOTONES DE ACCIÓN (pointer-events-auto para capturar clics) */}
           <div className="flex gap-2 pointer-events-auto">
             <Button 
               variant="outline" 
@@ -88,15 +95,11 @@ export function AgentCard({ agent, onDelete }: AgentCardProps) {
                 <AlertDialogFooter>
                   <AlertDialogCancel 
                     className="rounded-xl text-[10px] font-black uppercase"
-                    onClick={(e) => e.stopPropagation()}
                   >
                     Cancelar
                   </AlertDialogCancel>
                   <AlertDialogAction 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onDelete?.();
-                    }}
+                    onClick={() => onDelete?.()}
                     className="bg-destructive hover:bg-destructive/90 rounded-xl text-[10px] font-black uppercase"
                   >
                     Confirmar Eliminación
@@ -107,7 +110,7 @@ export function AgentCard({ agent, onDelete }: AgentCardProps) {
           </div>
         </div>
 
-        {/* METRICS GRID (COMPACT) */}
+        {/* METRICS GRID */}
         <div className="grid grid-cols-2 gap-3">
           <div className="p-3 bg-muted/30 pill-rounded border border-white flex items-center gap-3">
             <div className="p-1.5 bg-white rounded-full text-primary">
@@ -142,7 +145,7 @@ export function AgentCard({ agent, onDelete }: AgentCardProps) {
             </div>
           ))}
         </div>
-      </Card>
-    </div>
+      </div>
+    </Card>
   );
 }
