@@ -112,7 +112,7 @@ export function AgentChat({ agent }: AgentChatProps) {
     }
   };
 
-  const handleApplyChanges = async () => {
+  const handleApplyChanges = () => {
     if (!suggestion || !db) return;
     const agentRef = doc(db, "agents", agent.id);
 
@@ -134,7 +134,12 @@ export function AgentChat({ agent }: AgentChatProps) {
       errorEmitter.emit('permission-error', new FirestorePermissionError({
         path: agentRef.path,
         operation: 'update',
-        requestResourceData: suggestion
+        requestResourceData: {
+          role: suggestion.role,
+          objective: suggestion.objective,
+          tone: suggestion.tone,
+          knowledge: suggestion.knowledge
+        }
       }));
     });
   };
