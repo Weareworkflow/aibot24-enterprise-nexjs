@@ -7,35 +7,37 @@ import { getAuth, Auth } from 'firebase/auth';
 import { firebaseConfig } from './config';
 
 /**
- * Inicializa las instancias de Firebase.
- * Solo debe ejecutarse en el lado del cliente.
+ * Inicializa las instancias de Firebase de forma segura.
+ * Retorna null si la configuración es inválida o no estamos en el cliente.
  */
 export function initializeFirebase() {
-  // Verificación de seguridad para evitar ejecución en servidor
   if (typeof window === 'undefined') {
-    return { 
-      firebaseApp: null as any, 
-      firestore: null as any, 
-      auth: null as any 
-    };
+    return null;
   }
 
-  let firebaseApp: FirebaseApp;
-  
-  if (!getApps().length) {
-    // Validamos que exista al menos la API Key antes de intentar inicializar
-    if (!firebaseConfig.apiKey) {
-      console.warn('Firebase API Key no detectada. Asegúrate de configurar las variables de entorno NEXT_PUBLIC_FIREBASE_*.');
+  // Verificamos que al menos la API Key esté presente para evitar errores de inicialización
+  if (!firebaseConfig.apiKey || firebaseConfig.apiKey === 'undefined') {
+    console.warn('Firebase: Configuración incompleta detectada. Verifica tus variables de entorno.');
+    return null;
+  }
+
+  try {
+    let firebaseApp: FirebaseApp;
+    
+    if (!getApps().length) {
+      firebaseApp = initializeApp(firebaseConfig);
+    } else {
+      firebaseApp = getApp();
     }
-    firebaseApp = initializeApp(firebaseConfig);
-  } else {
-    firebaseApp = getApp();
+
+    const firestore = getFirestore(firebaseApp);
+    const auth = getAuth(firebaseApp);
+
+    return { firebaseApp, firestore, auth };
+  } catch (error) {
+    console.error('Error al inicializar Firebase:', error);
+    return null;
   }
-
-  const firestore = getFirestore(firebaseApp);
-  const auth = getAuth(firebaseApp);
-
-  return { firebaseApp, firestore, auth };
 }
 
 export * from './provider';
