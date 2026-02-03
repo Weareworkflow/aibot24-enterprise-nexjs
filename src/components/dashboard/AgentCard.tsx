@@ -28,6 +28,7 @@ export function AgentCard({ agent, onDelete }: AgentCardProps) {
 
   return (
     <div className="block group relative">
+      {/* Invisible link overlay for the whole card */}
       <Link href={`/agents/${agent.id}`} className="absolute inset-0 z-0" />
       
       <Card className="card-rounded hover:border-secondary/40 transition-all duration-300 border-none bg-white pill-shadow overflow-hidden p-8 flex flex-col gap-6 relative z-10 pointer-events-none">
@@ -44,7 +45,7 @@ export function AgentCard({ agent, onDelete }: AgentCardProps) {
               <h3 className="text-xl font-headline font-black text-primary leading-tight group-hover:text-secondary transition-colors">
                 {agent.name}
               </h3>
-              <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
+              <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest line-clamp-1">
                 {agent.personality}
               </p>
             </div>
@@ -85,7 +86,12 @@ export function AgentCard({ agent, onDelete }: AgentCardProps) {
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel className="rounded-xl text-[10px] font-black uppercase">Cancelar</AlertDialogCancel>
+                  <AlertDialogCancel 
+                    className="rounded-xl text-[10px] font-black uppercase"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    Cancelar
+                  </AlertDialogCancel>
                   <AlertDialogAction 
                     onClick={(e) => {
                       e.stopPropagation();
@@ -101,7 +107,7 @@ export function AgentCard({ agent, onDelete }: AgentCardProps) {
           </div>
         </div>
 
-        {/* METRICS GRID */}
+        {/* METRICS GRID (COMPACT) */}
         <div className="grid grid-cols-2 gap-3">
           <div className="p-3 bg-muted/30 pill-rounded border border-white flex items-center gap-3">
             <div className="p-1.5 bg-white rounded-full text-primary">
@@ -124,15 +130,15 @@ export function AgentCard({ agent, onDelete }: AgentCardProps) {
         </div>
 
         {/* CORE ANALYTICS ROW */}
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-3 gap-2">
           {[
             { label: "INBOUND", val: agent.metrics.usageCount, color: "text-primary" },
             { label: "TRANSF", val: agent.metrics.transfers || 0, color: "text-secondary" },
             { label: "ABAND", val: agent.metrics.abandoned || 0, color: "text-destructive" },
           ].map((m, i) => (
-            <div key={i} className="text-center py-3 bg-white border border-border/50 pill-rounded">
-              <p className="text-[7px] font-black text-muted-foreground uppercase tracking-widest mb-1">{m.label}</p>
-              <p className={cn("text-sm font-headline font-black", m.color)}>{m.val}</p>
+            <div key={i} className="text-center py-2.5 bg-white border border-border/50 pill-rounded">
+              <p className="text-[7px] font-black text-muted-foreground uppercase tracking-widest mb-0.5">{m.label}</p>
+              <p className={cn("text-xs font-headline font-black", m.color)}>{m.val}</p>
             </div>
           ))}
         </div>
