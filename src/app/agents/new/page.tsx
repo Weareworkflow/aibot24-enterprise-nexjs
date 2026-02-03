@@ -7,12 +7,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { Sparkles, Loader2, Mic2, MessageSquareText, Send, UserRound, Building2, Target, Bot, Rocket, CheckCircle2 } from "lucide-react";
+import { Sparkles, Loader2, Mic2, MessageSquareText, Send, Bot, Rocket } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { AgentType, ChatMessage } from "@/lib/types";
+import { AgentType, ChatMessage, AIAgent } from "@/lib/types";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useAgentStore } from "@/lib/store";
 
 const CONFIG_STEPS = [
   { key: 'name', question: "¡Hola! Soy tu Arquitecto Virtual. Vamos a diseñar tu agente de élite. Primero, ¿qué nombre llevará esta unidad?", label: "Nombre" },
@@ -43,6 +44,7 @@ export default function NewAgentPage() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const router = useRouter();
+  const { addAgent } = useAgentStore();
 
   useEffect(() => {
     if (step === 2 && messages.length === 0) {
@@ -105,7 +107,31 @@ export default function NewAgentPage() {
 
   const handleSave = async () => {
     setIsSaving(true);
+    
+    // Crear el nuevo objeto de agente
+    const newAgent: AIAgent = {
+      id: Date.now().toString(),
+      name: config.name,
+      type: agentType || 'text',
+      role: config.role,
+      company: config.company,
+      objective: config.objective,
+      tone: config.tone,
+      knowledge: config.knowledge,
+      isActive: true,
+      createdAt: new Date().toISOString(),
+      metrics: {
+        usageCount: 0,
+        performanceRating: 5.0,
+        totalInteractionMetric: 0,
+        tokens: "0",
+        transfers: 0,
+        abandoned: 0
+      }
+    };
+
     setTimeout(() => {
+      addAgent(newAgent);
       setIsSaving(false);
       toast({
         title: "Agente Desplegado",

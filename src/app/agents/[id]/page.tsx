@@ -36,89 +36,26 @@ import { cn } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-
-const MOCK_AGENTS_DATA: AIAgent[] = [
-  {
-    id: "1",
-    name: "AIV-SALES-MASTER",
-    type: "voice",
-    isActive: true,
-    role: "Especialista Ventas B2B",
-    company: "TechSolutions Global",
-    objective: "Cierre de contratos y prospección",
-    tone: "Directo y altamente profesional",
-    knowledge: "Manual de ventas corporativas, manejo de objeciones y precios de licencias empresariales.",
-    createdAt: "2024-01-15T10:00:00Z",
-    metrics: {
-      usageCount: 215,
-      performanceRating: 4.8,
-      totalInteractionMetric: 934,
-      latency: "450m",
-      tokens: "120k",
-      transfers: 45,
-      abandoned: 12
-    }
-  },
-  {
-    id: "2",
-    name: "SUPPORT-CORE-01",
-    type: "voice",
-    isActive: true,
-    role: "Soporte Técnico Nivel 1",
-    company: "CloudServices Inc",
-    objective: "Resolución de incidencias técnicas",
-    tone: "Paciente, empático y resolutivo",
-    knowledge: "Guía de resolución de problemas comunes de software, acceso a base de conocimientos de red y servidores.",
-    createdAt: "2024-02-01T14:30:00Z",
-    metrics: {
-      usageCount: 540,
-      performanceRating: 4.5,
-      totalInteractionMetric: 1820,
-      latency: "1200m",
-      tokens: "245k",
-      transfers: 112,
-      abandoned: 9
-    }
-  },
-  {
-    id: "3",
-    name: "WHATSAPP-BOT-PRO",
-    type: "text",
-    isActive: true,
-    role: "Asistente de Citas",
-    company: "Clínica Dental Moderna",
-    objective: "Gestión de calendario y recordatorios",
-    tone: "Informal, amable y eficiente",
-    knowledge: "Horarios de médicos, políticas de cancelación y procedimientos disponibles.",
-    createdAt: "2024-02-10T09:15:00Z",
-    metrics: {
-      usageCount: 1250,
-      performanceRating: 4.9,
-      totalInteractionMetric: 5400,
-      latency: "850m",
-      tokens: "450k",
-      transfers: 22,
-      abandoned: 5
-    }
-  }
-];
+import { useAgentStore } from "@/lib/store";
 
 export default function AgentConsolePage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
   const agentId = resolvedParams.id;
+  const { agents } = useAgentStore();
   const [agent, setAgent] = useState<AIAgent | null>(null);
+  const [isMounted, setIsMounted] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
-    const foundAgent = MOCK_AGENTS_DATA.find(a => a.id === agentId);
+    setIsMounted(true);
+    const foundAgent = agents.find(a => a.id === agentId);
     if (foundAgent) {
       setAgent(foundAgent);
-    } else {
-      setAgent(MOCK_AGENTS_DATA[0]);
     }
-  }, [agentId]);
+  }, [agentId, agents]);
 
-  if (!agent) return <div className="p-8 text-center font-black uppercase tracking-widest text-muted-foreground">Cargando consola...</div>;
+  if (!isMounted) return null;
+  if (!agent) return <div className="p-8 text-center font-black uppercase tracking-widest text-muted-foreground">Agente no encontrado</div>;
 
   const isVoice = agent.type === 'voice';
 
