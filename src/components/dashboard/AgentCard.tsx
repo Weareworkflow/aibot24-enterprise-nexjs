@@ -1,76 +1,72 @@
 "use client";
 
 import { AIAgent } from "@/lib/types";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Activity, Star, MoreVertical, Mic2, MessageSquareText } from "lucide-react";
+import { Power, Trash2, LayoutGrid } from "lucide-react";
 import Link from "next/link";
-import Image from "next/image";
 
 interface AgentCardProps {
   agent: AIAgent;
 }
 
 export function AgentCard({ agent }: AgentCardProps) {
-  const isVoice = agent.type === 'voice';
-
   return (
     <Link href={`/agents/${agent.id}`} className="block group">
-      <Card className="hover:border-primary/40 transition-all duration-200 border-border group bg-white shadow-sm hover:shadow-md rounded-lg overflow-hidden h-full flex flex-col">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 pb-2">
-          <div className="flex items-center gap-2.5 min-w-0">
-            <div className="relative h-9 w-9 rounded overflow-hidden border border-border/60 bg-muted flex-shrink-0 group-hover:border-primary/20 transition-colors">
-              <Image 
-                src={`https://picsum.photos/seed/${agent.id}/80/80`} 
-                alt={agent.name}
-                fill
-                className="object-cover"
-              />
+      <Card className="card-rounded hover:border-secondary/40 transition-all duration-300 border-none bg-white pill-shadow overflow-hidden p-8 space-y-8">
+        {/* HEADER AREA */}
+        <div className="flex justify-between items-start">
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 text-[10px] font-black text-muted-foreground uppercase tracking-widest">
+              <div className="p-1.5 bg-muted rounded flex items-center justify-center">
+                <LayoutGrid className="h-3 w-3" />
+              </div>
+              AIBOT24
             </div>
-            <div className="min-w-0">
-              <CardTitle className="text-xs font-headline font-bold text-[#333] group-hover:text-primary transition-colors truncate">
+            <div className="space-y-1">
+              <h3 className="text-xl font-headline font-black text-primary leading-tight group-hover:text-secondary transition-colors">
                 {agent.name}
-              </CardTitle>
-              <div className="flex items-center gap-1 mt-0.5">
-                {isVoice ? (
-                  <Mic2 className="h-2.5 w-2.5 text-primary" />
-                ) : (
-                  <MessageSquareText className="h-2.5 w-2.5 text-secondary" />
-                )}
-                <span className="text-[8px] text-muted-foreground uppercase font-black tracking-tighter">
-                  {isVoice ? 'Agente de Voz' : 'Agente de Texto'}
-                </span>
+              </h3>
+              <div className="flex items-center gap-2">
+                <div className="h-4 w-4 rounded-full bg-muted flex items-center justify-center">
+                  <div className="h-2 w-2 rounded-full border border-primary/50" />
+                </div>
+                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
+                  {agent.personality}
+                </p>
               </div>
             </div>
           </div>
-          <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground hover:bg-muted opacity-0 group-hover:opacity-100 transition-opacity" onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}>
-            <MoreVertical className="h-3 w-3" />
-          </Button>
-        </CardHeader>
-        
-        <CardContent className="p-3 pt-1 flex-1 flex flex-col justify-between">
-          <p className="text-[11px] text-muted-foreground line-clamp-2 mb-3 leading-snug">
-            {agent.personality}
-          </p>
           
-          <div className="flex items-center justify-between pt-2 border-t border-border/30">
-            <div className="flex items-center gap-2.5">
-              <div className="flex items-center gap-1 text-[10px] font-bold text-[#444]">
-                <Activity className="h-3 w-3 text-primary" />
-                {agent.metrics.usageCount}
-              </div>
-              <div className="flex items-center gap-1 text-[10px] font-bold text-[#444]">
-                <Star className="h-3 w-3 text-orange-400 fill-orange-400" />
-                {agent.metrics.performanceRating.toFixed(1)}
-              </div>
-            </div>
-            <Badge variant="outline" className="bg-green-50 text-green-600 border-green-100/50 text-[8px] font-black h-3.5 px-1 uppercase tracking-tighter">
-              {isVoice ? 'ACTIVO' : 'CONECTADO'}
-            </Badge>
+          <div className="flex gap-2">
+            <Button variant="outline" size="icon" className="h-10 w-10 pill-rounded border-muted bg-muted/20 hover:bg-primary hover:text-white transition-all">
+              <Power className="h-4 w-4" />
+            </Button>
+            <Button variant="outline" size="icon" className="h-10 w-10 pill-rounded border-muted bg-muted/20 hover:bg-destructive hover:text-white transition-all">
+              <Trash2 className="h-4 w-4" />
+            </Button>
           </div>
-        </CardContent>
+        </div>
+
+        {/* METRICS ROW */}
+        <div className="grid grid-cols-3 gap-4 pt-4">
+          {[
+            { label: "INBOUND", val: agent.metrics.usageCount, color: "text-primary" },
+            { label: "TRANSF", val: agent.metrics.totalInteractionMetric, color: "text-secondary" },
+            { label: "ABAND", val: agent.feedback?.[0] || "0", color: "text-destructive" },
+          ].map((m, i) => (
+            <div key={i} className="text-center space-y-2 p-4 bg-muted/30 pill-rounded border border-white">
+              <p className="text-[8px] font-black text-muted-foreground uppercase tracking-widest">{m.label}</p>
+              <p className={cn("text-lg font-headline font-black", m.color)}>{m.val}</p>
+            </div>
+          ))}
+        </div>
       </Card>
     </Link>
   );
+}
+
+// Helper function for class names
+function cn(...inputs: any[]) {
+  return inputs.filter(Boolean).join(" ");
 }

@@ -4,53 +4,26 @@
 
 @layer base {
   :root {
-    --background: 210 20% 98%;
-    --foreground: 210 20% 15%;
+    --background: 210 40% 98%;
+    --foreground: 222 47% 11%;
     --card: 0 0% 100%;
-    --card-foreground: 210 20% 15%;
+    --card-foreground: 222 47% 11%;
     --popover: 0 0% 100%;
-    --popover-foreground: 210 20% 15%;
-    --primary: 195 92% 45%; /* Bitrix Blue */
-    --primary-foreground: 0 0% 100%;
-    --secondary: 150 60% 45%; /* Bitrix Green */
+    --popover-foreground: 222 47% 11%;
+    --primary: 222 47% 11%; /* Dark Navy / Black */
+    --primary-foreground: 210 40% 98%;
+    --secondary: 195 92% 45%; /* Bitrix Blue */
     --secondary-foreground: 0 0% 100%;
-    --muted: 210 20% 94%;
-    --muted-foreground: 210 10% 45%;
-    --accent: 195 92% 45%;
-    --accent-foreground: 0 0% 100%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 150 60% 45%; /* Bitrix Green */
+    --accent-foreground: 222 47% 11%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
-    --border: 210 20% 90%;
-    --input: 210 20% 90%;
-    --ring: 195 92% 45%;
-    --radius: 0.5rem;
-    --chart-1: 195 92% 45%;
-    --chart-2: 150 60% 45%;
-    --chart-3: 35 90% 50%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
-  }
-
-  .dark {
-    --background: 210 20% 10%;
-    --foreground: 210 20% 98%;
-    --card: 210 20% 12%;
-    --card-foreground: 210 20% 98%;
-    --popover: 210 20% 12%;
-    --popover-foreground: 210 20% 98%;
-    --primary: 195 92% 55%;
-    --primary-foreground: 210 20% 10%;
-    --secondary: 150 60% 55%;
-    --secondary-foreground: 210 20% 10%;
-    --muted: 210 20% 18%;
-    --muted-foreground: 210 10% 70%;
-    --accent: 195 92% 55%;
-    --accent-foreground: 210 20% 10%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 210 20% 20%;
-    --input: 210 20% 20%;
-    --ring: 195 92% 55%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222 47% 11%;
+    --radius: 2rem;
   }
 }
 
@@ -62,17 +35,18 @@
     @apply bg-background text-foreground font-body;
   }
   h1, h2, h3, h4, h5, h6 {
-    @apply font-headline tracking-tight text-foreground/90;
+    @apply font-headline tracking-tight;
   }
 }
 
-/* Custom Scrollbar for Bitrix feel */
-::-webkit-scrollbar {
-  width: 6px;
+.pill-shadow {
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
 }
-::-webkit-scrollbar-track {
-  @apply bg-transparent;
+
+.card-rounded {
+  border-radius: 3.5rem;
 }
-::-webkit-scrollbar-thumb {
-  @apply bg-muted-foreground/20 rounded-full hover:bg-muted-foreground/30;
+
+.pill-rounded {
+  border-radius: 9999px;
 }
