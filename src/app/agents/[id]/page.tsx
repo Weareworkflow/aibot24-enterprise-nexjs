@@ -293,11 +293,11 @@ export default function AgentConsolePage({ params }: { params: Promise<{ id: str
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {[
                         { title: "WhatsApp Business", icon: Smartphone, status: "Configurar" },
-                        { title: "CRM Calendario", icon: Calendar, status: "Configurar" },
-                        { title: "Catálogo", icon: LayoutGrid, status: "Disponible" },
+                        { title: "Calendario Bitrix24", icon: Calendar, status: "Configurar" },
+                        { title: "Catálogo Bitrix24", icon: LayoutGrid, status: "Disponible" },
                         { title: "Generador Documentos", icon: FilePlus, status: "Configurar" },
                         { title: "Analizador Documento", icon: Search, status: "Configurar" },
-                        { title: "Google Drive", icon: Cloud, status: "Disponible" },
+                        { title: "Drive Bitrix24", icon: Cloud, status: "Disponible" },
                         { title: "Calls API", icon: PhoneCall, status: "Activo" },
                       ].map((int, i) => (
                         <div key={i} className="flex items-center justify-between p-4 border rounded-2xl hover:bg-muted/30 transition-colors group cursor-pointer">
