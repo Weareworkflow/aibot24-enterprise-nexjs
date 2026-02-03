@@ -2,11 +2,13 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Permitir acceso público total para integración embebida (Iframe)
+    // Permitir acceso público total para la integración embebida (Iframe)
+    // Nota: En producción real, se recomienda restringir por dominio si es posible
     match /agents/{agentId} {
       allow read, write: if true;
     }
     
+    // Bloquear el resto de las colecciones por seguridad
     match /{document=**} {
       allow read, write: if false;
     }

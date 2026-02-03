@@ -1,4 +1,3 @@
-
 {
   "entities": {
     "AIAgent": {
@@ -41,8 +40,8 @@
   },
   "firestore": {
     "/agents/{agentId}": {
-      "schema": "#/backend/entities/AIAgent",
-      "description": "Repositorio central de agentes inteligentes."
+      "schema": { "$ref": "#/entities/AIAgent" },
+      "description": "Repositorio central de agentes inteligentes accesible mediante Iframe."
     }
   }
 }

@@ -1,4 +1,3 @@
-
 /**
  * Configuración oficial de Firebase para el proyecto AIBot24.
  * Conectado al proyecto: aibot24-485301
