@@ -3,9 +3,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
 /**
- * Store global para el estado de la interfaz de usuario.
- * La persistencia de los agentes se maneja directamente en Firestore 
- * para garantizar sincronización en tiempo real entre múltiples pestañas/usuarios.
+ * Store global para el estado de la interfaz de usuario y contexto de Bitrix24.
  */
 interface UIState {
   searchQuery: string;
@@ -14,6 +12,10 @@ interface UIState {
   toggleSidebar: () => void;
   activeFilter: 'all' | 'voice' | 'text';
   setActiveFilter: (filter: 'all' | 'voice' | 'text') => void;
+  tenantId: string | null;
+  setTenantId: (id: string) => void;
+  domain: string | null;
+  setDomain: (domain: string) => void;
 }
 
 export const useUIStore = create<UIState>()(
@@ -25,9 +27,13 @@ export const useUIStore = create<UIState>()(
       toggleSidebar: () => set((state) => ({ isSidebarOpen: !state.isSidebarOpen })),
       activeFilter: 'all',
       setActiveFilter: (filter) => set({ activeFilter: filter }),
+      tenantId: null,
+      setTenantId: (id) => set({ tenantId: id }),
+      domain: null,
+      setDomain: (domain) => set({ domain: domain }),
     }),
     {
-      name: 'aibot24-ui-config',
+      name: 'aibot24-v3-config',
     }
   )
 );

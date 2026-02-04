@@ -13,10 +13,11 @@ import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { AgentType, ChatMessage, AIAgent } from "@/lib/types";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useFirestore, useUser } from "@/firebase";
+import { useFirestore } from "@/firebase";
 import { collection, doc, setDoc } from "firebase/firestore";
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
+import { useUIStore } from "@/lib/store";
 
 const CONFIG_STEPS = [
   { key: 'name', question: "¡Hola! Soy tu Arquitecto Virtual. Vamos a diseñar tu agente de élite. Primero, ¿qué nombre llevará esta unidad?", label: "Nombre" },
@@ -48,7 +49,7 @@ export default function NewAgentPage() {
   const { toast } = useToast();
   const router = useRouter();
   const db = useFirestore();
-  const { user } = useUser();
+  const { tenantId } = useUIStore();
 
   useEffect(() => {
     if (step === 2 && messages.length === 0) {
@@ -116,7 +117,7 @@ export default function NewAgentPage() {
     const agentId = Date.now().toString();
     const newAgent: AIAgent = {
       id: agentId,
-      tenantId: user?.uid || "anonymous",
+      tenantId: tenantId || "anonymous", // Vinculamos con el portal de Bitrix24
       name: config.name,
       type: agentType || 'text',
       role: config.role,
@@ -151,7 +152,7 @@ export default function NewAgentPage() {
         setIsSaving(false);
         toast({
           title: "Agente Desplegado",
-          description: `${config.name} ha sido activado correctamente en la nube.`,
+          description: `${config.name} ha sido activado correctamente en tu portal.`,
         });
         router.push("/");
       })
@@ -355,19 +356,6 @@ export default function NewAgentPage() {
                   </CardFooter>
                 )}
               </Card>
-
-              {isFinished && (
-                <div className="flex justify-center animate-in fade-in slide-in-from-top-2 duration-1000">
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={() => { setStep(2); setCurrentConfigIndex(0); setMessages([]); setIsFinished(false); }}
-                    className="text-[9px] font-black uppercase text-muted-foreground hover:text-secondary tracking-widest"
-                  >
-                    Reiniciar Protocolo de Diseño
-                  </Button>
-                </div>
-              )}
             </div>
           )}
         </div>

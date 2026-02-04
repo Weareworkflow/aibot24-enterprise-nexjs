@@ -5,7 +5,7 @@ import { useMemo } from "react";
 import { Navbar } from "@/components/layout/Navbar";
 import { AgentCard } from "@/components/dashboard/AgentCard";
 import { useCollection, useFirestore } from "@/firebase";
-import { collection, query, orderBy } from "firebase/firestore";
+import { collection, query, where, orderBy } from "firebase/firestore";
 import { AIAgent } from "@/lib/types";
 import { Loader2, Sparkles, LayoutDashboard, SearchX, Database } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -14,16 +14,18 @@ import { useUIStore } from "@/lib/store";
 
 export default function DashboardPage() {
   const db = useFirestore();
-  const { searchQuery } = useUIStore();
+  const { searchQuery, tenantId } = useUIStore();
   
   const agentsQuery = useMemo(() => {
     if (!db) return null;
+    const effectiveTenantId = tenantId || "anonymous";
     
     return query(
       collection(db, "agents"), 
+      where("tenantId", "==", effectiveTenantId),
       orderBy("createdAt", "desc")
     );
-  }, [db]);
+  }, [db, tenantId]);
 
   const { data: agents, loading: collectionLoading, error } = useCollection<AIAgent>(agentsQuery);
 
@@ -57,7 +59,7 @@ export default function DashboardPage() {
             </div>
             <div>
               <h1 className="text-xl font-headline font-bold">Panel Operativo</h1>
-              <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Estado global de unidades de IA</p>
+              <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Estado global de unidades de IA - {tenantId ? `Portal: ${tenantId}` : "Sesión Anónima"}</p>
             </div>
           </div>
         </div>
@@ -73,7 +75,7 @@ export default function DashboardPage() {
               <Database className="h-8 w-8 text-destructive/40" />
             </div>
             <p className="text-destructive font-black uppercase tracking-widest text-[10px]">Error de Sincronización</p>
-            <p className="text-xs text-muted-foreground max-w-sm">No pudimos conectar con el flujo de datos.</p>
+            <p className="text-xs text-muted-foreground max-w-sm">No pudimos conectar con el flujo de datos para este inquilino.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">

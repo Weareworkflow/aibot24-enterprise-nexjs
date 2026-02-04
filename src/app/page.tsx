@@ -4,26 +4,30 @@
 import { Navbar } from "@/components/layout/Navbar";
 import { AgentCard } from "@/components/dashboard/AgentCard";
 import { useCollection, useFirestore } from "@/firebase";
-import { collection, query, orderBy } from "firebase/firestore";
+import { collection, query, where, orderBy } from "firebase/firestore";
 import { AIAgent } from "@/lib/types";
 import { useMemo } from "react";
-import { Loader2, Sparkles, SearchX, Database } from "lucide-react";
+import { Loader2, Sparkles, SearchX, Database, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useUIStore } from "@/lib/store";
 
 export default function HomePage() {
   const db = useFirestore();
-  const { searchQuery } = useUIStore();
+  const { searchQuery, tenantId } = useUIStore();
   
   const agentsQuery = useMemo(() => {
     if (!db) return null;
     
+    // Si no hay tenantId, mostramos solo los anónimos o pedimos instalación
+    const effectiveTenantId = tenantId || "anonymous";
+
     return query(
       collection(db, "agents"), 
+      where("tenantId", "==", effectiveTenantId),
       orderBy("createdAt", "desc")
     );
-  }, [db]);
+  }, [db, tenantId]);
 
   const { data: agents, loading: collectionLoading, error } = useCollection<AIAgent>(agentsQuery);
 
@@ -33,13 +37,11 @@ export default function HomePage() {
     if (!q) return agents;
 
     return agents.filter(agent => {
-      // Búsqueda por iniciales o términos completos en nombre, rol, empresa
       const matchesText = 
         agent.name.toLowerCase().includes(q) ||
         agent.role.toLowerCase().includes(q) ||
         agent.company.toLowerCase().includes(q);
 
-      // Búsqueda por tipo (Modo Live o Modo Chat)
       const isLiveTerm = 'live'.includes(q) || 'voz'.includes(q) || 'voice'.includes(q);
       const isChatTerm = 'chat'.includes(q) || 'texto'.includes(q) || 'text'.includes(q);
       
@@ -55,6 +57,17 @@ export default function HomePage() {
     <div className="flex flex-col min-h-screen bg-[#F7F9FB]">
       <Navbar />
       <main className="container mx-auto px-4 py-8 space-y-8">
+        
+        {!tenantId && (
+          <div className="max-w-6xl mx-auto mb-6 bg-secondary/5 border border-secondary/20 p-4 rounded-3xl flex items-center gap-4">
+            <Info className="h-5 w-5 text-secondary flex-shrink-0" />
+            <p className="text-[11px] font-bold text-slate-600">
+              No se ha detectado una sesión de portal activa. Los agentes creados se guardarán como <span className="text-secondary font-black">"Anónimos"</span>. 
+              <Link href="/install" className="ml-2 underline hover:text-secondary">Ejecutar Protocolo de Instalación →</Link>
+            </p>
+          </div>
+        )}
+
         {collectionLoading ? (
           <div className="flex flex-col items-center justify-center py-20 gap-4">
             <Loader2 className="h-8 w-8 animate-spin text-secondary" />
@@ -64,7 +77,7 @@ export default function HomePage() {
           <div className="flex flex-col items-center justify-center py-20 text-center space-y-4">
             <Database className="h-8 w-8 text-destructive/40" />
             <p className="text-destructive font-black uppercase tracking-widest text-[10px]">Error de Sincronización</p>
-            <p className="text-xs text-muted-foreground max-w-sm">No pudimos obtener la lista de agentes. Verifica la conexión.</p>
+            <p className="text-xs text-muted-foreground max-w-sm">No pudimos obtener la lista de agentes para tu portal ({tenantId || "anonymous"}).</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
@@ -80,7 +93,6 @@ export default function HomePage() {
                 <SearchX className="h-10 w-10 text-muted-foreground/30" />
                 <div className="space-y-1">
                   <p className="text-muted-foreground font-black uppercase tracking-widest text-[10px]">No hay coincidencias para "{searchQuery}"</p>
-                  <p className="text-[9px] text-muted-foreground/60 uppercase font-bold">Busca por nombre, rol, empresa o tipo (Live/Chat)</p>
                 </div>
                 <Button 
                   variant="link" 

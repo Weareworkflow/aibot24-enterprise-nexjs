@@ -7,38 +7,45 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, CheckCircle2, ShieldCheck, Database } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/layout/Logo";
+import { useUIStore } from "@/lib/store";
 
 /**
  * Página de Instalación de Bitrix24.
- * Esta página es llamada por Bitrix24 durante el proceso de instalación de la aplicación.
- * Utiliza BX24.js para finalizar la instalación y capturar el contexto.
+ * Captura el member_id para usarlo como tenantId global.
  */
 export default function InstallPage() {
   const [status, setStatus] = useState<'loading' | 'ready' | 'success' | 'error'>('loading');
   const [installData, setInstallData] = useState<any>(null);
+  const { setTenantId, setDomain } = useUIStore();
 
   const handleInstall = () => {
     if (typeof window !== 'undefined' && (window as any).BX24) {
       const BX24 = (window as any).BX24;
       
       try {
-        // Capturamos el contexto de la instalación
         const auth = BX24.getAuth();
         const domain = new URLSearchParams(window.location.search).get('DOMAIN');
         
-        console.log("Bitrix24 Auth Context:", auth);
-        console.log("Bitrix24 Domain:", domain);
+        // El member_id es el identificador único de la instalación en el portal
+        const memberId = auth?.member_id;
 
-        setInstallData({ auth, domain });
-
-        // Finalizamos la instalación en Bitrix24
-        BX24.installFinish();
-        setStatus('success');
-        
-        // Redirigir al home después de 3 segundos
-        setTimeout(() => {
-          window.location.href = '/';
-        }, 3000);
+        if (memberId) {
+          setTenantId(memberId);
+          if (domain) setDomain(domain);
+          
+          setInstallData({ auth, domain, memberId });
+          
+          // Finalizamos el protocolo oficial
+          BX24.installFinish();
+          setStatus('success');
+          
+          setTimeout(() => {
+            window.location.href = '/';
+          }, 3000);
+        } else {
+          console.error("No se pudo obtener el member_id");
+          setStatus('error');
+        }
       } catch (err) {
         console.error("Error durante installFinish:", err);
         setStatus('error');
@@ -47,7 +54,6 @@ export default function InstallPage() {
   };
 
   useEffect(() => {
-    // Si la librería ya está cargada (por navegación previa o caché)
     if ((window as any).BX24) {
       setStatus('ready');
     }
@@ -87,7 +93,7 @@ export default function InstallPage() {
               <div className="space-y-6 text-center">
                 <div className="p-4 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
                   <p className="text-xs leading-relaxed text-slate-600">
-                    Se ha detectado una solicitud de instalación desde tu portal de Bitrix24. Haz clic en el botón de abajo para sincronizar los servicios de IA.
+                    Se ha detectado una solicitud de instalación desde tu portal. Haz clic para sincronizar tu Identificador Único de Portal.
                   </p>
                 </div>
                 <Button 
@@ -106,30 +112,28 @@ export default function InstallPage() {
                 </div>
                 <div className="text-center space-y-2">
                   <h3 className="font-bold text-lg text-slate-800">¡Instalación Exitosa!</h3>
-                  <p className="text-[10px] font-black uppercase text-accent tracking-widest">Sincronización Completa</p>
+                  <p className="text-[10px] font-black uppercase text-accent tracking-widest">Aislamiento de Datos Configurado</p>
                 </div>
-                <div className="w-full p-4 bg-slate-50 rounded-xl border flex items-center gap-3">
-                  <Database className="h-4 w-4 text-slate-400" />
-                  <span className="text-[10px] font-mono text-slate-500 truncate">Domain: {installData?.domain}</span>
+                <div className="w-full p-4 bg-slate-50 rounded-xl border flex flex-col gap-2">
+                  <div className="flex items-center gap-3">
+                    <Database className="h-3 w-3 text-slate-400" />
+                    <span className="text-[9px] font-mono text-slate-500 truncate">Tenant: {installData?.memberId}</span>
+                  </div>
                 </div>
-                <p className="text-[9px] text-muted-foreground italic">Redirigiendo al panel de control...</p>
+                <p className="text-[9px] text-muted-foreground italic">Redirigiendo al panel operativo...</p>
               </div>
             )}
 
             {status === 'error' && (
               <div className="text-center py-6 space-y-4">
                 <div className="text-destructive font-black uppercase tracking-widest text-xs">Error de Protocolo</div>
-                <p className="text-xs text-muted-foreground">No se pudo completar la instalación. Asegúrate de estar dentro de un portal de Bitrix24.</p>
+                <p className="text-xs text-muted-foreground">No se pudo capturar el member_id. Asegúrate de estar dentro de un portal de Bitrix24.</p>
                 <Button variant="outline" onClick={() => window.location.reload()} className="pill-rounded h-10 px-6">Reintentar</Button>
               </div>
             )}
           </div>
         </CardContent>
       </Card>
-      
-      <p className="mt-8 text-[9px] font-black uppercase text-muted-foreground tracking-[0.3em]">
-        Powered by AI<span className="text-secondary italic">Bot</span>24 Technology
-      </p>
     </div>
   );
 }
