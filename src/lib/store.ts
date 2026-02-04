@@ -4,6 +4,7 @@ import { persist } from 'zustand/middleware';
 
 /**
  * Store global para el estado de la interfaz de usuario y contexto de Bitrix24.
+ * Persiste el tenantId (member_id) para mantener la sesión del portal.
  */
 interface UIState {
   searchQuery: string;
@@ -13,9 +14,9 @@ interface UIState {
   activeFilter: 'all' | 'voice' | 'text';
   setActiveFilter: (filter: 'all' | 'voice' | 'text') => void;
   tenantId: string | null;
-  setTenantId: (id: string) => void;
+  setTenantId: (id: string | null) => void;
   domain: string | null;
-  setDomain: (domain: string) => void;
+  setDomain: (domain: string | null) => void;
 }
 
 export const useUIStore = create<UIState>()(
@@ -33,7 +34,7 @@ export const useUIStore = create<UIState>()(
       setDomain: (domain) => set({ domain: domain }),
     }),
     {
-      name: 'aibot24-v3-config',
+      name: 'aibot24-v3-config-v2',
     }
   )
 );

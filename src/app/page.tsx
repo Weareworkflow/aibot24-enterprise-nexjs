@@ -6,7 +6,7 @@ import { AgentCard } from "@/components/dashboard/AgentCard";
 import { useCollection, useFirestore } from "@/firebase";
 import { collection, query, where, orderBy } from "firebase/firestore";
 import { AIAgent } from "@/lib/types";
-import { useMemo } from "react";
+import { useMemo, useEffect } from "react";
 import { Loader2, Sparkles, SearchX, Database, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -16,15 +16,21 @@ export default function HomePage() {
   const db = useFirestore();
   const { searchQuery, tenantId } = useUIStore();
   
-  const agentsQuery = useMemo(() => {
-    if (!db) return null;
-    
-    // Si no hay tenantId, mostramos solo los anónimos o pedimos instalación
-    const effectiveTenantId = tenantId || "anonymous";
+  // Si no hay tenantId en el store, intentamos obtenerlo de la URL por si acaso (Bitrix contexts)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const memberId = params.get('member_id');
+    if (memberId && !tenantId) {
+      useUIStore.getState().setTenantId(memberId);
+    }
+  }, [tenantId]);
 
+  const agentsQuery = useMemo(() => {
+    if (!db || !tenantId) return null;
+    
     return query(
       collection(db, "agents"), 
-      where("tenantId", "==", effectiveTenantId),
+      where("tenantId", "==", tenantId),
       orderBy("createdAt", "desc")
     );
   }, [db, tenantId]);
@@ -59,25 +65,32 @@ export default function HomePage() {
       <main className="container mx-auto px-4 py-8 space-y-8">
         
         {!tenantId && (
-          <div className="max-w-6xl mx-auto mb-6 bg-secondary/5 border border-secondary/20 p-4 rounded-3xl flex items-center gap-4">
-            <Info className="h-5 w-5 text-secondary flex-shrink-0" />
-            <p className="text-[11px] font-bold text-slate-600">
-              No se ha detectado una sesión de portal activa. Los agentes creados se guardarán como <span className="text-secondary font-black">"Anónimos"</span>. 
-              <Link href="/install" className="ml-2 underline hover:text-secondary">Ejecutar Protocolo de Instalación →</Link>
-            </p>
+          <div className="max-w-6xl mx-auto mb-6 bg-secondary/5 border border-secondary/20 p-6 rounded-3xl flex items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <Info className="h-6 w-6 text-secondary flex-shrink-0" />
+              <div>
+                <p className="text-sm font-bold text-slate-800">No se ha detectado el portal de Bitrix24</p>
+                <p className="text-[11px] text-muted-foreground uppercase font-black tracking-widest mt-1">Es necesario ejecutar el protocolo de enlace inicial</p>
+              </div>
+            </div>
+            <Link href="/install">
+              <Button variant="default" className="pill-rounded bg-secondary text-white text-[10px] font-black uppercase tracking-widest px-6">
+                Enlazar Portal →
+              </Button>
+            </Link>
           </div>
         )}
 
-        {collectionLoading ? (
+        {tenantId && collectionLoading ? (
           <div className="flex flex-col items-center justify-center py-20 gap-4">
             <Loader2 className="h-8 w-8 animate-spin text-secondary" />
-            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Sincronizando con Bitrix24...</p>
+            <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Sincronizando con Portal: {tenantId.substring(0, 8)}...</p>
           </div>
         ) : error ? (
           <div className="flex flex-col items-center justify-center py-20 text-center space-y-4">
             <Database className="h-8 w-8 text-destructive/40" />
             <p className="text-destructive font-black uppercase tracking-widest text-[10px]">Error de Sincronización</p>
-            <p className="text-xs text-muted-foreground max-w-sm">No pudimos obtener la lista de agentes para tu portal ({tenantId || "anonymous"}).</p>
+            <p className="text-xs text-muted-foreground max-w-sm">No pudimos obtener la lista de agentes para tu portal ({tenantId || "sin-id"}). Revisa los permisos de Firestore.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
@@ -104,15 +117,15 @@ export default function HomePage() {
               </div>
             )}
 
-            {(!agents || agents.length === 0) && (
-              <div className="col-span-full py-32 text-center space-y-6 flex flex-col items-center">
+            {tenantId && (!agents || agents.length === 0) && !collectionLoading && (
+              <div className="col-span-full py-32 text-center space-y-6 flex flex-col items-center border-2 border-dashed border-slate-200 rounded-[3rem] bg-white/50">
                 <div className="p-4 bg-secondary/5 rounded-full">
                   <Sparkles className="h-8 w-8 text-secondary/40" />
                 </div>
                 <div className="space-y-2">
                   <p className="text-muted-foreground font-headline font-bold uppercase tracking-widest text-[10px]">No tienes agentes activos en este portal.</p>
                   <Link href="/agents/new">
-                    <Button variant="link" className="text-secondary text-xs font-bold p-0 h-auto">
+                    <Button variant="link" className="text-secondary text-xs font-bold p-0 h-auto underline underline-offset-4">
                       Iniciar Protocolo de Creación →
                     </Button>
                   </Link>
