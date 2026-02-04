@@ -70,8 +70,8 @@ export default function AgentConsolePage({ params }: { params: Promise<{ id: str
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="text-xl font-headline font-bold">{agent.name}</h1>
-                <Badge className={cn("border-none text-[9px] font-black h-4 uppercase", isVoice ? "bg-primary/10 text-primary" : "bg-secondary/10 text-secondary")}>
-                  {isVoice ? 'MODO VOZ' : 'MODO TEXTO'}
+                <Badge className={cn("border-none text-[9px] font-black h-4 uppercase", isVoice ? "bg-secondary/10 text-secondary" : "bg-accent/10 text-accent")}>
+                  {isVoice ? 'MODO LIVE' : 'MODO CHAT'}
                 </Badge>
               </div>
               <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">ID: {agent.id} • {agent.company}</p>

@@ -116,12 +116,12 @@ export function AgentCard({ agent }: AgentCardProps) {
               <div className={cn(
                 "p-1.5 rounded-lg flex items-center justify-center premium-relief", 
                 isActive 
-                  ? (isVoice ? "bg-primary text-white" : "bg-secondary text-white")
+                  ? (isVoice ? "bg-secondary text-white" : "bg-accent text-white")
                   : "bg-slate-300 text-slate-600 shadow-none"
               )}>
                 {isVoice ? <Phone className="h-3 w-3" /> : <MessageSquareText className="h-3 w-3" />}
               </div>
-              <span className="truncate max-w-[80px]">{isVoice ? "VOICE" : "TEXT"}</span>
+              <span className="truncate max-w-[80px]">{isVoice ? "LIVE" : "CHAT"}</span>
             </div>
 
             {isActive && (
@@ -251,7 +251,7 @@ export function AgentCard({ agent }: AgentCardProps) {
       <div className="grid grid-cols-3 gap-3 relative z-10">
         {[
           { 
-            label: isVoice ? "LLAMADAS" : "CHATS", 
+            label: isVoice ? "LIVE CALLS" : "CHAT MSG", 
             val: agent.metrics.usageCount, 
             color: isActive ? "text-primary" : "text-slate-700", 
             icon: isVoice ? PhoneIncoming : MessageCircle 

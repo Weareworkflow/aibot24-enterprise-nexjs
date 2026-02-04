@@ -193,7 +193,7 @@ export default function NewAgentPage() {
                     <Phone className="h-10 w-10 text-secondary group-hover:text-white" />
                   </div>
                   <div className="text-center">
-                    <h3 className="font-black text-sm uppercase tracking-wider">Modo Voz</h3>
+                    <h3 className="font-black text-sm uppercase tracking-wider">Modo Live</h3>
                     <p className="text-[10px] text-muted-foreground mt-2 font-bold uppercase">Llamadas y Telefonía</p>
                   </div>
                 </button>
@@ -205,8 +205,8 @@ export default function NewAgentPage() {
                     <MessageSquareText className="h-10 w-10 text-accent group-hover:text-white" />
                   </div>
                   <div className="text-center">
-                    <h3 className="font-black text-sm uppercase tracking-wider">Modo Texto</h3>
-                    <p className="text-[10px] text-muted-foreground mt-2 font-bold uppercase">Chat Web y WhatsApp</p>
+                    <h3 className="font-black text-sm uppercase tracking-wider">Modo Chat</h3>
+                    <p className="text-[10px] text-muted-foreground mt-2 font-bold uppercase">Mensajería y WhatsApp</p>
                   </div>
                 </button>
               </div>
