@@ -34,7 +34,8 @@ import {
   AlertCircle,
   CalendarDays,
   ShoppingBag,
-  FileText
+  FileText,
+  FolderOpen
 } from "lucide-react";
 import {
   Accordion,
@@ -85,6 +86,7 @@ export function AgentChat({ agent }: AgentChatProps) {
   const [isCalendarModalOpen, setIsCalendarModalOpen] = useState(false);
   const [isCatalogModalOpen, setIsCatalogModalOpen] = useState(false);
   const [isDocumentsModalOpen, setIsDocumentsModalOpen] = useState(false);
+  const [isDriveModalOpen, setIsDriveModalOpen] = useState(false);
   const [waCredentials, setWaCredentials] = useState({ phoneId: "", token: "" });
   
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -180,36 +182,14 @@ export function AgentChat({ agent }: AgentChatProps) {
     });
   };
 
-  const handleCalendarIntegration = () => {
+  const handleGenericIntegration = (title: string, setModal: (val: boolean) => void) => {
     if (!db || !agent) return;
-    const newInts = { ...agent.integrations, "Calendario Bitrix24": true };
+    const newInts = { ...agent.integrations, [title]: true };
     handleManualUpdate('integrations', newInts);
-    setIsCalendarModalOpen(false);
+    setModal(false);
     toast({
-      title: "Calendario Vinculado",
-      description: "Se ha establecido el enlace con el servicio de calendario.",
-    });
-  };
-
-  const handleCatalogIntegration = () => {
-    if (!db || !agent) return;
-    const newInts = { ...agent.integrations, "Catálogo Bitrix24": true };
-    handleManualUpdate('integrations', newInts);
-    setIsCatalogModalOpen(false);
-    toast({
-      title: "Catálogo Sincronizado",
-      description: "El catálogo de productos ha sido vinculado al agente.",
-    });
-  };
-
-  const handleDocumentsIntegration = () => {
-    if (!db || !agent) return;
-    const newInts = { ...agent.integrations, "Documentos Bitrix24": true };
-    handleManualUpdate('integrations', newInts);
-    setIsDocumentsModalOpen(false);
-    toast({
-      title: "Plantillas Vinculadas",
-      description: "Las plantillas de documentos han sido sincronizadas.",
+      title: "Integración Activada",
+      description: `${title} se ha vinculado correctamente.`,
     });
   };
 
@@ -351,14 +331,17 @@ export function AgentChat({ agent }: AgentChatProps) {
                           <Switch 
                             checked={isActive} 
                             onCheckedChange={(checked) => {
-                              if (int.title === "WhatsApp Business" && checked) {
-                                setIsWhatsAppModalOpen(true);
-                              } else if (int.title === "Calendario Bitrix24" && checked) {
-                                setIsCalendarModalOpen(true);
-                              } else if (int.title === "Catálogo Bitrix24" && checked) {
-                                setIsCatalogModalOpen(true);
-                              } else if (int.title === "Documentos Bitrix24" && checked) {
-                                setIsDocumentsModalOpen(true);
+                              if (checked) {
+                                switch (int.title) {
+                                  case "WhatsApp Business": setIsWhatsAppModalOpen(true); break;
+                                  case "Calendario Bitrix24": setIsCalendarModalOpen(true); break;
+                                  case "Catálogo Bitrix24": setIsCatalogModalOpen(true); break;
+                                  case "Documentos Bitrix24": setIsDocumentsModalOpen(true); break;
+                                  case "Drive Bitrix24": setIsDriveModalOpen(true); break;
+                                  default:
+                                    const newInts = { ...agent.integrations, [int.title]: checked };
+                                    handleManualUpdate('integrations', newInts);
+                                }
                               } else {
                                 const newInts = { ...agent.integrations, [int.title]: checked };
                                 handleManualUpdate('integrations', newInts);
@@ -509,7 +492,6 @@ export function AgentChat({ agent }: AgentChatProps) {
               Selección de Agenda Operativa
             </DialogDescription>
           </DialogHeader>
-          
           <div className="py-8 flex flex-col items-center justify-center text-center gap-4 bg-slate-50 rounded-3xl border border-dashed border-slate-200 mx-2">
             <AlertCircle className="h-10 w-10 text-muted-foreground/30" />
             <div className="space-y-1">
@@ -519,15 +501,13 @@ export function AgentChat({ agent }: AgentChatProps) {
               </p>
             </div>
           </div>
-
           <DialogFooter className="sm:justify-center">
             <Button 
               type="button" 
-              variant="outline"
-              className="w-full h-12 pill-rounded border-slate-200 text-muted-foreground font-black text-[11px] uppercase tracking-[0.2em]"
-              onClick={() => setIsCalendarModalOpen(false)}
+              className="w-full h-12 pill-rounded bg-secondary hover:bg-secondary/90 text-white font-black text-[11px] uppercase tracking-[0.2em]"
+              onClick={() => handleGenericIntegration("Calendario Bitrix24", setIsCalendarModalOpen)}
             >
-              Cerrar Protocolo
+              Cerrar y Vincular
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -545,7 +525,6 @@ export function AgentChat({ agent }: AgentChatProps) {
               Sincronización de Inventario Bitrix24
             </DialogDescription>
           </DialogHeader>
-          
           <div className="py-8 flex flex-col items-center justify-center text-center gap-4 bg-slate-50 rounded-3xl border border-dashed border-slate-200 mx-2">
             <AlertCircle className="h-10 w-10 text-muted-foreground/30" />
             <div className="space-y-1">
@@ -555,15 +534,13 @@ export function AgentChat({ agent }: AgentChatProps) {
               </p>
             </div>
           </div>
-
           <DialogFooter className="sm:justify-center">
             <Button 
               type="button" 
-              variant="outline"
-              className="w-full h-12 pill-rounded border-slate-200 text-muted-foreground font-black text-[11px] uppercase tracking-[0.2em]"
-              onClick={() => setIsCatalogModalOpen(false)}
+              className="w-full h-12 pill-rounded bg-secondary hover:bg-secondary/90 text-white font-black text-[11px] uppercase tracking-[0.2em]"
+              onClick={() => handleGenericIntegration("Catálogo Bitrix24", setIsCatalogModalOpen)}
             >
-              Cerrar Protocolo
+              Cerrar y Vincular
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -581,7 +558,6 @@ export function AgentChat({ agent }: AgentChatProps) {
               Gestión de Plantillas Operativas
             </DialogDescription>
           </DialogHeader>
-          
           <div className="py-8 flex flex-col items-center justify-center text-center gap-4 bg-slate-50 rounded-3xl border border-dashed border-slate-200 mx-2">
             <AlertCircle className="h-10 w-10 text-muted-foreground/30" />
             <div className="space-y-1">
@@ -591,15 +567,46 @@ export function AgentChat({ agent }: AgentChatProps) {
               </p>
             </div>
           </div>
-
           <DialogFooter className="sm:justify-center">
             <Button 
               type="button" 
-              variant="outline"
-              className="w-full h-12 pill-rounded border-slate-200 text-muted-foreground font-black text-[11px] uppercase tracking-[0.2em]"
-              onClick={() => setIsDocumentsModalOpen(false)}
+              className="w-full h-12 pill-rounded bg-secondary hover:bg-secondary/90 text-white font-black text-[11px] uppercase tracking-[0.2em]"
+              onClick={() => handleGenericIntegration("Documentos Bitrix24", setIsDocumentsModalOpen)}
             >
-              Cerrar Protocolo
+              Cerrar y Vincular
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Drive Configuration Modal */}
+      <Dialog open={isDriveModalOpen} onOpenChange={setIsDriveModalOpen}>
+        <DialogContent className="sm:max-w-[425px] rounded-[2rem] border-none shadow-2xl">
+          <DialogHeader>
+            <div className="h-16 w-16 bg-secondary/10 rounded-full flex items-center justify-center mb-4 mx-auto">
+              <FolderOpen className="h-8 w-8 text-secondary" />
+            </div>
+            <DialogTitle className="text-center font-headline font-bold text-xl">Drive Bitrix24</DialogTitle>
+            <DialogDescription className="text-center text-xs text-muted-foreground uppercase font-black tracking-widest pt-2">
+              Gestión de Carpetas de Almacenamiento
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-8 flex flex-col items-center justify-center text-center gap-4 bg-slate-50 rounded-3xl border border-dashed border-slate-200 mx-2">
+            <AlertCircle className="h-10 w-10 text-muted-foreground/30" />
+            <div className="space-y-1">
+              <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Sin Carpetas Disponibles</p>
+              <p className="text-[11px] italic text-muted-foreground px-6">
+                Se debe crear una Carpeta en Bitrix24 para seleccionarla aquí.
+              </p>
+            </div>
+          </div>
+          <DialogFooter className="sm:justify-center">
+            <Button 
+              type="button" 
+              className="w-full h-12 pill-rounded bg-secondary hover:bg-secondary/90 text-white font-black text-[11px] uppercase tracking-[0.2em]"
+              onClick={() => handleGenericIntegration("Drive Bitrix24", setIsDriveModalOpen)}
+            >
+              Cerrar y Vincular
             </Button>
           </DialogFooter>
         </DialogContent>
