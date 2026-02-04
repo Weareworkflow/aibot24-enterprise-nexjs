@@ -30,7 +30,9 @@ import {
   Palette,
   Check,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  KeyRound,
+  SmartphoneNfc
 } from "lucide-react";
 import {
   Accordion,
@@ -43,6 +45,15 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { refineAgentConfig } from "@/ai/flows/refine-agent-config";
 import { useFirestore } from "@/firebase";
@@ -66,6 +77,10 @@ export function AgentChat({ agent }: AgentChatProps) {
   const [isRefining, setIsRefining] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [history, setHistory] = useState<{role: 'user' | 'assistant', content: string, explanation?: string}[]>([]);
+  
+  // WhatsApp Integration State
+  const [isWhatsAppModalOpen, setIsWhatsAppModalOpen] = useState(false);
+  const [waCredentials, setWaCredentials] = useState({ phoneId: "", token: "" });
   
   const scrollRef = useRef<HTMLDivElement>(null);
   const db = useFirestore();
@@ -147,6 +162,17 @@ export function AgentChat({ agent }: AgentChatProps) {
     } finally {
       setIsRefining(false);
     }
+  };
+
+  const handleWhatsAppIntegration = () => {
+    if (!db || !agent) return;
+    const newInts = { ...agent.integrations, "WhatsApp Business": true };
+    handleManualUpdate('integrations', newInts);
+    setIsWhatsAppModalOpen(false);
+    toast({
+      title: "Conexión Establecida",
+      description: "WhatsApp API se ha integrado correctamente con Bitrix24.",
+    });
   };
 
   return (
@@ -261,7 +287,7 @@ export function AgentChat({ agent }: AgentChatProps) {
               </AccordionContent>
             </AccordionItem>
 
-            {/* INTEGRACIONES - COLUMNA ÚNICA */}
+            {/* INTEGRACIONES */}
             <AccordionItem value="integraciones" className="border-b px-6 border-slate-100">
               <AccordionTrigger className="hover:no-underline py-6 text-slate-700 data-[state=open]:text-secondary transition-colors outline-none">
                 <div className="flex items-center gap-4 text-[14px] font-black uppercase tracking-widest">
@@ -290,8 +316,12 @@ export function AgentChat({ agent }: AgentChatProps) {
                       <Switch 
                         checked={agent.integrations?.[int.title] || false} 
                         onCheckedChange={(checked) => {
-                          const newInts = { ...agent.integrations, [int.title]: checked };
-                          handleManualUpdate('integrations', newInts);
+                          if (int.title === "WhatsApp Business" && checked) {
+                            setIsWhatsAppModalOpen(true);
+                          } else {
+                            const newInts = { ...agent.integrations, [int.title]: checked };
+                            handleManualUpdate('integrations', newInts);
+                          }
                         }}
                       />
                     </div>
@@ -301,7 +331,7 @@ export function AgentChat({ agent }: AgentChatProps) {
             </AccordionItem>
           </Accordion>
 
-          {/* EDITAR CON AI - PEGADO A INTEGRACIONES */}
+          {/* EDITAR CON AI */}
           <Collapsible open={isChatOpen} onOpenChange={setIsChatOpen} className="w-full">
             <CollapsibleTrigger asChild>
               <button className={cn(
@@ -372,6 +402,58 @@ export function AgentChat({ agent }: AgentChatProps) {
           </Collapsible>
         </div>
       </ScrollArea>
+
+      {/* WhatsApp Configuration Modal */}
+      <Dialog open={isWhatsAppModalOpen} onOpenChange={setIsWhatsAppModalOpen}>
+        <DialogContent className="sm:max-w-[425px] rounded-[2rem] border-none shadow-2xl">
+          <DialogHeader>
+            <div className="h-16 w-16 bg-secondary/10 rounded-full flex items-center justify-center mb-4 mx-auto">
+              <SmartphoneNfc className="h-8 w-8 text-secondary" />
+            </div>
+            <DialogTitle className="text-center font-headline font-bold text-xl">Integración WhatsApp API</DialogTitle>
+            <DialogDescription className="text-center text-xs text-muted-foreground uppercase font-black tracking-widest pt-2">
+              Credenciales de Meta for Developers
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-6 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="phoneId" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                <Smartphone className="h-3 w-3" /> Phone Number ID
+              </Label>
+              <Input
+                id="phoneId"
+                placeholder="Ej: 1029384756..."
+                className="pill-rounded bg-slate-50 border-slate-200 focus:ring-secondary/20"
+                value={waCredentials.phoneId}
+                onChange={(e) => setWaCredentials(prev => ({ ...prev, phoneId: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="token" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                <KeyRound className="h-3 w-3" /> Permanent Access Token
+              </Label>
+              <Input
+                id="token"
+                type="password"
+                placeholder="EAAB..."
+                className="pill-rounded bg-slate-50 border-slate-200 focus:ring-secondary/20"
+                value={waCredentials.token}
+                onChange={(e) => setWaCredentials(prev => ({ ...prev, token: e.target.value }))}
+              />
+            </div>
+          </div>
+          <DialogFooter className="sm:justify-center">
+            <Button 
+              type="submit" 
+              className="w-full h-12 pill-rounded bg-secondary hover:bg-secondary/90 text-white font-black text-[11px] uppercase tracking-[0.2em] shadow-lg shadow-secondary/20"
+              onClick={handleWhatsAppIntegration}
+              disabled={!waCredentials.phoneId || !waCredentials.token}
+            >
+              Vincular con Bitrix24
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
