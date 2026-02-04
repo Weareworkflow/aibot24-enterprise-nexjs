@@ -178,25 +178,6 @@ export function AgentChat({ agent }: AgentChatProps) {
               </AccordionContent>
             </AccordionItem>
 
-            <AccordionItem value="conocimiento" className="border-b px-6 border-slate-100">
-              <AccordionTrigger className="hover:no-underline py-6">
-                <div className="flex items-center gap-4 text-[14px] font-black uppercase tracking-widest text-slate-700">
-                  <BookOpen className="h-5 w-5" /> Conocimiento
-                </div>
-              </AccordionTrigger>
-              <AccordionContent className="pb-8 pt-2 space-y-6">
-                <div className="space-y-1.5">
-                  <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Instrucciones Técnicas y FAQs</Label>
-                  <Textarea 
-                    value={agent.knowledge} 
-                    onChange={(e) => handleManualUpdate('knowledge', e.target.value, 'Conocimiento')} 
-                    className="min-h-[350px] font-mono text-sm bg-slate-50 leading-relaxed" 
-                    placeholder="Escribe aquí las reglas de negocio, manuales y conocimientos específicos..."
-                  />
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-
             <AccordionItem value="instrucciones" className="border-b px-6 border-slate-100">
               <AccordionTrigger className="hover:no-underline py-6">
                 <div className="flex items-center gap-4 text-[14px] font-black uppercase tracking-widest text-slate-700">
@@ -217,6 +198,25 @@ export function AgentChat({ agent }: AgentChatProps) {
                     />
                   </div>
                 ))}
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="conocimiento" className="border-b px-6 border-slate-100">
+              <AccordionTrigger className="hover:no-underline py-6">
+                <div className="flex items-center gap-4 text-[14px] font-black uppercase tracking-widest text-slate-700">
+                  <BookOpen className="h-5 w-5" /> Conocimiento
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="pb-8 pt-2 space-y-6">
+                <div className="space-y-1.5">
+                  <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Instrucciones Técnicas y FAQs</Label>
+                  <Textarea 
+                    value={agent.knowledge} 
+                    onChange={(e) => handleManualUpdate('knowledge', e.target.value, 'Conocimiento')} 
+                    className="min-h-[350px] font-mono text-sm bg-slate-50 leading-relaxed" 
+                    placeholder="Escribe aquí las reglas de negocio, manuales y conocimientos específicos..."
+                  />
+                </div>
               </AccordionContent>
             </AccordionItem>
 
