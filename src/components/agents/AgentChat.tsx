@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useRef, useEffect } from "react";
@@ -24,7 +25,7 @@ import {
   LayoutGrid,
   FilePlus,
   Cloud,
-  PhoneCall,
+  Globe,
   Palette,
   Check,
   ChevronDown,
@@ -35,7 +36,10 @@ import {
   CalendarDays,
   ShoppingBag,
   FileText,
-  FolderOpen
+  FolderOpen,
+  Plus,
+  Trash2,
+  Link2
 } from "lucide-react";
 import {
   Accordion,
@@ -56,6 +60,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { refineAgentConfig } from "@/ai/flows/refine-agent-config";
@@ -87,7 +98,11 @@ export function AgentChat({ agent }: AgentChatProps) {
   const [isCatalogModalOpen, setIsCatalogModalOpen] = useState(false);
   const [isDocumentsModalOpen, setIsDocumentsModalOpen] = useState(false);
   const [isDriveModalOpen, setIsDriveModalOpen] = useState(false);
+  const [isApiRestModalOpen, setIsApiRestModalOpen] = useState(false);
+  
   const [waCredentials, setWaCredentials] = useState({ phoneId: "", token: "" });
+  const [newApi, setNewApi] = useState({ url: "", method: "POST", name: "" });
+  const [endpoints, setEndpoints] = useState<{name: string, url: string, method: string}[]>([]);
   
   const scrollRef = useRef<HTMLDivElement>(null);
   const db = useFirestore();
@@ -179,6 +194,27 @@ export function AgentChat({ agent }: AgentChatProps) {
     toast({
       title: "Conexión Establecida",
       description: "WhatsApp API se ha integrado correctamente con Bitrix24.",
+    });
+  };
+
+  const handleApiRestAdd = () => {
+    if (!newApi.url || !newApi.name) return;
+    setEndpoints([...endpoints, newApi]);
+    setNewApi({ url: "", method: "POST", name: "" });
+  };
+
+  const handleApiRestRemove = (idx: number) => {
+    setEndpoints(endpoints.filter((_, i) => i !== idx));
+  };
+
+  const handleApiRestSave = () => {
+    if (!db || !agent) return;
+    const newInts = { ...agent.integrations, "API REST": true };
+    handleManualUpdate('integrations', newInts);
+    setIsApiRestModalOpen(false);
+    toast({
+      title: "API REST Activada",
+      description: "Se han vinculado los servicios externos al agente.",
     });
   };
 
@@ -317,7 +353,7 @@ export function AgentChat({ agent }: AgentChatProps) {
                     { title: "Catálogo Bitrix24", icon: LayoutGrid },
                     { title: "Documentos Bitrix24", icon: FilePlus },
                     { title: "Drive Bitrix24", icon: Cloud },
-                    { title: "Calls API", icon: PhoneCall },
+                    { title: "API REST", icon: Globe },
                   ].map((int, i) => {
                     const isActive = agent.integrations?.[int.title] || false;
 
@@ -338,6 +374,7 @@ export function AgentChat({ agent }: AgentChatProps) {
                                   case "Catálogo Bitrix24": setIsCatalogModalOpen(true); break;
                                   case "Documentos Bitrix24": setIsDocumentsModalOpen(true); break;
                                   case "Drive Bitrix24": setIsDriveModalOpen(true); break;
+                                  case "API REST": setIsApiRestModalOpen(true); break;
                                   default:
                                     const newInts = { ...agent.integrations, [int.title]: checked };
                                     handleManualUpdate('integrations', newInts);
@@ -480,6 +517,99 @@ export function AgentChat({ agent }: AgentChatProps) {
         </DialogContent>
       </Dialog>
 
+      {/* API REST Modal */}
+      <Dialog open={isApiRestModalOpen} onOpenChange={setIsApiRestModalOpen}>
+        <DialogContent className="sm:max-w-[500px] rounded-[2rem] border-none shadow-2xl max-h-[90vh] flex flex-col">
+          <DialogHeader>
+            <div className="h-16 w-16 bg-secondary/10 rounded-full flex items-center justify-center mb-4 mx-auto">
+              <Globe className="h-8 w-8 text-secondary" />
+            </div>
+            <DialogTitle className="text-center font-headline font-bold text-xl">Configuración API REST</DialogTitle>
+            <DialogDescription className="text-center text-xs text-muted-foreground uppercase font-black tracking-widest pt-2">
+              Protocolos de Comunicación Externa
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="flex-1 overflow-y-auto pr-2 space-y-6 py-4">
+            <div className="bg-slate-50 p-4 rounded-3xl border border-slate-200 space-y-4">
+              <h4 className="text-[9px] font-black uppercase text-secondary tracking-widest">Añadir Nuevo Endpoint</h4>
+              <div className="space-y-3">
+                <Input 
+                  placeholder="Nombre del servicio (Ej: CRM Webhook)" 
+                  className="h-10 text-[11px] bg-white pill-rounded"
+                  value={newApi.name}
+                  onChange={(e) => setNewApi({...newApi, name: e.target.value})}
+                />
+                <div className="flex gap-2">
+                  <Select value={newApi.method} onValueChange={(val) => setNewApi({...newApi, method: val})}>
+                    <SelectTrigger className="w-[100px] h-10 text-[11px] bg-white pill-rounded">
+                      <SelectValue placeholder="Method" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="GET">GET</SelectItem>
+                      <SelectItem value="POST">POST</SelectItem>
+                      <SelectItem value="PUT">PUT</SelectItem>
+                      <SelectItem value="DELETE">DELETE</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Input 
+                    placeholder="https://api.empresa.com/v1/..." 
+                    className="flex-1 h-10 text-[11px] bg-white pill-rounded"
+                    value={newApi.url}
+                    onChange={(e) => setNewApi({...newApi, url: e.target.value})}
+                  />
+                </div>
+                <Button 
+                  onClick={handleApiRestAdd}
+                  className="w-full h-10 bg-slate-900 text-white pill-rounded text-[10px] font-black uppercase tracking-widest gap-2"
+                  disabled={!newApi.url || !newApi.name}
+                >
+                  <Plus className="h-3 w-3" /> Registrar Endpoint
+                </Button>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <h4 className="text-[9px] font-black uppercase text-muted-foreground tracking-widest px-2">Endpoints Registrados ({endpoints.length})</h4>
+              {endpoints.length === 0 ? (
+                <div className="text-center py-8 border border-dashed rounded-3xl opacity-40">
+                  <Link2 className="h-6 w-6 mx-auto mb-2" />
+                  <p className="text-[10px] font-bold uppercase tracking-widest">No hay conexiones activas</p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {endpoints.map((ep, i) => (
+                    <div key={i} className="flex items-center justify-between p-3 bg-white border rounded-2xl shadow-sm animate-in fade-in slide-in-from-top-1">
+                      <div className="flex flex-col gap-0.5">
+                        <span className="text-[11px] font-black uppercase tracking-tight text-primary">{ep.name}</span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-[8px] font-black bg-secondary/10 text-secondary px-1.5 py-0.5 rounded uppercase">{ep.method}</span>
+                          <span className="text-[9px] text-muted-foreground truncate max-w-[200px]">{ep.url}</span>
+                        </div>
+                      </div>
+                      <Button variant="ghost" size="icon" onClick={() => handleApiRestRemove(i)} className="h-8 w-8 text-destructive hover:bg-destructive/10">
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <DialogFooter className="sm:justify-center pt-4 border-t">
+            <Button 
+              type="button" 
+              className="w-full h-12 pill-rounded bg-secondary hover:bg-secondary/90 text-white font-black text-[11px] uppercase tracking-[0.2em] shadow-lg shadow-secondary/20"
+              onClick={handleApiRestSave}
+            >
+              Confirmar y Activar API REST
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Rest of the modals (Calendar, Catalog, Documents, Drive) stay the same... */}
       {/* Calendar Configuration Modal */}
       <Dialog open={isCalendarModalOpen} onOpenChange={setIsCalendarModalOpen}>
         <DialogContent className="sm:max-w-[425px] rounded-[2rem] border-none shadow-2xl">
