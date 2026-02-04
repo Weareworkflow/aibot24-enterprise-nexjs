@@ -1,10 +1,23 @@
-
 "use client";
 
 import { AIAgent } from "@/lib/types";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Power, Trash2, Zap, Database, Mic2, MessageSquareText, PhoneIncoming, PhoneForwarded, PhoneOff, MessageCircle, ArrowRightLeft, UserX, Building2 } from "lucide-react";
+import { 
+  Power, 
+  Trash2, 
+  Database, 
+  Mic2, 
+  MessageSquareText, 
+  PhoneIncoming, 
+  PhoneForwarded, 
+  PhoneOff, 
+  MessageCircle, 
+  ArrowRightLeft, 
+  UserX, 
+  Building2,
+  Clock
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { useFirestore } from "@/firebase";
@@ -86,10 +99,21 @@ export function AgentCard({ agent }: AgentCardProps) {
     <Card 
       onClick={handleCardClick}
       className={cn(
-        "card-rounded relative hover:border-secondary/40 transition-all duration-300 border-none pill-shadow overflow-hidden p-8 flex flex-col gap-6 group cursor-pointer",
-        isActive ? "bg-white" : "bg-slate-200 grayscale-[0.5]"
+        "card-rounded relative hover:scale-[1.02] transition-all duration-500 border border-white/40 pill-shadow overflow-hidden p-8 flex flex-col gap-6 group cursor-pointer",
+        isActive ? "bg-white alive-bg" : "bg-slate-100/80 grayscale-[0.8]"
       )}
     >
+      {/* Decorative pulse indicator */}
+      {isActive && (
+        <div className="absolute top-6 right-6 flex items-center gap-1.5 px-2 py-1 rounded-full bg-secondary/5 border border-secondary/10">
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-secondary opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-secondary"></span>
+          </span>
+          <span className="text-[7px] font-black uppercase tracking-widest text-secondary">En Línea</span>
+        </div>
+      )}
+
       <div className="flex justify-between items-start w-full">
         <div className="space-y-4">
           <div className={cn(
@@ -97,10 +121,10 @@ export function AgentCard({ agent }: AgentCardProps) {
             isActive ? "text-muted-foreground" : "text-slate-500"
           )}>
             <div className={cn(
-              "p-1.5 rounded flex items-center justify-center", 
+              "p-1.5 rounded-lg flex items-center justify-center premium-relief", 
               isActive 
-                ? (isVoice ? "bg-primary/10 text-primary" : "bg-secondary/10 text-secondary")
-                : "bg-slate-300 text-slate-600"
+                ? (isVoice ? "bg-primary text-white" : "bg-secondary text-white")
+                : "bg-slate-300 text-slate-600 shadow-none"
             )}>
               {isVoice ? <Mic2 className="h-3 w-3" /> : <MessageSquareText className="h-3 w-3" />}
             </div>
@@ -108,7 +132,7 @@ export function AgentCard({ agent }: AgentCardProps) {
           </div>
           <div className="space-y-1">
             <h3 className={cn(
-              "text-xl font-headline font-black leading-tight transition-colors",
+              "text-2xl font-headline font-black leading-tight transition-colors",
               isActive ? "text-primary group-hover:text-secondary" : "text-slate-700"
             )}>
               {agent.name}
@@ -128,10 +152,10 @@ export function AgentCard({ agent }: AgentCardProps) {
             variant="outline" 
             size="icon" 
             className={cn(
-              "h-9 w-9 pill-rounded border-muted transition-all",
+              "h-10 w-10 pill-rounded border-slate-200 transition-all premium-relief",
               isActive 
-                ? "bg-muted/20 hover:bg-primary hover:text-white" 
-                : "bg-slate-400 text-slate-800 hover:bg-slate-500"
+                ? "bg-white hover:bg-primary hover:text-white" 
+                : "bg-slate-200 text-slate-500 hover:bg-slate-300 shadow-none"
             )}
             onClick={handleToggleActive}
           >
@@ -144,30 +168,30 @@ export function AgentCard({ agent }: AgentCardProps) {
                 variant="outline" 
                 size="icon" 
                 className={cn(
-                  "h-9 w-9 pill-rounded border-muted transition-all",
+                  "h-10 w-10 pill-rounded border-slate-200 transition-all premium-relief",
                   isActive 
-                    ? "bg-muted/20 hover:bg-destructive hover:text-white" 
-                    : "bg-slate-300 text-slate-600 hover:bg-destructive hover:text-white"
+                    ? "bg-white hover:bg-destructive hover:text-white" 
+                    : "bg-slate-200 text-slate-500 hover:bg-destructive shadow-none"
                 )}
                 onClick={(e) => e.stopPropagation()}
               >
                 <Trash2 className="h-4 w-4" />
               </Button>
             </AlertDialogTrigger>
-            <AlertDialogContent className="rounded-2xl border-none">
+            <AlertDialogContent className="rounded-3xl border-none p-8">
               <AlertDialogHeader>
-                <AlertDialogTitle className="font-headline font-bold">¿Eliminar este agente?</AlertDialogTitle>
-                <AlertDialogDescription className="text-xs">
-                  Esta acción no se puede deshacer. Se eliminarán permanentemente las configuraciones de <strong>{agent.name}</strong> en la nube.
+                <AlertDialogTitle className="font-headline font-bold text-xl">¿Eliminar este agente?</AlertDialogTitle>
+                <AlertDialogDescription className="text-xs leading-relaxed">
+                  Esta acción no se puede deshacer. Se eliminarán permanentemente las configuraciones de <strong>{agent.name}</strong> en la infraestructura de la nube.
                 </AlertDialogDescription>
               </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel className="rounded-xl text-[10px] font-black uppercase" onClick={(e) => e.stopPropagation()}>
+              <AlertDialogFooter className="mt-6">
+                <AlertDialogCancel className="rounded-xl text-[10px] font-black uppercase h-12" onClick={(e) => e.stopPropagation()}>
                   Cancelar
                 </AlertDialogCancel>
                 <AlertDialogAction 
                   onClick={handleDelete}
-                  className="bg-destructive hover:bg-destructive/90 rounded-xl text-[10px] font-black uppercase"
+                  className="bg-destructive hover:bg-destructive/90 rounded-xl text-[10px] font-black uppercase h-12"
                 >
                   Confirmar Eliminación
                 </AlertDialogAction>
@@ -177,38 +201,38 @@ export function AgentCard({ agent }: AgentCardProps) {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-4">
         <div className={cn(
-          "p-3 pill-rounded border flex items-center gap-3",
-          isActive ? "bg-muted/30 border-white" : "bg-slate-300/50 border-slate-400/20"
+          "p-4 rounded-[1.8rem] border transition-all duration-500 flex items-center gap-3 premium-relief",
+          isActive ? "bg-slate-50 border-white/60" : "bg-slate-200/50 border-slate-300 shadow-none"
         )}>
-          <div className={cn("p-1.5 rounded-full", isActive ? "bg-white text-primary" : "bg-slate-400 text-slate-700")}>
-            {isVoice ? <Clock className="h-3 w-3" /> : <MessageCircle className="h-3 w-3" />}
+          <div className={cn("p-2 rounded-full premium-relief", isActive ? "bg-white text-primary" : "bg-slate-300 text-slate-500 shadow-none")}>
+            {isVoice ? <Clock className="h-4 w-4" /> : <MessageCircle className="h-4 w-4" />}
           </div>
           <div>
-            <p className={cn("text-[8px] font-black uppercase", isActive ? "text-muted-foreground" : "text-slate-600")}>
+            <p className={cn("text-[8px] font-black uppercase tracking-widest", isActive ? "text-muted-foreground" : "text-slate-600")}>
               {isVoice ? "Minutos" : "Mensajes"}
             </p>
-            <p className={cn("text-sm font-headline font-black", isActive ? "text-primary" : "text-slate-800")}>
+            <p className={cn("text-lg font-headline font-black", isActive ? "text-primary" : "text-slate-800")}>
               {agent.metrics.totalInteractionMetric || "0"}
             </p>
           </div>
         </div>
         <div className={cn(
-          "p-3 pill-rounded border flex items-center gap-3",
-          isActive ? "bg-muted/30 border-white" : "bg-slate-300/50 border-slate-400/20"
+          "p-4 rounded-[1.8rem] border transition-all duration-500 flex items-center gap-3 premium-relief",
+          isActive ? "bg-slate-50 border-white/60" : "bg-slate-200/50 border-slate-300 shadow-none"
         )}>
-          <div className={cn("p-1.5 rounded-full", isActive ? "bg-white text-secondary" : "bg-slate-400 text-slate-700")}>
-            <Database className="h-3 w-3" />
+          <div className={cn("p-2 rounded-full premium-relief", isActive ? "bg-white text-secondary" : "bg-slate-300 text-slate-500 shadow-none")}>
+            <Database className="h-4 w-4" />
           </div>
           <div>
-            <p className={cn("text-[8px] font-black uppercase", isActive ? "text-muted-foreground" : "text-slate-600")}>Tokens</p>
-            <p className={cn("text-sm font-headline font-black", isActive ? "text-secondary" : "text-slate-800")}>{agent.metrics.tokens || "0"}</p>
+            <p className={cn("text-[8px] font-black uppercase tracking-widest", isActive ? "text-muted-foreground" : "text-slate-600")}>Tokens</p>
+            <p className={cn("text-lg font-headline font-black", isActive ? "text-secondary" : "text-slate-800")}>{agent.metrics.tokens || "0"}</p>
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-3 gap-3">
         {[
           { 
             label: isVoice ? "LLAMADAS" : "CHATS", 
@@ -230,12 +254,12 @@ export function AgentCard({ agent }: AgentCardProps) {
           },
         ].map((m, i) => (
           <div key={i} className={cn(
-            "text-center py-2 border pill-rounded flex flex-col items-center justify-center",
-            isActive ? "bg-white border-border/50" : "bg-slate-100 border-slate-300"
+            "text-center py-3 border rounded-2xl flex flex-col items-center justify-center transition-all duration-500 premium-relief",
+            isActive ? "bg-white border-slate-100" : "bg-slate-100 border-slate-300 shadow-none"
           )}>
-            <m.icon className={cn("h-3 w-3 mb-0.5", m.color)} />
-            <p className={cn("text-[7px] font-black uppercase tracking-widest mb-0.5", isActive ? "text-muted-foreground" : "text-slate-500")}>{m.label}</p>
-            <p className={cn("text-xs font-headline font-black", m.color)}>{m.val}</p>
+            <m.icon className={cn("h-3.5 w-3.5 mb-1", m.color)} />
+            <p className={cn("text-[7px] font-black uppercase tracking-[0.15em] mb-1 opacity-70", isActive ? "text-muted-foreground" : "text-slate-500")}>{m.label}</p>
+            <p className={cn("text-sm font-headline font-black", m.color)}>{m.val}</p>
           </div>
         ))}
       </div>
