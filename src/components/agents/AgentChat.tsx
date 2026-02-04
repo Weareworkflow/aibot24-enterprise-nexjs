@@ -23,7 +23,6 @@ import {
   Calendar,
   LayoutGrid,
   FilePlus,
-  Search,
   Cloud,
   PhoneCall,
   Palette,
@@ -315,7 +314,6 @@ export function AgentChat({ agent }: AgentChatProps) {
                     { title: "Calendario Bitrix24", icon: Calendar },
                     { title: "Catálogo Bitrix24", icon: LayoutGrid },
                     { title: "Documentos Bitrix24", icon: FilePlus },
-                    { title: "Analizador Documento", icon: Search },
                     { title: "Drive Bitrix24", icon: Cloud },
                     { title: "Calls API", icon: PhoneCall },
                   ].map((int, i) => {
