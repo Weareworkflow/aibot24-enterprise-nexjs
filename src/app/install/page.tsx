@@ -23,26 +23,25 @@ function InstallContent() {
   const { setTenantId, setDomain } = useUIStore();
 
   useEffect(() => {
-    const memberId = searchParams.get('member_id');
-    const domain = searchParams.get('DOMAIN');
-    const authId = searchParams.get('AUTH_ID');
-    const refreshToken = searchParams.get('REFRESH_ID');
-    const expires = searchParams.get('AUTH_EXPIRES');
-
     const initializeBX24 = async () => {
       if (typeof window !== 'undefined' && (window as any).BX24) {
         const BX24 = (window as any).BX24;
 
         BX24.init(async () => {
           console.log("Protocolo Bitrix24 Activado");
+          
+          // Intentamos obtener auth del SDK si no viene en URL
+          const auth = BX24.getAuth();
+          const memberId = searchParams.get('member_id') || auth?.member_id;
+          const domain = searchParams.get('DOMAIN') || auth?.domain;
 
           if (memberId && db) {
             const installationRecord: BitrixInstallation = {
               memberId,
               domain: domain || "unknown",
-              accessToken: authId || "",
-              refreshToken: refreshToken || "",
-              expiresIn: parseInt(expires || "3600"),
+              accessToken: auth?.access_token || searchParams.get('AUTH_ID') || "",
+              refreshToken: auth?.refresh_token || searchParams.get('REFRESH_ID') || "",
+              expiresIn: parseInt(auth?.expires_in || searchParams.get('AUTH_EXPIRES') || "3600"),
               status: 'active',
               createdAt: new Date().toISOString()
             };
@@ -61,9 +60,10 @@ function InstallContent() {
               setTimeout(() => {
                 BX24.installFinish();
                 router.push('/');
-              }, 1000);
+              }, 1500);
 
             } catch (error: any) {
+              console.error("Firestore Error:", error);
               errorEmitter.emit('permission-error', new FirestorePermissionError({
                 path: installRef.path,
                 operation: 'create',
@@ -71,10 +71,12 @@ function InstallContent() {
               }));
               setStatus('error');
             }
-          } else if (memberId) {
-            // Si el DB no está listo pero tenemos memberId, lo guardamos y esperamos
-            setTenantId(memberId);
-            if (domain) setDomain(domain);
+          } else {
+            console.warn("Contexto no encontrado aún, reintentando...");
+            // Si no hay memberId, esperamos un poco más antes de dar error
+            if (status !== 'success') {
+              setTimeout(initializeBX24, 2000);
+            }
           }
         });
       }
@@ -85,10 +87,10 @@ function InstallContent() {
         initializeBX24();
         clearInterval(checkInterval);
       }
-    }, 100);
+    }, 500);
 
     return () => clearInterval(checkInterval);
-  }, [searchParams, db, setTenantId, setDomain, router]);
+  }, [searchParams, db, setTenantId, setDomain, router, status]);
 
   return (
     <div className="space-y-6">
@@ -96,8 +98,8 @@ function InstallContent() {
         <div className="flex flex-col items-center gap-4 py-6">
           <Loader2 className="h-8 w-8 animate-spin text-secondary" />
           <div className="text-center">
-            <p className="text-xs font-bold text-slate-600 uppercase tracking-widest">Configurando Aibot24...</p>
-            <p className="text-[9px] text-muted-foreground uppercase font-black tracking-[0.2em] mt-2">Sincronizando con Bitrix24</p>
+            <p className="text-xs font-bold text-slate-600 uppercase tracking-widest">Sincronizando con Bitrix24...</p>
+            <p className="text-[9px] text-muted-foreground uppercase font-black tracking-[0.2em] mt-2">Protocolo de Enlace en Curso</p>
           </div>
         </div>
       )}
@@ -107,13 +109,13 @@ function InstallContent() {
           <CheckCircle2 className="h-12 w-12 text-accent" />
           <div className="text-center space-y-4">
             <h3 className="font-bold text-lg text-slate-800">¡Enlace Exitoso!</h3>
-            <p className="text-[10px] font-black uppercase text-accent tracking-widest">Redirigiendo al Panel Operativo...</p>
+            <p className="text-[10px] font-black uppercase text-accent tracking-widest">Iniciando Panel Operativo...</p>
             <Button 
               onClick={() => router.push('/')}
               variant="outline" 
               className="pill-rounded gap-2 text-[10px] font-black uppercase"
             >
-              <LayoutDashboard className="h-3.5 w-3.5" /> Ir al Panel Manualmente
+              <LayoutDashboard className="h-3.5 w-3.5" /> Ir al Panel
             </Button>
           </div>
         </div>
@@ -123,7 +125,8 @@ function InstallContent() {
         <div className="text-center py-6 space-y-4">
           <Database className="h-10 w-10 text-destructive mx-auto mb-2 opacity-20" />
           <div className="text-destructive font-black uppercase tracking-widest text-xs">Error de Protocolo</div>
-          <p className="text-[10px] text-muted-foreground px-4">No se pudo capturar el contexto. Reintenta desde Bitrix24.</p>
+          <p className="text-[10px] text-muted-foreground px-4">No se pudo capturar el contexto del portal. Por favor, reintenta desde el panel de aplicaciones de Bitrix24.</p>
+          <Button onClick={() => window.location.reload()} variant="link" className="text-[10px] uppercase font-black">Reintentar</Button>
         </div>
       )}
     </div>
@@ -147,7 +150,7 @@ export default function InstallPage() {
           <div className="flex justify-center mb-4">
             <ShieldCheck className="h-12 w-12 text-secondary" />
           </div>
-          <CardTitle className="font-headline text-xl font-bold">Instalación Local</CardTitle>
+          <CardTitle className="font-headline text-xl font-bold">Instalación de Aplicación</CardTitle>
           <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-70 mt-2">Protocolo de Enlace Seguro</p>
         </CardHeader>
 
@@ -155,7 +158,7 @@ export default function InstallPage() {
           <Suspense fallback={
             <div className="flex flex-col items-center gap-4 py-6">
               <Loader2 className="h-8 w-8 animate-spin text-secondary" />
-              <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Iniciando SDK...</p>
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Cargando SDK...</p>
             </div>
           }>
             <InstallContent />

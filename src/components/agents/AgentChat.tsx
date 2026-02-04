@@ -214,7 +214,7 @@ export function AgentChat({ agent }: AgentChatProps) {
               </AccordionContent>
             </AccordionItem>
 
-            {/* 2. INSTRUCCIONES (Agrupa comportamento, tono y manual) */}
+            {/* 2. INSTRUCCIONES (Jerarquía: Objetivo, Tono, Manual) */}
             <AccordionItem value="instrucciones" className="border-b px-6 border-slate-100">
               <AccordionTrigger className="hover:no-underline py-6">
                 <div className="flex items-center gap-4 text-[14px] font-black uppercase tracking-widest text-slate-700">
@@ -245,14 +245,14 @@ export function AgentChat({ agent }: AgentChatProps) {
                       value={agent.knowledge} 
                       onChange={(e) => handleManualUpdate('knowledge', e.target.value, 'Instrucciones')} 
                       className="min-h-[300px] font-mono text-sm bg-slate-50 leading-relaxed" 
-                      placeholder="Define aquí las reglas de negocio, respuestas permitidas y flujos..."
+                      placeholder="Define aquí las reglas de negocio, respuestas permitidas y flujos de comportamiento..."
                     />
                   </div>
                 </div>
               </AccordionContent>
             </AccordionItem>
 
-            {/* 3. CONOCIMIENTO (Debajo de Instrucciones, enfocado en archivos) */}
+            {/* 3. CONOCIMIENTO (Debajo de Instrucciones, solo archivos) */}
             <AccordionItem value="conocimiento" className="border-b px-6 border-slate-100">
               <AccordionTrigger className="hover:no-underline py-6">
                 <div className="flex items-center gap-4 text-[14px] font-black uppercase tracking-widest text-slate-700">
@@ -261,7 +261,7 @@ export function AgentChat({ agent }: AgentChatProps) {
               </AccordionTrigger>
               <AccordionContent className="pb-8 pt-2 space-y-8">
                 <div className="space-y-4">
-                  <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Base Documental (Archivos)</Label>
+                  <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Base Documental (Carga de Archivos)</Label>
                   <div 
                     onClick={() => fileInputRef.current?.click()}
                     className="border-2 border-dashed border-slate-200 rounded-[2rem] p-8 flex flex-col items-center justify-center gap-3 bg-slate-50 hover:bg-slate-100 hover:border-secondary/40 transition-all cursor-pointer group"
@@ -279,7 +279,7 @@ export function AgentChat({ agent }: AgentChatProps) {
                     </div>
                     <div className="text-center">
                       <p className="text-xs font-bold text-slate-600">Subir PDF, DOC, Excel o Texto</p>
-                      <p className="text-[9px] text-muted-foreground uppercase font-black tracking-widest mt-1">Sincronización documental activa</p>
+                      <p className="text-[9px] text-muted-foreground uppercase font-black tracking-widest mt-1">Gestión de conocimiento por archivos</p>
                     </div>
                   </div>
 
