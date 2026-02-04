@@ -17,7 +17,9 @@ export async function getBitrixClient(memberId: string) {
   const now = Math.floor(Date.now() / 1000);
   
   // Calculamos si el token ha expirado (usando un margen de 5 minutos)
-  const expiresAt = data.expiresAt || 0;
+  // Nota: expiresIn es la duración en segundos, necesitamos compararlo con el tiempo de creación o tener un expiresAt.
+  // Asumiremos que tenemos expiresAt en Firestore si ya lo hemos calculado antes.
+  const expiresAt = data.expiresAt || (Math.floor(new Date(data.createdAt).getTime() / 1000) + (data.expiresIn || 3600));
   const isExpired = now >= (expiresAt - 300);
 
   if (isExpired && data.refreshToken) {

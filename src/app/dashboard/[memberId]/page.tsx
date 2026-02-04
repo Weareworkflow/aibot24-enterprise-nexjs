@@ -16,18 +16,20 @@ interface DevDashboardProps {
  */
 export default async function DevDashboardPage({ params }: DevDashboardProps) {
   // Verificación de seguridad para desarrollo
-  if (process.env.NODE_ENV !== 'development' && !process.env.NEXT_PUBLIC_DEV_MODE) {
+  const isDevMode = process.env.NODE_ENV === 'development' || process.env.NEXT_PUBLIC_DEV_MODE;
+  
+  if (!isDevMode) {
     return notFound();
   }
 
   const { memberId } = await params;
 
   try {
-    // Llamada de prueba a Bitrix para verificar sesión
+    // Llamada de prueba a Bitrix para verificar sesión (app.info es un método estándar)
     const appInfo = await callBitrixMethod(memberId, 'app.info');
 
     if (appInfo.error) {
-      throw new Error(appInfo.error_description || "Error de API");
+      throw new Error(appInfo.error_description || "Error de API al conectar con Bitrix");
     }
 
     return (
@@ -102,14 +104,15 @@ export default async function DevDashboardPage({ params }: DevDashboardProps) {
           <div className="h-16 w-16 bg-destructive/10 rounded-full flex items-center justify-center mx-auto">
             <ShieldCheck className="h-8 w-8 text-destructive" />
           </div>
-          <h2 className="font-headline font-bold text-lg">Error de Autenticación</h2>
+          <h2 className="font-headline font-bold text-lg">Error de Autenticación Local</h2>
           <p className="text-xs text-muted-foreground leading-relaxed">
-            No se pudo establecer una sesión válida para el Member ID: <br />
+            No se pudo establecer una sesión persistente para el Member ID: <br />
             <span className="font-mono font-bold text-primary">{memberId}</span>
           </p>
           <div className="bg-destructive/5 p-4 rounded-xl border border-destructive/10 text-[10px] font-mono text-destructive">
             {error.message}
           </div>
+          <p className="text-[9px] uppercase font-black text-muted-foreground">Asegúrate de que el memberId exista en tu colección de installations.</p>
         </Card>
       </div>
     );
