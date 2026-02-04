@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useRef, useEffect } from "react";
@@ -384,7 +383,7 @@ export function AgentChat({ agent }: AgentChatProps) {
 
                 <div className="space-y-2 pt-2">
                   <div className="flex items-center gap-2 text-[10px] font-black text-muted-foreground uppercase tracking-widest">
-                    <LayoutGrid className="h-4 w-4" /> Instrucciones al agente
+                    <LayoutGrid className="h-4 w-4" /> Instrucciones
                   </div>
                   <Textarea 
                     value={agent.knowledge} 

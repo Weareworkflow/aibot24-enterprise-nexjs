@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect, useRef } from "react";
@@ -126,11 +125,12 @@ export default function NewAgentPage() {
       createdAt: new Date().toISOString(),
       integrations: {
         "WhatsApp Business": false,
+        "CRM Bitrix24": false,
         "Calendario Bitrix24": false,
         "Catálogo Bitrix24": false,
         "Documentos Bitrix24": false,
         "Drive Bitrix24": false,
-        "Calls API": false
+        "API REST": false
       },
       metrics: {
         usageCount: 0,
@@ -288,7 +288,7 @@ export default function NewAgentPage() {
                                 <p className="text-[11px] p-2 bg-white rounded-lg border italic">{config.tone}</p>
                               </div>
                               <div className="space-y-1">
-                                <p className="text-[8px] font-black text-muted-foreground uppercase">Instrucciones al agente</p>
+                                <p className="text-[8px] font-black text-muted-foreground uppercase">Instrucciones</p>
                                 <div className="max-h-32 overflow-y-auto text-[10px] p-3 bg-white rounded-xl border border-dashed font-mono leading-relaxed">
                                   {config.knowledge}
                                 </div>
