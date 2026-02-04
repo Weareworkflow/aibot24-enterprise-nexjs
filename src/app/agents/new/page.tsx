@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, useRef } from "react";
@@ -6,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { Sparkles, Loader2, Mic2, MessageSquareText, Send, Bot, Rocket } from "lucide-react";
+import { Sparkles, Loader2, Phone, MessageSquareText, Send, Bot, Rocket } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -189,7 +190,7 @@ export default function NewAgentPage() {
                   className="flex flex-col items-center gap-6 p-10 rounded-[3rem] border-2 border-dashed border-muted hover:border-secondary hover:bg-secondary/5 transition-all group"
                 >
                   <div className="h-20 w-20 rounded-full bg-secondary/10 flex items-center justify-center group-hover:bg-secondary group-hover:text-white transition-all">
-                    <Mic2 className="h-10 w-10 text-secondary group-hover:text-white" />
+                    <Phone className="h-10 w-10 text-secondary group-hover:text-white" />
                   </div>
                   <div className="text-center">
                     <h3 className="font-black text-sm uppercase tracking-wider">Modo Voz</h3>

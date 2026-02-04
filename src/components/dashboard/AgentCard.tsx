@@ -8,7 +8,7 @@ import {
   Power, 
   Trash2, 
   Database, 
-  Mic2, 
+  Phone, 
   MessageSquareText, 
   PhoneIncoming, 
   PhoneForwarded, 
@@ -119,7 +119,7 @@ export function AgentCard({ agent }: AgentCardProps) {
                   ? (isVoice ? "bg-primary text-white" : "bg-secondary text-white")
                   : "bg-slate-300 text-slate-600 shadow-none"
               )}>
-                {isVoice ? <Mic2 className="h-3 w-3" /> : <MessageSquareText className="h-3 w-3" />}
+                {isVoice ? <Phone className="h-3 w-3" /> : <MessageSquareText className="h-3 w-3" />}
               </div>
               <span className="truncate max-w-[80px]">{isVoice ? "VOICE" : "TEXT"}</span>
             </div>
@@ -143,7 +143,6 @@ export function AgentCard({ agent }: AgentCardProps) {
               {agent.name}
             </h3>
             
-            {/* Rol del Agente - Destacado en Verde Bitrix (Texto reducido) */}
             <div className={cn(
               "inline-flex items-center gap-1.5 text-[9px] font-black uppercase tracking-[0.15em] py-1.5 px-3 rounded-full border shadow-sm transition-all",
               isActive 
@@ -218,7 +217,6 @@ export function AgentCard({ agent }: AgentCardProps) {
         </div>
       </div>
 
-      {/* Metrics Section */}
       <div className="grid grid-cols-2 gap-4 relative z-10">
         <div className={cn(
           "p-5 rounded-[2rem] border transition-all duration-500 flex items-center gap-4 premium-relief",
@@ -250,7 +248,6 @@ export function AgentCard({ agent }: AgentCardProps) {
         </div>
       </div>
 
-      {/* Footer Stats */}
       <div className="grid grid-cols-3 gap-3 relative z-10">
         {[
           { 
