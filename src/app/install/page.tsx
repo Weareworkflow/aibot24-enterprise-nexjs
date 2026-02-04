@@ -15,7 +15,7 @@ import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 
 /**
- * Componente interno que maneja la lógica de captura de parámetros y sincronización.
+ * Maneja la lógica de captura de parámetros y sincronización con Bitrix24.
  */
 function InstallContent() {
   const [status, setStatus] = useState<'loading' | 'ready' | 'success' | 'error'>('loading');
@@ -25,7 +25,7 @@ function InstallContent() {
   const { setTenantId, setDomain } = useUIStore();
 
   useEffect(() => {
-    // 1. Capturamos los parámetros que Bitrix24 envía en la URL durante la instalación
+    // 1. Capturamos los parámetros que Bitrix24 envía en la URL
     const memberId = searchParams.get('member_id');
     const domain = searchParams.get('DOMAIN');
     const authId = searchParams.get('AUTH_ID');
@@ -36,8 +36,9 @@ function InstallContent() {
       if (typeof window !== 'undefined' && (window as any).BX24) {
         const BX24 = (window as any).BX24;
 
+        // Inicializamos el protocolo oficial
         BX24.init(async () => {
-          console.log("Protocolo Bitrix24 Iniciado");
+          console.log("Protocolo Bitrix24 Activado");
 
           if (memberId && db) {
             const installationRecord: BitrixInstallation = {
@@ -53,7 +54,7 @@ function InstallContent() {
             const installRef = doc(db, "installations", memberId);
 
             try {
-              // 2. Registramos la instalación en Firestore para aislamiento de datos
+              // 2. Registramos la instalación para aislamiento de multi-tenant
               await setDoc(installRef, installationRecord);
               
               setTenantId(memberId);
@@ -61,12 +62,11 @@ function InstallContent() {
               
               setStatus('success');
 
-              // 3. Finalizamos el protocolo de instalación de Bitrix
+              // 3. Finalizamos el protocolo para cerrar la ventana en Bitrix
               setTimeout(() => {
                 BX24.installFinish();
-                // Redirigimos al home después de un breve delay
                 router.push('/');
-              }, 1500);
+              }, 1200);
 
             } catch (error: any) {
               errorEmitter.emit('permission-error', new FirestorePermissionError({
@@ -77,14 +77,13 @@ function InstallContent() {
               setStatus('error');
             }
           } else {
-            // Si no hay memberId o db, marcamos error de contexto
             setStatus('error');
           }
         });
       }
     };
 
-    // Verificamos si el script ya cargó
+    // Verificación cíclica para asegurar que el script está inyectado
     const checkInterval = setInterval(() => {
       if ((window as any).BX24) {
         initializeBX24();
@@ -102,7 +101,7 @@ function InstallContent() {
           <Loader2 className="h-8 w-8 animate-spin text-secondary" />
           <div className="text-center">
             <p className="text-xs font-bold text-slate-600 uppercase tracking-widest">Configurando Aibot24 en tu portal...</p>
-            <p className="text-[9px] text-muted-foreground uppercase font-black tracking-[0.2em] mt-2">Sincronizando Protocolo API</p>
+            <p className="text-[9px] text-muted-foreground uppercase font-black tracking-[0.2em] mt-2">Sincronizando Member ID</p>
           </div>
         </div>
       )}
@@ -121,7 +120,7 @@ function InstallContent() {
         <div className="text-center py-6 space-y-4">
           <Database className="h-10 w-10 text-destructive mx-auto mb-2 opacity-20" />
           <div className="text-destructive font-black uppercase tracking-widest text-xs">Error de Protocolo</div>
-          <p className="text-[10px] text-muted-foreground px-4">No se pudo capturar el contexto del portal. Por favor, reintenta la instalación desde el Panel de Bitrix24.</p>
+          <p className="text-[10px] text-muted-foreground px-4">No se pudo capturar el contexto. Reintenta desde el Panel de Bitrix24.</p>
         </div>
       )}
     </div>
@@ -131,10 +130,9 @@ function InstallContent() {
 export default function InstallPage() {
   return (
     <div className="min-h-screen bg-[#F0F3F5] flex flex-col items-center justify-center p-4">
-      {/* Carga del SDK oficial de Bitrix24 */}
       <Script 
         src="https://api.bitrix24.com/api/v1/" 
-        strategy="beforeInteractive"
+        strategy="afterInteractive"
       />
 
       <div className="mb-8 scale-110">
@@ -147,14 +145,14 @@ export default function InstallPage() {
             <ShieldCheck className="h-12 w-12 text-secondary" />
           </div>
           <CardTitle className="font-headline text-xl font-bold">Instalación de Aplicación</CardTitle>
-          <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-70 mt-2">Bitrix24 Enterprise Bridge</p>
+          <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-70 mt-2">Protocolo de Enlace Seguro</p>
         </CardHeader>
 
         <CardContent className="p-8">
           <Suspense fallback={
             <div className="flex flex-col items-center gap-4 py-6">
               <Loader2 className="h-8 w-8 animate-spin text-secondary" />
-              <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Cargando Parámetros...</p>
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Iniciando SDK...</p>
             </div>
           }>
             <InstallContent />
