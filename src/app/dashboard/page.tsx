@@ -7,7 +7,7 @@ import { AgentCard } from "@/components/dashboard/AgentCard";
 import { useCollection, useFirestore } from "@/firebase";
 import { collection, query, where, orderBy } from "firebase/firestore";
 import { AIAgent } from "@/lib/types";
-import { Loader2, Sparkles, LayoutDashboard, SearchX, Database } from "lucide-react";
+import { Loader2, Sparkles, LayoutDashboard, SearchX, Database, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useUIStore } from "@/lib/store";
@@ -103,18 +103,20 @@ export default function DashboardPage() {
             )}
 
             {(!agents || agents.length === 0) && (
-              <div className="col-span-full py-32 text-center space-y-6 flex flex-col items-center border-2 border-dashed border-slate-200 rounded-[3rem] bg-white/50">
-                <div className="p-4 bg-secondary/5 rounded-full">
-                  <Sparkles className="h-8 w-8 text-secondary/40" />
+              <div className="col-span-full py-24 text-center space-y-8 flex flex-col items-center border-2 border-dashed border-slate-200 rounded-[3rem] bg-white shadow-sm max-w-4xl mx-auto">
+                <div className="h-20 w-20 rounded-full bg-secondary/5 flex items-center justify-center">
+                  <Sparkles className="h-10 w-10 text-secondary/30" />
                 </div>
                 <div className="space-y-2">
-                  <p className="text-muted-foreground font-headline font-bold uppercase tracking-widest text-[10px]">No hay agentes desplegados en este portal.</p>
-                  <Link href="/agents/new">
-                    <Button variant="link" className="text-secondary text-xs font-bold p-0 h-auto">
-                      Iniciar Protocolo de Diseño →
-                    </Button>
-                  </Link>
+                  <h2 className="text-xl font-headline font-bold">Sin Flota Activa</h2>
+                  <p className="text-muted-foreground font-headline font-bold uppercase tracking-widest text-[10px]">Empieza configurando una unidad de IA para tu portal.</p>
                 </div>
+                <Link href="/agents/new">
+                  <Button className="pill-rounded bg-secondary hover:bg-secondary/90 text-white font-black text-[10px] uppercase tracking-widest px-8 h-12 gap-2">
+                    <Plus className="h-4 w-4" />
+                    Nuevo Agente
+                  </Button>
+                </Link>
               </div>
             )}
           </div>

@@ -7,7 +7,7 @@ import { useCollection, useFirestore } from "@/firebase";
 import { collection, query, where, orderBy } from "firebase/firestore";
 import { AIAgent } from "@/lib/types";
 import { useMemo, useEffect } from "react";
-import { Loader2, Sparkles, SearchX, Database, Info } from "lucide-react";
+import { Loader2, Sparkles, SearchX, Database, Info, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useUIStore } from "@/lib/store";
@@ -16,7 +16,6 @@ export default function HomePage() {
   const db = useFirestore();
   const { searchQuery, tenantId } = useUIStore();
   
-  // Si no hay tenantId en el store, intentamos obtenerlo de la URL por si acaso (Bitrix contexts)
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const memberId = params.get('member_id');
@@ -118,18 +117,25 @@ export default function HomePage() {
             )}
 
             {tenantId && (!agents || agents.length === 0) && !collectionLoading && (
-              <div className="col-span-full py-32 text-center space-y-6 flex flex-col items-center border-2 border-dashed border-slate-200 rounded-[3rem] bg-white/50">
-                <div className="p-4 bg-secondary/5 rounded-full">
-                  <Sparkles className="h-8 w-8 text-secondary/40" />
+              <div className="col-span-full py-24 text-center space-y-8 flex flex-col items-center border-2 border-dashed border-slate-200 rounded-[3rem] bg-white shadow-sm max-w-4xl mx-auto">
+                <div className="relative">
+                  <div className="absolute inset-0 bg-secondary/10 rounded-full blur-2xl animate-pulse" />
+                  <div className="relative h-20 w-20 rounded-full bg-secondary/10 flex items-center justify-center">
+                    <Sparkles className="h-10 w-10 text-secondary" />
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <p className="text-muted-foreground font-headline font-bold uppercase tracking-widest text-[10px]">No tienes agentes activos en este portal.</p>
-                  <Link href="/agents/new">
-                    <Button variant="link" className="text-secondary text-xs font-bold p-0 h-auto underline underline-offset-4">
-                      Iniciar Protocolo de Creación →
-                    </Button>
-                  </Link>
+                <div className="space-y-2 max-w-md">
+                  <h2 className="text-xl font-headline font-bold">Sin Unidades Desplegadas</h2>
+                  <p className="text-[11px] text-muted-foreground uppercase font-black tracking-widest leading-relaxed">
+                    Tu portal Bitrix24 aún no cuenta con agentes de IA configurados. Inicia el protocolo para automatizar tu atención.
+                  </p>
                 </div>
+                <Link href="/agents/new">
+                  <Button className="h-12 px-8 pill-rounded bg-secondary hover:bg-secondary/90 text-white font-black text-[10px] uppercase tracking-widest gap-2 shadow-lg shadow-secondary/20">
+                    <Plus className="h-4 w-4" />
+                    Diseñar Mi Primer Agente
+                  </Button>
+                </Link>
               </div>
             )}
           </div>
