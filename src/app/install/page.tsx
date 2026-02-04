@@ -15,9 +15,8 @@ import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 
 /**
- * Página de Instalación de Bitrix24.
- * Captura el member_id para usarlo como tenantId global y guarda el registro en la DB.
- * URL de instalación: /install
+ * Página oficial de Instalación de Bitrix24.
+ * Funciona como el 'Install URL' registrado en el Panel de Desarrollador.
  */
 export default function InstallPage() {
   const [status, setStatus] = useState<'loading' | 'ready' | 'success' | 'error'>('loading');
@@ -33,7 +32,7 @@ export default function InstallPage() {
         const auth = BX24.getAuth();
         const queryParams = new URLSearchParams(window.location.search);
         
-        // El member_id es el identificador único de la instalación en el portal
+        // member_id es el tenant único global de este portal
         const memberId = auth?.member_id || queryParams.get('member_id');
         const domain = auth?.domain || queryParams.get('DOMAIN');
 
@@ -48,27 +47,23 @@ export default function InstallPage() {
             createdAt: new Date().toISOString()
           };
 
-          // Guardar en Firestore para registro de portal
           const installRef = doc(db, "installations", memberId);
           
           setDoc(installRef, installationRecord)
             .then(() => {
-              // Guardamos en el store global para persistencia en la sesión
               setTenantId(memberId);
               if (domain) setDomain(domain);
               setInstallData(installationRecord);
               
-              // Finalizamos el protocolo oficial de Bitrix24
+              // Cierre de protocolo Bitrix24
               BX24.installFinish();
               setStatus('success');
               
-              // Redirigimos al home después de un momento
               setTimeout(() => {
                 window.location.href = '/';
-              }, 3000);
+              }, 2000);
             })
             .catch(async (error) => {
-              console.error("Error guardando instalacion:", error);
               errorEmitter.emit('permission-error', new FirestorePermissionError({
                 path: installRef.path,
                 operation: 'create',
@@ -77,11 +72,9 @@ export default function InstallPage() {
               setStatus('error');
             });
         } else {
-          console.error("No se pudo obtener el member_id del contexto BX24");
           setStatus('error');
         }
       } catch (err) {
-        console.error("Error durante el proceso de instalacion:", err);
         setStatus('error');
       }
     }
@@ -115,7 +108,7 @@ export default function InstallPage() {
             <ShieldCheck className="h-12 w-12 text-secondary" />
           </div>
           <CardTitle className="font-headline text-xl font-bold">Enlace de Portal</CardTitle>
-          <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-70 mt-2">Bitrix24 Protocol v3.0</p>
+          <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-70 mt-2">Bitrix24 API Installation</p>
         </CardHeader>
 
         <CardContent className="p-8">
@@ -123,7 +116,7 @@ export default function InstallPage() {
             {status === 'loading' && (
               <div className="flex flex-col items-center gap-4 py-6">
                 <Loader2 className="h-8 w-8 animate-spin text-secondary" />
-                <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Sincronizando SDK...</p>
+                <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Sincronizando Protocolo...</p>
               </div>
             )}
 
@@ -131,41 +124,31 @@ export default function InstallPage() {
               <div className="space-y-6 text-center">
                 <div className="p-4 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
                   <p className="text-xs leading-relaxed text-slate-600">
-                    Se ha detectado una sesión de Bitrix24. Haz clic para registrar este portal y activar el aislamiento de datos corporativos.
+                    Se ha detectado una sesión de Bitrix24. Haz clic para registrar este portal y activar el aislamiento de datos.
                   </p>
                 </div>
                 <Button 
                   onClick={handleInstall} 
-                  className="w-full h-14 pill-rounded bg-secondary hover:bg-secondary/90 text-white font-black uppercase text-xs tracking-widest gap-2 shadow-lg shadow-secondary/20"
+                  className="w-full h-14 pill-rounded bg-secondary hover:bg-secondary/90 text-white font-black uppercase text-xs tracking-widest gap-2"
                 >
-                  Confirmar y Activar
+                  Confirmar Instalación API
                 </Button>
               </div>
             )}
 
             {status === 'success' && (
               <div className="flex flex-col items-center gap-6 py-4 animate-in fade-in zoom-in duration-500">
-                <div className="h-16 w-16 bg-accent/10 rounded-full flex items-center justify-center">
-                  <CheckCircle2 className="h-10 w-10 text-accent" />
-                </div>
+                <CheckCircle2 className="h-12 w-12 text-accent" />
                 <div className="text-center space-y-2">
                   <h3 className="font-bold text-lg text-slate-800">¡Portal Vinculado!</h3>
-                  <p className="text-[10px] font-black uppercase text-accent tracking-widest">Aislamiento de Datos Configurado</p>
+                  <p className="text-[10px] font-black uppercase text-accent tracking-widest">Tenant ID Configurado</p>
                 </div>
-                <div className="w-full p-4 bg-slate-50 rounded-xl border flex flex-col gap-2">
-                  <div className="flex items-center gap-3">
-                    <Database className="h-3 w-3 text-slate-400" />
-                    <span className="text-[9px] font-mono text-slate-500 truncate">Portal ID: {installData?.memberId}</span>
-                  </div>
-                </div>
-                <p className="text-[9px] text-muted-foreground italic">Redirigiendo a tu consola...</p>
               </div>
             )}
 
             {status === 'error' && (
               <div className="text-center py-6 space-y-4">
                 <div className="text-destructive font-black uppercase tracking-widest text-xs">Error de Protocolo</div>
-                <p className="text-xs text-muted-foreground">No se pudo registrar la instalación. Asegúrate de estar ejecutando la app dentro de un portal de Bitrix24.</p>
                 <Button variant="outline" onClick={() => window.location.reload()} className="pill-rounded h-10 px-6">Reintentar</Button>
               </div>
             )}

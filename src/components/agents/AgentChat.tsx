@@ -176,6 +176,7 @@ export function AgentChat({ agent }: AgentChatProps) {
       <ScrollArea className="flex-1" ref={scrollRef}>
         <div className="flex flex-col min-h-full">
           <Accordion type="single" collapsible defaultValue="identidad" className="w-full">
+            {/* 1. IDENTIDAD */}
             <AccordionItem value="identidad" className="border-b px-6 border-slate-100">
               <AccordionTrigger className="hover:no-underline py-6">
                 <div className="flex items-center gap-4 text-[14px] font-black uppercase tracking-widest text-slate-700">
@@ -212,6 +213,7 @@ export function AgentChat({ agent }: AgentChatProps) {
               </AccordionContent>
             </AccordionItem>
 
+            {/* 2. INSTRUCCIONES (Estilo, Tono y Manual Técnico) */}
             <AccordionItem value="instrucciones" className="border-b px-6 border-slate-100">
               <AccordionTrigger className="hover:no-underline py-6">
                 <div className="flex items-center gap-4 text-[14px] font-black uppercase tracking-widest text-slate-700">
@@ -220,20 +222,22 @@ export function AgentChat({ agent }: AgentChatProps) {
               </AccordionTrigger>
               <AccordionContent className="pb-8 pt-2 space-y-6">
                 <div className="space-y-6">
-                  {[
-                    { key: 'objective', label: 'Objetivo Crítico' },
-                    { key: 'tone', label: 'Tono y Personalidad' }
-                  ].map(field => (
-                    <div key={field.key} className="space-y-1.5">
-                      <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">{field.label}</Label>
-                      <Textarea 
-                        value={(agent as any)[field.key]} 
-                        onChange={(e) => handleManualUpdate(field.key, e.target.value)} 
-                        className="min-h-[100px] text-sm bg-slate-50" 
-                      />
-                    </div>
-                  ))}
-                  
+                  <div className="space-y-1.5">
+                    <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Objetivo Crítico</Label>
+                    <Textarea 
+                      value={agent.objective} 
+                      onChange={(e) => handleManualUpdate('objective', e.target.value, 'Objetivo')} 
+                      className="min-h-[100px] text-sm bg-slate-50" 
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Tono y Personalidad</Label>
+                    <Textarea 
+                      value={agent.tone} 
+                      onChange={(e) => handleManualUpdate('tone', e.target.value, 'Tono')} 
+                      className="min-h-[100px] text-sm bg-slate-50" 
+                    />
+                  </div>
                   <div className="space-y-1.5">
                     <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Manual de Instrucciones Técnicas</Label>
                     <Textarea 
@@ -247,6 +251,7 @@ export function AgentChat({ agent }: AgentChatProps) {
               </AccordionContent>
             </AccordionItem>
 
+            {/* 3. CONOCIMIENTO (Base Documental Multi-archivo) */}
             <AccordionItem value="conocimiento" className="border-b px-6 border-slate-100">
               <AccordionTrigger className="hover:no-underline py-6">
                 <div className="flex items-center gap-4 text-[14px] font-black uppercase tracking-widest text-slate-700">
@@ -304,6 +309,7 @@ export function AgentChat({ agent }: AgentChatProps) {
               </AccordionContent>
             </AccordionItem>
 
+            {/* 4. INTEGRACIONES */}
             <AccordionItem value="integraciones" className="border-b px-6 border-slate-100">
               <AccordionTrigger className="hover:no-underline py-6">
                 <div className="flex items-center gap-4 text-[14px] font-black uppercase tracking-widest text-slate-700">
