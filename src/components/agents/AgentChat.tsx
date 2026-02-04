@@ -32,7 +32,8 @@ import {
   ChevronUp,
   KeyRound,
   SmartphoneNfc,
-  AlertCircle
+  AlertCircle,
+  CalendarDays
 } from "lucide-react";
 import {
   Accordion,
@@ -78,8 +79,9 @@ export function AgentChat({ agent }: AgentChatProps) {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [history, setHistory] = useState<{role: 'user' | 'assistant', content: string, explanation?: string}[]>([]);
   
-  // WhatsApp Integration State
+  // Modals States
   const [isWhatsAppModalOpen, setIsWhatsAppModalOpen] = useState(false);
+  const [isCalendarModalOpen, setIsCalendarModalOpen] = useState(false);
   const [waCredentials, setWaCredentials] = useState({ phoneId: "", token: "" });
   
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -172,6 +174,18 @@ export function AgentChat({ agent }: AgentChatProps) {
     toast({
       title: "Conexión Establecida",
       description: "WhatsApp API se ha integrado correctamente con Bitrix24.",
+    });
+  };
+
+  const handleCalendarIntegration = () => {
+    // Para el MVP, simplemente activamos la integración tras el modal
+    if (!db || !agent) return;
+    const newInts = { ...agent.integrations, "Calendario Bitrix24": true };
+    handleManualUpdate('integrations', newInts);
+    setIsCalendarModalOpen(false);
+    toast({
+      title: "Calendario Vinculado",
+      description: "Se ha establecido el enlace con el servicio de calendario.",
     });
   };
 
@@ -306,7 +320,6 @@ export function AgentChat({ agent }: AgentChatProps) {
                     { title: "Drive Bitrix24", icon: Cloud },
                     { title: "Calls API", icon: PhoneCall },
                   ].map((int, i) => {
-                    const isCalendar = int.title === "Calendario Bitrix24";
                     const isActive = agent.integrations?.[int.title] || false;
 
                     return (
@@ -321,6 +334,8 @@ export function AgentChat({ agent }: AgentChatProps) {
                             onCheckedChange={(checked) => {
                               if (int.title === "WhatsApp Business" && checked) {
                                 setIsWhatsAppModalOpen(true);
+                              } else if (int.title === "Calendario Bitrix24" && checked) {
+                                setIsCalendarModalOpen(true);
                               } else {
                                 const newInts = { ...agent.integrations, [int.title]: checked };
                                 handleManualUpdate('integrations', newInts);
@@ -328,16 +343,6 @@ export function AgentChat({ agent }: AgentChatProps) {
                             }}
                           />
                         </div>
-                        {/* Lista de Calendarios cuando Calendario está activo */}
-                        {isCalendar && isActive && (
-                          <div className="mx-4 p-4 rounded-2xl bg-slate-50 border border-dashed border-slate-200 animate-in fade-in slide-in-from-top-1">
-                            <div className="flex flex-col items-center justify-center py-2 text-center gap-2">
-                              <AlertCircle className="h-5 w-5 text-muted-foreground/50" />
-                              <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Lista de Calendarios</p>
-                              <p className="text-[11px] italic text-muted-foreground">No se encontraron calendarios vinculados en este portal.</p>
-                            </div>
-                          </div>
-                        )}
                       </div>
                     );
                   })}
@@ -465,6 +470,49 @@ export function AgentChat({ agent }: AgentChatProps) {
               disabled={!waCredentials.phoneId || !waCredentials.token}
             >
               Vincular con Bitrix24
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Calendar Configuration Modal */}
+      <Dialog open={isCalendarModalOpen} onOpenChange={setIsCalendarModalOpen}>
+        <DialogContent className="sm:max-w-[425px] rounded-[2rem] border-none shadow-2xl">
+          <DialogHeader>
+            <div className="h-16 w-16 bg-secondary/10 rounded-full flex items-center justify-center mb-4 mx-auto">
+              <CalendarDays className="h-8 w-8 text-secondary" />
+            </div>
+            <DialogTitle className="text-center font-headline font-bold text-xl">Calendario Bitrix24</DialogTitle>
+            <DialogDescription className="text-center text-xs text-muted-foreground uppercase font-black tracking-widest pt-2">
+              Selección de Agenda Operativa
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="py-8 flex flex-col items-center justify-center text-center gap-4 bg-slate-50 rounded-3xl border border-dashed border-slate-200 mx-2">
+            <AlertCircle className="h-10 w-10 text-muted-foreground/30" />
+            <div className="space-y-1">
+              <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Sin Agendas Disponibles</p>
+              <p className="text-[11px] italic text-muted-foreground px-6">
+                No se han detectado calendarios públicos vinculados a este portal de Bitrix24.
+              </p>
+            </div>
+          </div>
+
+          <DialogFooter className="sm:justify-center">
+            <Button 
+              type="button" 
+              variant="outline"
+              className="w-full h-12 pill-rounded border-slate-200 text-muted-foreground font-black text-[11px] uppercase tracking-[0.2em]"
+              onClick={() => setIsCalendarModalOpen(false)}
+            >
+              Cerrar Protocolo
+            </Button>
+            <Button 
+              type="button" 
+              className="w-full h-12 pill-rounded bg-secondary hover:bg-secondary/90 text-white font-black text-[11px] uppercase tracking-[0.2em] shadow-lg shadow-secondary/20"
+              onClick={handleCalendarIntegration}
+            >
+              Confirmar Sincronización
             </Button>
           </DialogFooter>
         </DialogContent>
