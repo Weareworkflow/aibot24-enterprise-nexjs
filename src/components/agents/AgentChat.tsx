@@ -43,7 +43,8 @@ import {
   Braces,
   Briefcase,
   Database,
-  Upload
+  Upload,
+  AlignLeft
 } from "lucide-react";
 import {
   Accordion,
@@ -358,6 +359,16 @@ export function AgentChat({ agent }: AgentChatProps) {
                     className="min-h-[120px] text-sm italic bg-slate-50 border-slate-200 resize-none focus-visible:ring-secondary/30"
                   />
                 </div>
+                <div className="space-y-2 pt-2 border-t border-slate-100 mt-4">
+                  <div className="flex items-center gap-2 text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-2">
+                    <AlignLeft className="h-4 w-4" /> Instrucciones
+                  </div>
+                  <Textarea 
+                    value={agent.knowledge} 
+                    onChange={(e) => handleManualUpdate('knowledge', e.target.value)}
+                    className="min-h-[250px] text-[12px] font-mono bg-slate-50 border-slate-200 resize-none focus-visible:ring-secondary/30"
+                  />
+                </div>
               </AccordionContent>
             </AccordionItem>
 
@@ -379,17 +390,6 @@ export function AgentChat({ agent }: AgentChatProps) {
                   <Button variant="outline" size="sm" className="h-8 pill-rounded bg-white border-slate-200 text-[9px] font-black uppercase tracking-widest gap-2">
                     <Upload className="h-3 w-3" /> Subir Archivo
                   </Button>
-                </div>
-
-                <div className="space-y-2 pt-2">
-                  <div className="flex items-center gap-2 text-[10px] font-black text-muted-foreground uppercase tracking-widest">
-                    <LayoutGrid className="h-4 w-4" /> Instrucciones
-                  </div>
-                  <Textarea 
-                    value={agent.knowledge} 
-                    onChange={(e) => handleManualUpdate('knowledge', e.target.value)}
-                    className="min-h-[250px] text-[12px] font-mono bg-slate-50 border-slate-200 resize-none focus-visible:ring-secondary/30"
-                  />
                 </div>
               </AccordionContent>
             </AccordionItem>

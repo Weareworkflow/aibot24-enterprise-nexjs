@@ -1,4 +1,3 @@
-
 "use client";
 
 import { cn } from "@/lib/utils";
@@ -54,7 +53,7 @@ export function Logo({ className, showText = true }: LogoProps) {
       </div>
       {showText && (
         <span className="font-headline text-xl font-bold text-primary tracking-tighter flex items-center">
-          AI<span className="text-secondary italic">Bot</span>24 <span className="text-secondary font-black uppercase text-[15px] tracking-[0.2em] ml-2 border-l-2 pl-2 border-slate-300 h-6 flex items-center">Enterprise</span>
+          AI<span className="text-secondary italic">Bot</span>24 <span className="text-secondary font-black uppercase text-[18px] tracking-[0.25em] ml-2 border-l-2 pl-3 border-slate-300 h-8 flex items-center">Enterprise</span>
         </span>
       )}
     </div>
