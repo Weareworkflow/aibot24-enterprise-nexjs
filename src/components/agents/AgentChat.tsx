@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { AIAgent } from "@/lib/types";
+import { AIAgent, APIEndpoint } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -39,7 +39,8 @@ import {
   FolderOpen,
   Plus,
   Trash2,
-  Link2
+  Link2,
+  Braces
 } from "lucide-react";
 import {
   Accordion,
@@ -101,8 +102,7 @@ export function AgentChat({ agent }: AgentChatProps) {
   const [isApiRestModalOpen, setIsApiRestModalOpen] = useState(false);
   
   const [waCredentials, setWaCredentials] = useState({ phoneId: "", token: "" });
-  const [newApi, setNewApi] = useState({ url: "", method: "POST", name: "" });
-  const [endpoints, setEndpoints] = useState<{name: string, url: string, method: string}[]>([]);
+  const [newApi, setNewApi] = useState<APIEndpoint>({ name: "", url: "", method: "POST", headers: "", body: "" });
   
   const scrollRef = useRef<HTMLDivElement>(null);
   const db = useFirestore();
@@ -115,7 +115,7 @@ export function AgentChat({ agent }: AgentChatProps) {
         scrollContainer.scrollTop = scrollContainer.scrollHeight;
       }
     }
-  }, [history, isRefining, isChatOpen]);
+  }, [history, isRefining, isChatOpen, agent.apiEndpoints]);
 
   const handleManualUpdate = (field: keyof AIAgent, value: any) => {
     if (!db || !agent) return;
@@ -199,12 +199,14 @@ export function AgentChat({ agent }: AgentChatProps) {
 
   const handleApiRestAdd = () => {
     if (!newApi.url || !newApi.name) return;
-    setEndpoints([...endpoints, newApi]);
-    setNewApi({ url: "", method: "POST", name: "" });
+    const updatedEndpoints = [...(agent.apiEndpoints || []), newApi];
+    handleManualUpdate('apiEndpoints', updatedEndpoints);
+    setNewApi({ name: "", url: "", method: "POST", headers: "", body: "" });
   };
 
   const handleApiRestRemove = (idx: number) => {
-    setEndpoints(endpoints.filter((_, i) => i !== idx));
+    const updatedEndpoints = (agent.apiEndpoints || []).filter((_, i) => i !== idx);
+    handleManualUpdate('apiEndpoints', updatedEndpoints);
   };
 
   const handleApiRestSave = () => {
@@ -213,8 +215,8 @@ export function AgentChat({ agent }: AgentChatProps) {
     handleManualUpdate('integrations', newInts);
     setIsApiRestModalOpen(false);
     toast({
-      title: "API REST Activada",
-      description: "Se han vinculado los servicios externos al agente.",
+      title: "Protocolo API Activado",
+      description: "Servicios externos vinculados correctamente.",
     });
   };
 
@@ -235,7 +237,7 @@ export function AgentChat({ agent }: AgentChatProps) {
         <div className="flex flex-col min-h-full">
           <Accordion type="single" collapsible className="w-full">
             <AccordionItem value="identidad" className="border-b px-6 border-slate-100">
-              <AccordionTrigger className="hover:no-underline py-6 text-slate-700 data-[state=open]:text-secondary transition-colors outline-none">
+              <AccordionTrigger className="hover:no-underline py-6 text-slate-700 data-[state=open]:text-secondary transition-colors outline-none [&[data-state=open]>svg]:rotate-180">
                 <div className="flex items-center gap-4 text-[14px] font-black uppercase tracking-widest">
                   <Settings2 className="h-5 w-5" /> Identidad
                 </div>
@@ -298,7 +300,7 @@ export function AgentChat({ agent }: AgentChatProps) {
             </AccordionItem>
 
             <AccordionItem value="instrucciones" className="border-b px-6 border-slate-100">
-              <AccordionTrigger className="hover:no-underline py-6 text-slate-700 data-[state=open]:text-secondary transition-colors outline-none">
+              <AccordionTrigger className="hover:no-underline py-6 text-slate-700 data-[state=open]:text-secondary transition-colors outline-none [&[data-state=open]>svg]:rotate-180">
                 <div className="flex items-center gap-4 text-[14px] font-black uppercase tracking-widest">
                   <Code2 className="h-5 w-5" /> Instrucciones
                 </div>
@@ -340,7 +342,7 @@ export function AgentChat({ agent }: AgentChatProps) {
             </AccordionItem>
 
             <AccordionItem value="integraciones" className="border-b px-6 border-slate-100">
-              <AccordionTrigger className="hover:no-underline py-6 text-slate-700 data-[state=open]:text-secondary transition-colors outline-none">
+              <AccordionTrigger className="hover:no-underline py-6 text-slate-700 data-[state=open]:text-secondary transition-colors outline-none [&[data-state=open]>svg]:rotate-180">
                 <div className="flex items-center gap-4 text-[14px] font-black uppercase tracking-widest">
                   <Share2 className="h-5 w-5" /> Integraciones
                 </div>
@@ -386,6 +388,26 @@ export function AgentChat({ agent }: AgentChatProps) {
                             }}
                           />
                         </div>
+                        
+                        {/* Listado de Endpoints debajo de API REST */}
+                        {int.title === "API REST" && isActive && agent.apiEndpoints && agent.apiEndpoints.length > 0 && (
+                          <div className="px-4 py-2 space-y-2">
+                            {agent.apiEndpoints.map((ep, idx) => (
+                              <div key={idx} className="flex items-center justify-between p-2.5 bg-slate-50 rounded-xl border border-slate-200 border-dashed animate-in fade-in slide-in-from-top-1">
+                                <div className="flex flex-col gap-0.5 overflow-hidden">
+                                  <span className="text-[10px] font-black uppercase tracking-tight text-primary truncate">{ep.name}</span>
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="text-[7px] font-black bg-secondary/10 text-secondary px-1.5 py-0.5 rounded uppercase">{ep.method}</span>
+                                    <span className="text-[8px] text-muted-foreground truncate max-w-[150px]">{ep.url}</span>
+                                  </div>
+                                </div>
+                                <Button variant="ghost" size="icon" onClick={() => handleApiRestRemove(idx)} className="h-7 w-7 text-destructive hover:bg-destructive/10">
+                                  <Trash2 className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     );
                   })}
@@ -517,32 +539,34 @@ export function AgentChat({ agent }: AgentChatProps) {
         </DialogContent>
       </Dialog>
 
-      {/* API REST Modal */}
+      {/* API REST Modal Avanzado */}
       <Dialog open={isApiRestModalOpen} onOpenChange={setIsApiRestModalOpen}>
-        <DialogContent className="sm:max-w-[500px] rounded-[2rem] border-none shadow-2xl max-h-[90vh] flex flex-col">
+        <DialogContent className="sm:max-w-[550px] rounded-[2rem] border-none shadow-2xl max-h-[90vh] flex flex-col">
           <DialogHeader>
             <div className="h-16 w-16 bg-secondary/10 rounded-full flex items-center justify-center mb-4 mx-auto">
               <Globe className="h-8 w-8 text-secondary" />
             </div>
-            <DialogTitle className="text-center font-headline font-bold text-xl">Configuración API REST</DialogTitle>
+            <DialogTitle className="text-center font-headline font-bold text-xl">Protocolos API REST</DialogTitle>
             <DialogDescription className="text-center text-xs text-muted-foreground uppercase font-black tracking-widest pt-2">
-              Protocolos de Comunicación Externa
+              Configuración de Servicios Externos
             </DialogDescription>
           </DialogHeader>
           
           <div className="flex-1 overflow-y-auto pr-2 space-y-6 py-4">
-            <div className="bg-slate-50 p-4 rounded-3xl border border-slate-200 space-y-4">
-              <h4 className="text-[9px] font-black uppercase text-secondary tracking-widest">Añadir Nuevo Endpoint</h4>
-              <div className="space-y-3">
+            <div className="bg-slate-50 p-5 rounded-3xl border border-slate-200 space-y-4">
+              <h4 className="text-[9px] font-black uppercase text-secondary tracking-widest flex items-center gap-2">
+                <Plus className="h-3 w-3" /> Definir Nueva Petición
+              </h4>
+              <div className="space-y-4">
                 <Input 
-                  placeholder="Nombre del servicio (Ej: CRM Webhook)" 
-                  className="h-10 text-[11px] bg-white pill-rounded"
+                  placeholder="Nombre del servicio (Ej: Webhook CRM)" 
+                  className="h-10 text-[11px] bg-white pill-rounded border-slate-200"
                   value={newApi.name}
                   onChange={(e) => setNewApi({...newApi, name: e.target.value})}
                 />
                 <div className="flex gap-2">
                   <Select value={newApi.method} onValueChange={(val) => setNewApi({...newApi, method: val})}>
-                    <SelectTrigger className="w-[100px] h-10 text-[11px] bg-white pill-rounded">
+                    <SelectTrigger className="w-[110px] h-10 text-[11px] bg-white pill-rounded border-slate-200">
                       <SelectValue placeholder="Method" />
                     </SelectTrigger>
                     <SelectContent>
@@ -553,42 +577,70 @@ export function AgentChat({ agent }: AgentChatProps) {
                     </SelectContent>
                   </Select>
                   <Input 
-                    placeholder="https://api.empresa.com/v1/..." 
-                    className="flex-1 h-10 text-[11px] bg-white pill-rounded"
+                    placeholder="https://api.servidor.com/v1/endpoint" 
+                    className="flex-1 h-10 text-[11px] bg-white pill-rounded border-slate-200"
                     value={newApi.url}
                     onChange={(e) => setNewApi({...newApi, url: e.target.value})}
                   />
                 </div>
+                
+                <div className="space-y-3">
+                  <div className="space-y-1.5">
+                    <Label className="text-[8px] font-black uppercase text-muted-foreground tracking-widest flex items-center gap-1.5">
+                      <KeyRound className="h-2.5 w-2.5" /> Headers (JSON)
+                    </Label>
+                    <Textarea 
+                      placeholder='{ "Authorization": "Bearer ...", "Content-Type": "application/json" }'
+                      className="min-h-[60px] text-[10px] font-mono bg-white rounded-xl border-slate-200 resize-none"
+                      value={newApi.headers}
+                      onChange={(e) => setNewApi({...newApi, headers: e.target.value})}
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-[8px] font-black uppercase text-muted-foreground tracking-widest flex items-center gap-1.5">
+                      <Braces className="h-2.5 w-2.5" /> Request Body (JSON)
+                    </Label>
+                    <Textarea 
+                      placeholder='{ "action": "create_lead", "data": { ... } }'
+                      className="min-h-[80px] text-[10px] font-mono bg-white rounded-xl border-slate-200 resize-none"
+                      value={newApi.body}
+                      onChange={(e) => setNewApi({...newApi, body: e.target.value})}
+                    />
+                  </div>
+                </div>
+
                 <Button 
                   onClick={handleApiRestAdd}
-                  className="w-full h-10 bg-slate-900 text-white pill-rounded text-[10px] font-black uppercase tracking-widest gap-2"
+                  className="w-full h-11 bg-slate-900 text-white pill-rounded text-[10px] font-black uppercase tracking-widest gap-2 hover:bg-slate-800 transition-colors"
                   disabled={!newApi.url || !newApi.name}
                 >
-                  <Plus className="h-3 w-3" /> Registrar Endpoint
+                  <Plus className="h-3 w-3" /> Registrar Servicio
                 </Button>
               </div>
             </div>
 
-            <div className="space-y-3">
-              <h4 className="text-[9px] font-black uppercase text-muted-foreground tracking-widest px-2">Endpoints Registrados ({endpoints.length})</h4>
-              {endpoints.length === 0 ? (
-                <div className="text-center py-8 border border-dashed rounded-3xl opacity-40">
-                  <Link2 className="h-6 w-6 mx-auto mb-2" />
-                  <p className="text-[10px] font-bold uppercase tracking-widest">No hay conexiones activas</p>
+            <div className="space-y-3 px-1">
+              <h4 className="text-[9px] font-black uppercase text-muted-foreground tracking-widest flex items-center gap-2">
+                Servicios Registrados ({agent.apiEndpoints?.length || 0})
+              </h4>
+              {!agent.apiEndpoints || agent.apiEndpoints.length === 0 ? (
+                <div className="text-center py-10 border-2 border-dashed rounded-3xl opacity-30 bg-slate-50/50">
+                  <Link2 className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
+                  <p className="text-[10px] font-bold uppercase tracking-widest">Esperando Conexiones</p>
                 </div>
               ) : (
-                <div className="space-y-2">
-                  {endpoints.map((ep, i) => (
-                    <div key={i} className="flex items-center justify-between p-3 bg-white border rounded-2xl shadow-sm animate-in fade-in slide-in-from-top-1">
-                      <div className="flex flex-col gap-0.5">
-                        <span className="text-[11px] font-black uppercase tracking-tight text-primary">{ep.name}</span>
+                <div className="space-y-2.5">
+                  {agent.apiEndpoints.map((ep, i) => (
+                    <div key={i} className="flex items-center justify-between p-4 bg-white border border-slate-100 rounded-2xl shadow-sm animate-in fade-in slide-in-from-top-1 group">
+                      <div className="flex flex-col gap-1 overflow-hidden">
+                        <span className="text-[11px] font-black uppercase tracking-tight text-primary truncate">{ep.name}</span>
                         <div className="flex items-center gap-2">
-                          <span className="text-[8px] font-black bg-secondary/10 text-secondary px-1.5 py-0.5 rounded uppercase">{ep.method}</span>
-                          <span className="text-[9px] text-muted-foreground truncate max-w-[200px]">{ep.url}</span>
+                          <span className="text-[8px] font-black bg-secondary/10 text-secondary px-2 py-0.5 rounded uppercase">{ep.method}</span>
+                          <span className="text-[9px] text-muted-foreground truncate max-w-[280px]">{ep.url}</span>
                         </div>
                       </div>
-                      <Button variant="ghost" size="icon" onClick={() => handleApiRestRemove(i)} className="h-8 w-8 text-destructive hover:bg-destructive/10">
-                        <Trash2 className="h-3 w-3" />
+                      <Button variant="ghost" size="icon" onClick={() => handleApiRestRemove(i)} className="h-9 w-9 text-destructive hover:bg-destructive/10 group-hover:scale-105 transition-transform">
+                        <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
                   ))}
@@ -597,20 +649,19 @@ export function AgentChat({ agent }: AgentChatProps) {
             </div>
           </div>
 
-          <DialogFooter className="sm:justify-center pt-4 border-t">
+          <DialogFooter className="sm:justify-center pt-4 border-t border-slate-100">
             <Button 
               type="button" 
               className="w-full h-12 pill-rounded bg-secondary hover:bg-secondary/90 text-white font-black text-[11px] uppercase tracking-[0.2em] shadow-lg shadow-secondary/20"
               onClick={handleApiRestSave}
             >
-              Confirmar y Activar API REST
+              Vincular Protocolos al Agente
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* Rest of the modals (Calendar, Catalog, Documents, Drive) stay the same... */}
-      {/* Calendar Configuration Modal */}
+      {/* Calendario Modal */}
       <Dialog open={isCalendarModalOpen} onOpenChange={setIsCalendarModalOpen}>
         <DialogContent className="sm:max-w-[425px] rounded-[2rem] border-none shadow-2xl">
           <DialogHeader>
@@ -643,7 +694,7 @@ export function AgentChat({ agent }: AgentChatProps) {
         </DialogContent>
       </Dialog>
 
-      {/* Catalog Configuration Modal */}
+      {/* Catalogo Modal */}
       <Dialog open={isCatalogModalOpen} onOpenChange={setIsCatalogModalOpen}>
         <DialogContent className="sm:max-w-[425px] rounded-[2rem] border-none shadow-2xl">
           <DialogHeader>
@@ -676,7 +727,7 @@ export function AgentChat({ agent }: AgentChatProps) {
         </DialogContent>
       </Dialog>
 
-      {/* Documents Configuration Modal */}
+      {/* Documentos Modal */}
       <Dialog open={isDocumentsModalOpen} onOpenChange={setIsDocumentsModalOpen}>
         <DialogContent className="sm:max-w-[425px] rounded-[2rem] border-none shadow-2xl">
           <DialogHeader>
@@ -709,7 +760,7 @@ export function AgentChat({ agent }: AgentChatProps) {
         </DialogContent>
       </Dialog>
 
-      {/* Drive Configuration Modal */}
+      {/* Drive Modal */}
       <Dialog open={isDriveModalOpen} onOpenChange={setIsDriveModalOpen}>
         <DialogContent className="sm:max-w-[425px] rounded-[2rem] border-none shadow-2xl">
           <DialogHeader>

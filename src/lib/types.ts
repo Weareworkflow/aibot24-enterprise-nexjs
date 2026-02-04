@@ -1,6 +1,14 @@
 
 export type AgentType = 'voice' | 'text';
 
+export interface APIEndpoint {
+  name: string;
+  url: string;
+  method: string;
+  headers?: string;
+  body?: string;
+}
+
 export interface AIAgent {
   id: string;
   name: string;
@@ -14,6 +22,7 @@ export interface AIAgent {
   createdAt: string;
   isActive?: boolean;
   integrations?: Record<string, boolean>;
+  apiEndpoints?: APIEndpoint[];
   metrics: {
     usageCount: number;
     performanceRating: number;
