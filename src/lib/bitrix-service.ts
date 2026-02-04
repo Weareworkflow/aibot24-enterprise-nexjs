@@ -84,3 +84,25 @@ export async function callBitrixMethod(memberId: string, method: string, params:
 
   return await response.json();
 }
+
+/**
+ * Registra un Bot de tipo 'O' (Open Lines) en Bitrix24.
+ */
+export async function registerBitrixBot(memberId: string, agentData: { name: string, role: string, color: string, agentId: string }) {
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`;
+  
+  const params = {
+    CODE: `bot_${agentData.agentId}`,
+    TYPE: 'O', // TIPO O PARA OPEN LINES
+    EVENT_MESSAGE_ADD: `${appUrl}/api/bitrix/webhook`,
+    EVENT_WELCOME_MESSAGE: `${appUrl}/api/bitrix/webhook`,
+    PROPERTIES: {
+      NAME: agentData.name,
+      WORK_POSITION: agentData.role,
+      COLOR: agentData.color || 'BLUE',
+    }
+  };
+
+  const response = await callBitrixMethod(memberId, 'imbot.register', params);
+  return response;
+}

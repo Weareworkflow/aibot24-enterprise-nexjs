@@ -29,7 +29,8 @@ import {
   ChevronDown,
   ChevronUp,
   Briefcase,
-  Globe
+  Globe,
+  MessageSquare
 } from "lucide-react";
 import {
   Accordion,
@@ -214,7 +215,7 @@ export function AgentChat({ agent }: AgentChatProps) {
               </AccordionContent>
             </AccordionItem>
 
-            {/* 2. INSTRUCCIONES: Jerarquía Exacta */}
+            {/* 2. INSTRUCCIONES */}
             <AccordionItem value="instrucciones" className="border-b px-6 border-slate-100">
               <AccordionTrigger className="hover:no-underline py-6">
                 <div className="flex items-center gap-4 text-[14px] font-black uppercase tracking-widest text-slate-700">
@@ -247,7 +248,7 @@ export function AgentChat({ agent }: AgentChatProps) {
                       value={agent.knowledge} 
                       onChange={(e) => handleManualUpdate('knowledge', e.target.value, 'Manual Técnico')} 
                       className="min-h-[300px] font-mono text-sm bg-slate-50 leading-relaxed" 
-                      placeholder="Instrucciones detalladas de comportamiento y reglas de negocio..."
+                      placeholder="Instrucciones detalladas de comportamiento..."
                     />
                   </div>
                 </div>
@@ -320,6 +321,7 @@ export function AgentChat({ agent }: AgentChatProps) {
               <AccordionContent className="pb-8 pt-2">
                 <div className="flex flex-col gap-3">
                   {[
+                    { title: "Open Lines (Chat Bitrix24)", icon: MessageSquare },
                     { title: "WhatsApp Business", icon: Smartphone },
                     { title: "CRM Bitrix24", icon: Briefcase },
                     { title: "Calendario Bitrix24", icon: Calendar },

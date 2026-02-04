@@ -5,21 +5,18 @@ import { useState } from "react";
 import { AIAgent, APIEndpoint } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { 
   SmartphoneNfc, 
   Briefcase, 
   Globe, 
-  CalendarDays, 
-  ShoppingBag, 
-  FileText, 
-  FolderOpen, 
+  MessageSquare,
+  UploadCloud,
   Plus, 
   Trash2,
-  AlertCircle
+  AlertCircle,
+  CheckCircle2,
+  Loader2
 } from "lucide-react";
 import {
   Dialog,
@@ -36,6 +33,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Checkbox } from "@/components/ui/checkbox";
+import { useToast } from "@/hooks/use-toast";
 
 const DEPARTMENTS = [
   "Departamento de Ventas",
@@ -59,6 +59,8 @@ export function IntegrationModals({ agent, activeModal, onClose, onSave, onApiUp
   const [waCredentials, setWaCredentials] = useState({ phoneId: "", token: "" });
   const [selectedDepts, setSelectedDepts] = useState<string[]>([]);
   const [newApi, setNewApi] = useState<APIEndpoint>({ name: "", url: "", method: "POST", headers: "", body: "" });
+  const [isRegisteringBot, setIsRegisteringBot] = useState(false);
+  const { toast } = useToast();
 
   const handleWhatsApp = () => {
     onSave('integrations', { ...agent.integrations, "WhatsApp Business": true }, "WhatsApp Business");
@@ -68,6 +70,30 @@ export function IntegrationModals({ agent, activeModal, onClose, onSave, onApiUp
   const handleCrm = () => {
     onSave('integrations', { ...agent.integrations, "CRM Bitrix24": true }, "CRM Bitrix24");
     onClose();
+  };
+
+  const handleOpenLines = async () => {
+    setIsRegisteringBot(true);
+    try {
+      // Simulación de llamada a registro de bot tipo O
+      // En un entorno real esto llamaría a una Server Action que use registerBitrixBot
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      onSave('integrations', { ...agent.integrations, "Open Lines (Chat Bitrix24)": true }, "Open Lines (Chat Bitrix24)");
+      toast({
+        title: "Bot Registrado",
+        description: `El bot tipo O "${agent.name}" ha sido vinculado a Open Lines.`,
+      });
+      onClose();
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error de Registro",
+        description: "No se pudo registrar el bot en Bitrix24.",
+      });
+    } finally {
+      setIsRegisteringBot(false);
+    }
   };
 
   const toggleDept = (dept: string) => {
@@ -92,6 +118,49 @@ export function IntegrationModals({ agent, activeModal, onClose, onSave, onApiUp
 
   return (
     <>
+      {/* Open Lines (Chat Bitrix24) - TIPO O */}
+      <Dialog open={activeModal === "Open Lines (Chat Bitrix24)"} onOpenChange={onClose}>
+        <DialogContent className="sm:max-w-[425px] rounded-[2rem] border-none shadow-2xl">
+          <DialogHeader>
+            <div className="h-16 w-16 bg-secondary/10 rounded-full flex items-center justify-center mb-4 mx-auto">
+              <MessageSquare className="h-8 w-8 text-secondary" />
+            </div>
+            <DialogTitle className="text-center font-headline font-bold text-xl">Open Lines Bot (Tipo O)</DialogTitle>
+            <DialogDescription className="text-center text-[10px] text-muted-foreground uppercase font-black tracking-widest pt-2">
+              Integración Nativa de Chat
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-6 space-y-4">
+            <div className="p-4 bg-secondary/5 rounded-2xl border border-secondary/10 flex items-start gap-3">
+              <CheckCircle2 className="h-5 w-5 text-secondary mt-0.5" />
+              <p className="text-[11px] leading-relaxed text-slate-600">
+                Al activar esta opción, <strong>{agent.name}</strong> se registrará como un Bot de Líneas Abiertas. Podrá responder mensajes de WhatsApp, Facebook y Live Chat directamente desde el centro de contacto de Bitrix24.
+              </p>
+            </div>
+            <div className="space-y-1">
+              <Label className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">Código de Bot</Label>
+              <div className="p-3 bg-slate-50 rounded-xl font-mono text-[10px] border">bot_{agent.id}</div>
+            </div>
+          </div>
+          <DialogFooter className="sm:justify-center">
+            <Button 
+              className="w-full h-12 pill-rounded bg-secondary gap-2 font-black uppercase text-[10px] tracking-widest" 
+              onClick={handleOpenLines}
+              disabled={isRegisteringBot}
+            >
+              {isRegisteringBot ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Registrando Protocolo...
+                </>
+              ) : (
+                "Activar en Líneas Abiertas"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* WhatsApp */}
       <Dialog open={activeModal === "WhatsApp Business"} onOpenChange={onClose}>
         <DialogContent className="sm:max-w-[425px] rounded-[2rem] border-none shadow-2xl">
