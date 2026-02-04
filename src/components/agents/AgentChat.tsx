@@ -42,7 +42,9 @@ import {
   Trash2,
   Link2,
   Braces,
-  Briefcase
+  Briefcase,
+  Database,
+  Upload
 } from "lucide-react";
 import {
   Accordion,
@@ -347,27 +349,48 @@ export function AgentChat({ agent }: AgentChatProps) {
                     className="min-h-[100px] text-sm bg-slate-50 border-slate-200 resize-none focus-visible:ring-secondary/30"
                   />
                 </div>
-                <div className="space-y-6">
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2 text-[10px] font-black text-muted-foreground uppercase tracking-widest">
-                      <Palette className="h-4 w-4" /> Personalidad y Tono
-                    </div>
-                    <Textarea 
-                      value={agent.tone} 
-                      onChange={(e) => handleManualUpdate('tone', e.target.value)}
-                      className="min-h-[120px] text-sm italic bg-slate-50 border-slate-200 resize-none focus-visible:ring-secondary/30"
-                    />
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-[10px] font-black text-muted-foreground uppercase tracking-widest">
+                    <Palette className="h-4 w-4" /> Personalidad y Tono
                   </div>
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2 text-[10px] font-black text-muted-foreground uppercase tracking-widest">
-                      <LayoutGrid className="h-4 w-4" /> Instrucciones al agente
-                    </div>
-                    <Textarea 
-                      value={agent.knowledge} 
-                      onChange={(e) => handleManualUpdate('knowledge', e.target.value)}
-                      className="min-h-[200px] text-[12px] font-mono bg-slate-50 border-slate-200 resize-none focus-visible:ring-secondary/30"
-                    />
+                  <Textarea 
+                    value={agent.tone} 
+                    onChange={(e) => handleManualUpdate('tone', e.target.value)}
+                    className="min-h-[120px] text-sm italic bg-slate-50 border-slate-200 resize-none focus-visible:ring-secondary/30"
+                  />
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="conocimiento" className="border-b px-6 border-slate-100">
+              <AccordionTrigger className="hover:no-underline py-6 text-slate-700 data-[state=open]:text-secondary transition-colors outline-none [&[data-state=open]>svg]:rotate-180">
+                <div className="flex items-center gap-4 text-[14px] font-black uppercase tracking-widest">
+                  <Database className="h-5 w-5" /> Conocimiento
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="pb-8 pt-2 space-y-6">
+                <div className="p-5 bg-slate-50 rounded-[2rem] border border-dashed border-slate-200 flex flex-col items-center justify-center text-center gap-4">
+                  <div className="h-12 w-12 rounded-full bg-white flex items-center justify-center shadow-sm">
+                    <FileText className="h-6 w-6 text-muted-foreground/40" />
                   </div>
+                  <div className="space-y-1">
+                    <p className="text-[10px] font-black uppercase tracking-widest">Entrenamiento Avanzado</p>
+                    <p className="text-[9px] text-muted-foreground uppercase font-bold">Carga manual de documentos PDF, DOC o TXT</p>
+                  </div>
+                  <Button variant="outline" size="sm" className="h-8 pill-rounded bg-white border-slate-200 text-[9px] font-black uppercase tracking-widest gap-2">
+                    <Upload className="h-3 w-3" /> Subir Archivo
+                  </Button>
+                </div>
+
+                <div className="space-y-2 pt-2">
+                  <div className="flex items-center gap-2 text-[10px] font-black text-muted-foreground uppercase tracking-widest">
+                    <LayoutGrid className="h-4 w-4" /> Instrucciones al agente
+                  </div>
+                  <Textarea 
+                    value={agent.knowledge} 
+                    onChange={(e) => handleManualUpdate('knowledge', e.target.value)}
+                    className="min-h-[250px] text-[12px] font-mono bg-slate-50 border-slate-200 resize-none focus-visible:ring-secondary/30"
+                  />
                 </div>
               </AccordionContent>
             </AccordionItem>
