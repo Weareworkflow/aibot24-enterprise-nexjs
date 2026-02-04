@@ -214,7 +214,7 @@ export function AgentChat({ agent }: AgentChatProps) {
               </AccordionContent>
             </AccordionItem>
 
-            {/* 2. INSTRUCCIONES (Agrupa comportamiento y objetivos) */}
+            {/* 2. INSTRUCCIONES (Agrupa comportamento, tono y manual) */}
             <AccordionItem value="instrucciones" className="border-b px-6 border-slate-100">
               <AccordionTrigger className="hover:no-underline py-6">
                 <div className="flex items-center gap-4 text-[14px] font-black uppercase tracking-widest text-slate-700">
@@ -228,7 +228,7 @@ export function AgentChat({ agent }: AgentChatProps) {
                     <Textarea 
                       value={agent.objective} 
                       onChange={(e) => handleManualUpdate('objective', e.target.value, 'Objetivo')} 
-                      className="min-h-[100px] text-sm bg-slate-50" 
+                      className="min-h-[80px] text-sm bg-slate-50" 
                     />
                   </div>
                   <div className="space-y-1.5">
@@ -236,23 +236,23 @@ export function AgentChat({ agent }: AgentChatProps) {
                     <Textarea 
                       value={agent.tone} 
                       onChange={(e) => handleManualUpdate('tone', e.target.value, 'Tono')} 
-                      className="min-h-[100px] text-sm bg-slate-50" 
+                      className="min-h-[80px] text-sm bg-slate-50" 
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Manual de Instrucciones Técnicas</Label>
+                    <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Manual de Comportamiento Técnico</Label>
                     <Textarea 
                       value={agent.knowledge} 
                       onChange={(e) => handleManualUpdate('knowledge', e.target.value, 'Instrucciones')} 
                       className="min-h-[300px] font-mono text-sm bg-slate-50 leading-relaxed" 
-                      placeholder="Define aquí el comportamiento detallado del agente..."
+                      placeholder="Define aquí las reglas de negocio, respuestas permitidas y flujos..."
                     />
                   </div>
                 </div>
               </AccordionContent>
             </AccordionItem>
 
-            {/* 3. CONOCIMIENTO (Debajo de Instrucciones, solo archivos) */}
+            {/* 3. CONOCIMIENTO (Debajo de Instrucciones, enfocado en archivos) */}
             <AccordionItem value="conocimiento" className="border-b px-6 border-slate-100">
               <AccordionTrigger className="hover:no-underline py-6">
                 <div className="flex items-center gap-4 text-[14px] font-black uppercase tracking-widest text-slate-700">
@@ -345,7 +345,7 @@ export function AgentChat({ agent }: AgentChatProps) {
             <CollapsibleTrigger asChild>
               <button className="flex items-center justify-between px-6 py-6 w-full border-t bg-white">
                 <div className="flex items-center gap-4 text-[14px] font-black uppercase tracking-widest text-secondary">
-                  <Wand2 className="h-6 w-6" /> Refinar con AI
+                  <Wand2 className="h-6 w-6" /> Refinar con IA
                 </div>
                 {isChatOpen ? <ChevronDown className="h-5 w-5" /> : <ChevronUp className="h-5 w-5" />}
               </button>
