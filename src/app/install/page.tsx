@@ -83,7 +83,7 @@ function InstallContent() {
       }
     };
 
-    // Verificación cíclica para asegurar que el script está inyectado
+    // Verificación cíclica para asegurar que el script está inyectado y listo
     const checkInterval = setInterval(() => {
       if ((window as any).BX24) {
         initializeBX24();
