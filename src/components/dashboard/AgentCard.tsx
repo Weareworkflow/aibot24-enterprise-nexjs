@@ -101,37 +101,40 @@ export function AgentCard({ agent }: AgentCardProps) {
     <Card 
       onClick={handleCardClick}
       className={cn(
-        "card-rounded relative hover:scale-[1.02] transition-all duration-500 border border-white/60 pill-shadow overflow-hidden p-8 flex flex-col gap-6 group cursor-pointer",
-        isActive ? "bg-white alive-bg" : "bg-slate-100/80 grayscale-[0.8]"
+        "card-rounded relative hover:scale-[1.02] transition-all duration-500 border border-slate-100 pill-shadow overflow-hidden p-8 flex flex-col gap-6 group cursor-pointer",
+        isActive ? "bg-white alive-bg" : "bg-slate-50/80 grayscale-[0.8]"
       )}
     >
-      {/* Indicador de Estado - Reubicado y en Verde */}
-      {isActive && (
-        <div className="absolute top-6 right-6 flex items-center gap-1.5 px-3 py-1 rounded-full bg-accent/10 border border-accent/20">
-          <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-accent"></span>
-          </span>
-          <span className="text-[7px] font-black uppercase tracking-widest text-accent">En Línea</span>
-        </div>
-      )}
-
       <div className="flex justify-between items-start w-full">
-        <div className="space-y-4">
-          <div className={cn(
-            "flex items-center gap-2 text-[10px] font-black uppercase tracking-widest",
-            isActive ? "text-muted-foreground" : "text-slate-500"
-          )}>
+        <div className="space-y-4 flex-1">
+          {/* Header Status & Type */}
+          <div className="flex items-center gap-3">
             <div className={cn(
-              "p-1.5 rounded-lg flex items-center justify-center premium-relief", 
-              isActive 
-                ? (isVoice ? "bg-primary text-white" : "bg-secondary text-white")
-                : "bg-slate-300 text-slate-600 shadow-none"
+              "flex items-center gap-2 text-[10px] font-black uppercase tracking-widest",
+              isActive ? "text-muted-foreground" : "text-slate-500"
             )}>
-              {isVoice ? <Mic2 className="h-3 w-3" /> : <MessageSquareText className="h-3 w-3" />}
+              <div className={cn(
+                "p-1.5 rounded-lg flex items-center justify-center premium-relief", 
+                isActive 
+                  ? (isVoice ? "bg-primary text-white" : "bg-secondary text-white")
+                  : "bg-slate-300 text-slate-600 shadow-none"
+              )}>
+                {isVoice ? <Mic2 className="h-3 w-3" /> : <MessageSquareText className="h-3 w-3" />}
+              </div>
+              {isVoice ? "VOICE AGENT" : "TEXT AGENT"}
             </div>
-            {isVoice ? "VOICE AGENT" : "TEXT AGENT"}
+
+            {isActive && (
+              <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-accent/10 border border-accent/20 animate-in fade-in zoom-in duration-700">
+                <span className="relative flex h-1.5 w-1.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-accent"></span>
+                </span>
+                <span className="text-[7px] font-black uppercase tracking-widest text-accent">En Línea</span>
+              </div>
+            )}
           </div>
+
           <div className="space-y-1">
             <h3 className={cn(
               "text-2xl font-headline font-black leading-tight transition-colors",
@@ -139,16 +142,18 @@ export function AgentCard({ agent }: AgentCardProps) {
             )}>
               {agent.name}
             </h3>
-            {/* Rol del Agente - En Verde */}
+            
+            {/* Rol del Agente - Destacado en Verde */}
             <div className={cn(
-              "flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest",
+              "flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest py-1 px-2 rounded-md bg-accent/5 w-fit",
               isActive ? "text-accent" : "text-slate-500"
             )}>
               <Briefcase className="h-3.5 w-3.5" />
               {agent.role}
             </div>
+
             <div className={cn(
-              "flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest opacity-60",
+              "flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest opacity-60 mt-1",
               isActive ? "text-muted-foreground" : "text-slate-500"
             )}>
               <Building2 className="h-3 w-3" />
@@ -157,7 +162,7 @@ export function AgentCard({ agent }: AgentCardProps) {
           </div>
         </div>
         
-        <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
+        <div className="flex gap-2 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
           <Button 
             variant="outline" 
             size="icon" 
