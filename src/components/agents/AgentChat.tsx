@@ -192,7 +192,7 @@ export function AgentChat({ agent }: AgentChatProps) {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
                 <div className="space-y-2">
                   <div className="flex items-center gap-2.5 text-[10px] font-black text-muted-foreground uppercase tracking-widest">
-                    <UserRound className="h-4 w-4" /> Unidad
+                    <UserRound className="h-4 w-4" /> Nombre
                   </div>
                   <p className="text-sm font-bold">{agent.name}</p>
                 </div>
