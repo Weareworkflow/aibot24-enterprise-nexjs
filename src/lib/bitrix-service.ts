@@ -1,4 +1,6 @@
+
 import { db } from './firebase-server';
+import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { BitrixInstallation } from './types';
 
 /**
@@ -6,13 +8,14 @@ import { BitrixInstallation } from './types';
  * Maneja el refresco automático de tokens utilizando las credenciales oficiales.
  */
 export async function getBitrixClient(memberId: string) {
-  const installationDoc = await db.collection('installations').doc(memberId).get();
+  const installationRef = doc(db, 'installations', memberId);
+  const installationSnap = await getDoc(installationRef);
 
-  if (!installationDoc.exists) {
+  if (!installationSnap.exists()) {
     throw new Error(`Instalación no encontrada para el Member ID: ${memberId}`);
   }
 
-  const data = installationDoc.data() as BitrixInstallation;
+  const data = installationSnap.data() as BitrixInstallation;
   const now = Math.floor(Date.now() / 1000);
   
   // Calculamos la expiración (5 min de margen)
@@ -44,7 +47,7 @@ export async function getBitrixClient(memberId: string) {
         expiresAt: Math.floor(Date.now() / 1000) + parseInt(newData.expires_in),
       };
 
-      await db.collection('installations').doc(memberId).update(updatedData);
+      await updateDoc(installationRef, updatedData);
       
       return {
         accessToken: newData.access_token,

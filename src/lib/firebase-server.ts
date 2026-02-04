@@ -1,16 +1,14 @@
 
-import * as admin from 'firebase-admin';
+import { initializeApp, getApps, getApp } from 'firebase/app';
+import { getFirestore } from 'firebase/firestore';
+import { getAuth } from 'firebase/auth';
 import { firebaseConfig } from '@/firebase/config';
 
 /**
- * Inicializa Firebase Admin para uso en Server Components y API Routes.
+ * Inicializa Firebase utilizando el SDK estándar para uso en Server Components y API Routes.
+ * Esto evita el error de "Missing credentials" de firebase-admin en localhost.
  */
-if (!admin.apps.length) {
-  admin.initializeApp({
-    credential: admin.credential.applicationDefault(), // Opcional si se despliega en GCP/Firebase
-    projectId: firebaseConfig.projectId,
-  });
-}
+const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 
-export const db = admin.firestore();
-export const auth = admin.auth();
+export const db = getFirestore(app);
+export const auth = getAuth(app);
