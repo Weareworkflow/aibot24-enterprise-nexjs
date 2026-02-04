@@ -50,6 +50,7 @@ export interface BitrixInstallation {
   accessToken?: string;
   refreshToken?: string;
   expiresIn?: number;
+  expiresAt?: number; // Timestamp Unix de expiración
   status: 'active' | 'suspended';
   createdAt: string;
 }
