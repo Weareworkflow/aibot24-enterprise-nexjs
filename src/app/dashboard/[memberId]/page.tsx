@@ -3,9 +3,9 @@ import { notFound } from 'next/navigation';
 import { callBitrixMethod } from '@/lib/bitrix-service';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Globe, ShieldCheck, Database, Terminal, RefreshCw } from 'lucide-react';
+import { Globe, ShieldCheck, Database, Terminal, Rocket, LayoutDashboard } from 'lucide-react';
 import { Navbar } from '@/components/layout/Navbar';
-import Link from 'next/link';
+import { LaunchDevSession } from '@/components/dashboard/LaunchDevSession';
 
 interface DevDashboardProps {
   params: Promise<{ memberId: string }>;
@@ -13,10 +13,9 @@ interface DevDashboardProps {
 
 /**
  * Consola de Desarrollo Persistente para AIBot24.
- * Permite probar la lógica de negocio y APIs con datos reales fuera del Iframe.
+ * Puerta de enlace para activar la sesión de desarrollo local.
  */
 export default async function DevDashboardPage({ params }: DevDashboardProps) {
-  // Verificación de entorno de desarrollo
   const isDevMode = process.env.NODE_ENV === 'development' || process.env.NEXT_PUBLIC_DEV_MODE;
   
   if (!isDevMode) {
@@ -26,7 +25,6 @@ export default async function DevDashboardPage({ params }: DevDashboardProps) {
   const { memberId } = await params;
 
   try {
-    // Llamada REST de prueba al portal para validar el flujo de tokens
     const appInfo = await callBitrixMethod(memberId, 'app.info');
 
     if (appInfo.error) {
@@ -55,6 +53,23 @@ export default async function DevDashboardPage({ params }: DevDashboardProps) {
           </div>
 
           <div className="grid gap-6">
+            <Card className="border-none shadow-sm card-rounded overflow-hidden bg-white border-2 border-secondary/20">
+              <CardContent className="p-8 text-center space-y-6">
+                <div className="h-20 w-20 bg-secondary/10 rounded-full flex items-center justify-center mx-auto">
+                  <Rocket className="h-10 w-10 text-secondary" />
+                </div>
+                <div className="space-y-2">
+                  <h2 className="text-xl font-headline font-bold">Lanzar Panel Operativo</h2>
+                  <p className="text-xs text-muted-foreground max-w-sm mx-auto">
+                    Haz clic abajo para vincular este portal a tu entorno local y empezar a gestionar tus agentes de IA.
+                  </p>
+                </div>
+                <div className="flex justify-center">
+                  <LaunchDevSession memberId={memberId} />
+                </div>
+              </CardContent>
+            </Card>
+
             <Card className="border-none shadow-sm card-rounded overflow-hidden bg-white">
               <CardHeader className="bg-primary/5 border-b py-4">
                 <CardTitle className="text-xs font-black uppercase tracking-widest flex items-center gap-2">
@@ -115,18 +130,10 @@ export default async function DevDashboardPage({ params }: DevDashboardProps) {
           <div className="bg-destructive/5 p-4 rounded-xl border border-destructive/10 text-[10px] font-mono text-destructive text-left overflow-x-auto max-h-32">
             {error.message}
           </div>
-          <div className="space-y-4 pt-2">
+          <div className="space-y-4 pt-4">
             <p className="text-[9px] uppercase font-black text-muted-foreground tracking-[0.1em]">
-              Verifica que el memberId exista en tu base de datos y que las credenciales locales sean correctas.
+              Verifica que el memberId exista en Firestore y que tus credenciales en el archivo .env sean válidas.
             </p>
-            <Link href={`/dashboard/${memberId}`} className="block">
-              <button 
-                className="w-full h-12 pill-rounded bg-secondary text-white text-[10px] font-black uppercase tracking-widest shadow-lg shadow-secondary/20 flex items-center justify-center gap-2"
-              >
-                <RefreshCw className="h-4 w-4" />
-                Reintentar Protocolo
-              </button>
-            </Link>
           </div>
         </Card>
       </div>

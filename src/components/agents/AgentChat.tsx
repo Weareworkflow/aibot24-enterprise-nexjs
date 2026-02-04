@@ -214,7 +214,7 @@ export function AgentChat({ agent }: AgentChatProps) {
               </AccordionContent>
             </AccordionItem>
 
-            {/* 2. INSTRUCCIONES */}
+            {/* 2. INSTRUCCIONES: Jerarquía Exacta */}
             <AccordionItem value="instrucciones" className="border-b px-6 border-slate-100">
               <AccordionTrigger className="hover:no-underline py-6">
                 <div className="flex items-center gap-4 text-[14px] font-black uppercase tracking-widest text-slate-700">
@@ -229,6 +229,7 @@ export function AgentChat({ agent }: AgentChatProps) {
                       value={agent.objective} 
                       onChange={(e) => handleManualUpdate('objective', e.target.value, 'Objetivo')} 
                       className="min-h-[80px] text-sm bg-slate-50" 
+                      placeholder="Define el objetivo principal..."
                     />
                   </div>
                   <div className="space-y-1.5">
@@ -237,22 +238,23 @@ export function AgentChat({ agent }: AgentChatProps) {
                       value={agent.tone} 
                       onChange={(e) => handleManualUpdate('tone', e.target.value, 'Tono')} 
                       className="min-h-[80px] text-sm bg-slate-50" 
+                      placeholder="Describe la personalidad..."
                     />
                   </div>
                   <div className="space-y-1.5">
                     <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Manual de Comportamiento Técnico</Label>
                     <Textarea 
                       value={agent.knowledge} 
-                      onChange={(e) => handleManualUpdate('knowledge', e.target.value, 'Instrucciones')} 
+                      onChange={(e) => handleManualUpdate('knowledge', e.target.value, 'Manual Técnico')} 
                       className="min-h-[300px] font-mono text-sm bg-slate-50 leading-relaxed" 
-                      placeholder="Instrucciones detalladas del agente..."
+                      placeholder="Instrucciones detalladas de comportamiento y reglas de negocio..."
                     />
                   </div>
                 </div>
               </AccordionContent>
             </AccordionItem>
 
-            {/* 3. CONOCIMIENTO (ARCHIVOS) */}
+            {/* 3. CONOCIMIENTO: Gestión de Archivos (Ubicado justo debajo) */}
             <AccordionItem value="conocimiento" className="border-b px-6 border-slate-100">
               <AccordionTrigger className="hover:no-underline py-6">
                 <div className="flex items-center gap-4 text-[14px] font-black uppercase tracking-widest text-slate-700">
