@@ -1,11 +1,11 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import Script from "next/script";
+import { useSearchParams, useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, CheckCircle2, ShieldCheck, Database } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Loader2, ShieldCheck, CheckCircle2, Database } from "lucide-react";
 import { Logo } from "@/components/layout/Logo";
 import { useUIStore } from "@/lib/store";
 import { useFirestore } from "@/firebase";
@@ -15,86 +15,125 @@ import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 
 /**
- * Página oficial de Instalación de Bitrix24.
- * Funciona como el 'Install URL' registrado en el Panel de Desarrollador.
+ * Componente interno que maneja la lógica de captura de parámetros y sincronización.
  */
-export default function InstallPage() {
+function InstallContent() {
   const [status, setStatus] = useState<'loading' | 'ready' | 'success' | 'error'>('loading');
-  const [installData, setInstallData] = useState<any>(null);
-  const { setTenantId, setDomain } = useUIStore();
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const db = useFirestore();
+  const { setTenantId, setDomain } = useUIStore();
 
-  const handleInstall = async () => {
-    if (typeof window !== 'undefined' && (window as any).BX24 && db) {
-      const BX24 = (window as any).BX24;
-      
-      try {
-        const auth = BX24.getAuth();
-        const queryParams = new URLSearchParams(window.location.search);
-        
-        // member_id es el tenant único global de este portal
-        const memberId = auth?.member_id || queryParams.get('member_id');
-        const domain = auth?.domain || queryParams.get('DOMAIN');
+  useEffect(() => {
+    // 1. Capturamos los parámetros que Bitrix24 envía en la URL durante la instalación
+    const memberId = searchParams.get('member_id');
+    const domain = searchParams.get('DOMAIN');
+    const authId = searchParams.get('AUTH_ID');
+    const refreshToken = searchParams.get('REFRESH_ID');
+    const expires = searchParams.get('AUTH_EXPIRES');
 
-        if (memberId) {
-          const installationRecord: BitrixInstallation = {
-            memberId,
-            domain: domain || "unknown",
-            accessToken: auth?.access_token || "",
-            refreshToken: auth?.refresh_token || "",
-            expiresIn: auth?.expires_in || 3600,
-            status: 'active',
-            createdAt: new Date().toISOString()
-          };
+    const initializeBX24 = async () => {
+      if (typeof window !== 'undefined' && (window as any).BX24) {
+        const BX24 = (window as any).BX24;
 
-          const installRef = doc(db, "installations", memberId);
-          
-          setDoc(installRef, installationRecord)
-            .then(() => {
+        BX24.init(async () => {
+          console.log("Protocolo Bitrix24 Iniciado");
+
+          if (memberId && db) {
+            const installationRecord: BitrixInstallation = {
+              memberId,
+              domain: domain || "unknown",
+              accessToken: authId || "",
+              refreshToken: refreshToken || "",
+              expiresIn: parseInt(expires || "3600"),
+              status: 'active',
+              createdAt: new Date().toISOString()
+            };
+
+            const installRef = doc(db, "installations", memberId);
+
+            try {
+              // 2. Registramos la instalación en Firestore para aislamiento de datos
+              await setDoc(installRef, installationRecord);
+              
               setTenantId(memberId);
               if (domain) setDomain(domain);
-              setInstallData(installationRecord);
               
-              // Cierre de protocolo Bitrix24
-              BX24.installFinish();
               setStatus('success');
-              
+
+              // 3. Finalizamos el protocolo de instalación de Bitrix
               setTimeout(() => {
-                window.location.href = '/';
-              }, 2000);
-            })
-            .catch(async (error) => {
+                BX24.installFinish();
+                // Redirigimos al home después de un breve delay
+                router.push('/');
+              }, 1500);
+
+            } catch (error: any) {
               errorEmitter.emit('permission-error', new FirestorePermissionError({
                 path: installRef.path,
                 operation: 'create',
                 requestResourceData: installationRecord
               }));
               setStatus('error');
-            });
-        } else {
-          setStatus('error');
-        }
-      } catch (err) {
-        setStatus('error');
+            }
+          } else {
+            // Si no hay memberId o db, marcamos error de contexto
+            setStatus('error');
+          }
+        });
       }
-    }
-  };
+    };
 
-  useEffect(() => {
-    const checkBX24 = setInterval(() => {
+    // Verificamos si el script ya cargó
+    const checkInterval = setInterval(() => {
       if ((window as any).BX24) {
-        setStatus('ready');
-        clearInterval(checkBX24);
+        initializeBX24();
+        clearInterval(checkInterval);
       }
-    }, 500);
+    }, 100);
 
-    return () => clearInterval(checkBX24);
-  }, []);
+    return () => clearInterval(checkInterval);
+  }, [searchParams, db, setTenantId, setDomain, router]);
 
   return (
+    <div className="space-y-6">
+      {status === 'loading' && (
+        <div className="flex flex-col items-center gap-4 py-6">
+          <Loader2 className="h-8 w-8 animate-spin text-secondary" />
+          <div className="text-center">
+            <p className="text-xs font-bold text-slate-600 uppercase tracking-widest">Configurando Aibot24 en tu portal...</p>
+            <p className="text-[9px] text-muted-foreground uppercase font-black tracking-[0.2em] mt-2">Sincronizando Protocolo API</p>
+          </div>
+        </div>
+      )}
+
+      {status === 'success' && (
+        <div className="flex flex-col items-center gap-6 py-4 animate-in fade-in zoom-in duration-500">
+          <CheckCircle2 className="h-12 w-12 text-accent" />
+          <div className="text-center space-y-2">
+            <h3 className="font-bold text-lg text-slate-800">¡Enlace Exitoso!</h3>
+            <p className="text-[10px] font-black uppercase text-accent tracking-widest">Cerrando instalador...</p>
+          </div>
+        </div>
+      )}
+
+      {status === 'error' && (
+        <div className="text-center py-6 space-y-4">
+          <Database className="h-10 w-10 text-destructive mx-auto mb-2 opacity-20" />
+          <div className="text-destructive font-black uppercase tracking-widest text-xs">Error de Protocolo</div>
+          <p className="text-[10px] text-muted-foreground px-4">No se pudo capturar el contexto del portal. Por favor, reintenta la instalación desde el Panel de Bitrix24.</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default function InstallPage() {
+  return (
     <div className="min-h-screen bg-[#F0F3F5] flex flex-col items-center justify-center p-4">
+      {/* Carga del SDK oficial de Bitrix24 */}
       <Script 
-        src="//api.bitrix24.com/api/v1/" 
+        src="https://api.bitrix24.com/api/v1/" 
         strategy="beforeInteractive"
       />
 
@@ -107,52 +146,19 @@ export default function InstallPage() {
           <div className="flex justify-center mb-4">
             <ShieldCheck className="h-12 w-12 text-secondary" />
           </div>
-          <CardTitle className="font-headline text-xl font-bold">Enlace de Portal</CardTitle>
-          <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-70 mt-2">Bitrix24 API Installation</p>
+          <CardTitle className="font-headline text-xl font-bold">Instalación de Aplicación</CardTitle>
+          <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-70 mt-2">Bitrix24 Enterprise Bridge</p>
         </CardHeader>
 
         <CardContent className="p-8">
-          <div className="space-y-6">
-            {status === 'loading' && (
-              <div className="flex flex-col items-center gap-4 py-6">
-                <Loader2 className="h-8 w-8 animate-spin text-secondary" />
-                <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Sincronizando Protocolo...</p>
-              </div>
-            )}
-
-            {status === 'ready' && (
-              <div className="space-y-6 text-center">
-                <div className="p-4 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
-                  <p className="text-xs leading-relaxed text-slate-600">
-                    Se ha detectado una sesión de Bitrix24. Haz clic para registrar este portal y activar el aislamiento de datos.
-                  </p>
-                </div>
-                <Button 
-                  onClick={handleInstall} 
-                  className="w-full h-14 pill-rounded bg-secondary hover:bg-secondary/90 text-white font-black uppercase text-xs tracking-widest gap-2"
-                >
-                  Confirmar Instalación API
-                </Button>
-              </div>
-            )}
-
-            {status === 'success' && (
-              <div className="flex flex-col items-center gap-6 py-4 animate-in fade-in zoom-in duration-500">
-                <CheckCircle2 className="h-12 w-12 text-accent" />
-                <div className="text-center space-y-2">
-                  <h3 className="font-bold text-lg text-slate-800">¡Portal Vinculado!</h3>
-                  <p className="text-[10px] font-black uppercase text-accent tracking-widest">Tenant ID Configurado</p>
-                </div>
-              </div>
-            )}
-
-            {status === 'error' && (
-              <div className="text-center py-6 space-y-4">
-                <div className="text-destructive font-black uppercase tracking-widest text-xs">Error de Protocolo</div>
-                <Button variant="outline" onClick={() => window.location.reload()} className="pill-rounded h-10 px-6">Reintentar</Button>
-              </div>
-            )}
-          </div>
+          <Suspense fallback={
+            <div className="flex flex-col items-center gap-4 py-6">
+              <Loader2 className="h-8 w-8 animate-spin text-secondary" />
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Cargando Parámetros...</p>
+            </div>
+          }>
+            <InstallContent />
+          </Suspense>
         </CardContent>
       </Card>
     </div>

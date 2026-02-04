@@ -213,7 +213,7 @@ export function AgentChat({ agent }: AgentChatProps) {
               </AccordionContent>
             </AccordionItem>
 
-            {/* 2. INSTRUCCIONES (Agrupado Objetivo, Tono y Manual) */}
+            {/* 2. INSTRUCCIONES */}
             <AccordionItem value="instrucciones" className="border-b px-6 border-slate-100">
               <AccordionTrigger className="hover:no-underline py-6">
                 <div className="flex items-center gap-4 text-[14px] font-black uppercase tracking-widest text-slate-700">
@@ -251,7 +251,7 @@ export function AgentChat({ agent }: AgentChatProps) {
               </AccordionContent>
             </AccordionItem>
 
-            {/* 3. CONOCIMIENTO (Debajo de Instrucciones, Multi-archivo) */}
+            {/* 3. CONOCIMIENTO (Debajo de Instrucciones) */}
             <AccordionItem value="conocimiento" className="border-b px-6 border-slate-100">
               <AccordionTrigger className="hover:no-underline py-6">
                 <div className="flex items-center gap-4 text-[14px] font-black uppercase tracking-widest text-slate-700">
