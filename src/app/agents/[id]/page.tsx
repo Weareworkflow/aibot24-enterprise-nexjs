@@ -1,4 +1,3 @@
-
 "use client";
 
 import { use, useState, useEffect, useMemo } from "react";
@@ -130,19 +129,19 @@ export default function AgentConsolePage({ params }: { params: Promise<{ id: str
                 <TabsList className="bg-white border pill-rounded h-12 p-1 gap-1 shadow-sm shrink-0">
                   <TabsTrigger 
                     value="identidad" 
-                    className="pill-rounded h-10 px-6 data-[state=active]:bg-primary data-[state=active]:text-white text-[10px] font-black uppercase tracking-[0.1em] gap-2 transition-all"
+                    className="pill-rounded h-10 px-6 data-[state=active]:bg-secondary data-[state=active]:text-white text-[10px] font-black uppercase tracking-[0.1em] gap-2 transition-all"
                   >
                     <Settings2 className="h-3.5 w-3.5" /> Identidad
                   </TabsTrigger>
                   <TabsTrigger 
                     value="instrucciones" 
-                    className="pill-rounded h-10 px-6 data-[state=active]:bg-primary data-[state=active]:text-white text-[10px] font-black uppercase tracking-[0.1em] gap-2 transition-all"
+                    className="pill-rounded h-10 px-6 data-[state=active]:bg-secondary data-[state=active]:text-white text-[10px] font-black uppercase tracking-[0.1em] gap-2 transition-all"
                   >
                     <Code2 className="h-3.5 w-3.5" /> Instrucciones
                   </TabsTrigger>
                   <TabsTrigger 
                     value="integraciones" 
-                    className="pill-rounded h-10 px-6 data-[state=active]:bg-primary data-[state=active]:text-white text-[10px] font-black uppercase tracking-[0.1em] gap-2 transition-all"
+                    className="pill-rounded h-10 px-6 data-[state=active]:bg-secondary data-[state=active]:text-white text-[10px] font-black uppercase tracking-[0.1em] gap-2 transition-all"
                   >
                     <Share2 className="h-3.5 w-3.5" /> Integraciones
                   </TabsTrigger>
@@ -225,7 +224,7 @@ export default function AgentConsolePage({ params }: { params: Promise<{ id: str
                           <div className="flex items-center gap-3">
                             <div className={cn(
                               "p-2.5 rounded-2xl transition-colors",
-                              agent.integrations?.[int.title] ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
+                              agent.integrations?.[int.title] ? "bg-secondary/10 text-secondary" : "bg-muted text-muted-foreground"
                             )}>
                               <int.icon className="h-4 w-4" />
                             </div>
