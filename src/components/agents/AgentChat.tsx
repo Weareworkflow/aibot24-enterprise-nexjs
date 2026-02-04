@@ -154,253 +154,247 @@ export function AgentChat({ agent }: AgentChatProps) {
       <Collapsible 
         open={isChatOpen} 
         onOpenChange={setIsChatOpen}
-        className="flex flex-col h-full"
+        className="flex flex-col h-full overflow-hidden"
       >
-        {/* SECCIÓN SUPERIOR: Contiene acordeones y el botón pegado a ellos */}
+        {/* SECCIÓN DE CONFIGURACIÓN: Ocupa el espacio dinámicamente */}
         <div className={cn(
-          "bg-muted/10 transition-all duration-500 ease-in-out flex flex-col min-h-0",
-          isChatOpen ? "h-auto border-b" : "flex-1 overflow-y-auto"
+          "flex flex-col min-h-0 bg-muted/5 transition-all duration-300 ease-in-out",
+          isChatOpen ? "h-[45%] border-b" : "flex-1"
         )}>
-          <Accordion type="single" collapsible className="w-full">
-            <AccordionItem value="identidad" className="border-b px-6">
-              <AccordionTrigger className="hover:no-underline py-5 data-[state=open]:text-secondary transition-colors">
-                <div className="flex items-center gap-4 text-base font-black uppercase tracking-widest">
-                  <Settings2 className="h-6 w-6" /> Identidad
-                </div>
-              </AccordionTrigger>
-              <AccordionContent className="pb-8 pt-2">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2 text-[11px] font-black text-muted-foreground uppercase tracking-widest">
-                      <UserRound className="h-4 w-4" /> Nombre
-                    </div>
-                    <Input 
-                      value={agent.name} 
-                      onChange={(e) => handleManualUpdate('name', e.target.value)}
-                      className="h-12 text-sm font-bold bg-white/80"
-                    />
+          <ScrollArea className="flex-1">
+            <Accordion type="single" collapsible defaultValue="identidad" className="w-full">
+              <AccordionItem value="identidad" className="border-b px-6">
+                <AccordionTrigger className="hover:no-underline py-5 data-[state=open]:text-secondary transition-colors">
+                  <div className="flex items-center gap-4 text-sm font-black uppercase tracking-widest">
+                    <Settings2 className="h-5 w-5" /> Identidad
                   </div>
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2 text-[11px] font-black text-muted-foreground uppercase tracking-widest">
-                      <Sparkles className="h-4 w-4" /> Rol
-                    </div>
-                    <Input 
-                      value={agent.role} 
-                      onChange={(e) => handleManualUpdate('role', e.target.value)}
-                      className="h-12 text-sm font-bold bg-white/80"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2 text-[11px] font-black text-muted-foreground uppercase tracking-widest">
-                      <Building2 className="h-4 w-4" /> Empresa
-                    </div>
-                    <Input 
-                      value={agent.company} 
-                      onChange={(e) => handleManualUpdate('company', e.target.value)}
-                      className="h-12 text-sm font-bold bg-white/80"
-                    />
-                  </div>
-                </div>
-
-                <div className="mt-8 pt-6 border-t">
-                  <div className="flex items-center gap-2 text-[11px] font-black text-muted-foreground uppercase tracking-widest mb-4">
-                    <Palette className="h-5 w-5" /> Identidad Visual del Asistente
-                  </div>
-                  <div className="flex flex-wrap gap-3">
-                    {ASSISTANT_COLORS.map((c) => (
-                      <button
-                        key={c}
-                        onClick={() => handleManualUpdate('color', c)}
-                        className={cn(
-                          "h-10 w-10 rounded-full transition-all hover:scale-110 flex items-center justify-center relative shadow-sm border",
-                          agent.color === c && "ring-2 ring-offset-2 ring-secondary"
-                        )}
-                        style={{ backgroundColor: c }}
-                      >
-                        {agent.color === c && <Check className="h-5 w-5 text-white drop-shadow-sm" />}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-
-            <AccordionItem value="instrucciones" className="border-b px-6">
-              <AccordionTrigger className="hover:no-underline py-5 data-[state=open]:text-secondary transition-colors">
-                <div className="flex items-center gap-4 text-base font-black uppercase tracking-widest">
-                  <Code2 className="h-6 w-6" /> Instrucciones
-                </div>
-              </AccordionTrigger>
-              <AccordionContent className="pb-8 pt-2 space-y-8">
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2 text-[11px] font-black text-muted-foreground uppercase tracking-widest">
-                    <Target className="h-5 w-5" /> Objetivo Crítico
-                  </div>
-                  <Textarea 
-                    value={agent.objective} 
-                    onChange={(e) => handleManualUpdate('objective', e.target.value)}
-                    className="min-h-[80px] text-sm font-bold leading-relaxed bg-white/80 resize-none"
-                  />
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-2 text-[11px] font-black text-muted-foreground uppercase tracking-widest">
-                      <Palette className="h-5 w-5" /> Personalidad y Tono
-                    </div>
-                    <Textarea 
-                      value={agent.tone} 
-                      onChange={(e) => handleManualUpdate('tone', e.target.value)}
-                      className="min-h-[120px] text-sm italic bg-white/80 leading-relaxed resize-none"
-                    />
-                  </div>
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-2 text-[11px] font-black text-muted-foreground uppercase tracking-widest">
-                      <LayoutGrid className="h-5 w-5" /> Base de Conocimiento
-                    </div>
-                    <Textarea 
-                      value={agent.knowledge} 
-                      onChange={(e) => handleManualUpdate('knowledge', e.target.value)}
-                      className="min-h-[120px] text-[12px] font-mono bg-white/80 leading-relaxed resize-none"
-                    />
-                  </div>
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-
-            <AccordionItem value="integraciones" className="border-b px-6">
-              <AccordionTrigger className="hover:no-underline py-5 data-[state=open]:text-secondary transition-colors">
-                <div className="flex items-center gap-4 text-base font-black uppercase tracking-widest">
-                  <Share2 className="h-6 w-6" /> Integraciones
-                </div>
-              </AccordionTrigger>
-              <AccordionContent className="pb-8 pt-2">
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {[
-                    { title: "WhatsApp Business", icon: Smartphone },
-                    { title: "Calendario Bitrix24", icon: Calendar },
-                    { title: "Catálogo Bitrix24", icon: LayoutGrid },
-                    { title: "Documentos Bitrix24", icon: FilePlus },
-                    { title: "Analizador Documento", icon: Search },
-                    { title: "Drive Bitrix24", icon: Cloud },
-                    { title: "Calls API", icon: PhoneCall },
-                  ].map((int, i) => (
-                    <div 
-                      key={i} 
-                      className="flex items-center justify-between p-5 border rounded-2xl bg-white/50 hover:bg-white transition-colors shadow-sm"
-                    >
-                      <div className="flex items-center gap-4">
-                        <int.icon className={cn("h-6 w-6", agent.integrations?.[int.title] ? "text-secondary" : "text-muted-foreground")} />
-                        <span className="text-[12px] font-black uppercase tracking-wider">{int.title}</span>
+                </AccordionTrigger>
+                <AccordionContent className="pb-8 pt-2">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 text-[10px] font-black text-muted-foreground uppercase tracking-widest">
+                        <UserRound className="h-4 w-4" /> Nombre
                       </div>
-                      <Switch 
-                        className="scale-110"
-                        checked={agent.integrations?.[int.title] || false} 
-                        onCheckedChange={(checked) => {
-                          const newInts = { ...agent.integrations, [int.title]: checked };
-                          handleManualUpdate('integrations', newInts);
-                        }}
+                      <Input 
+                        value={agent.name} 
+                        onChange={(e) => handleManualUpdate('name', e.target.value)}
+                        className="h-10 text-sm font-bold bg-white"
                       />
                     </div>
-                  ))}
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 text-[10px] font-black text-muted-foreground uppercase tracking-widest">
+                        <Sparkles className="h-4 w-4" /> Rol
+                      </div>
+                      <Input 
+                        value={agent.role} 
+                        onChange={(e) => handleManualUpdate('role', e.target.value)}
+                        className="h-10 text-sm font-bold bg-white"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 text-[10px] font-black text-muted-foreground uppercase tracking-widest">
+                        <Building2 className="h-4 w-4" /> Empresa
+                      </div>
+                      <Input 
+                        value={agent.company} 
+                        onChange={(e) => handleManualUpdate('company', e.target.value)}
+                        className="h-10 text-sm font-bold bg-white"
+                      />
+                    </div>
+                  </div>
 
-          {/* BOTÓN DE OPTIMIZADOR AI: Pegado a la última sección del acordeón */}
+                  <div className="mt-8 pt-6 border-t">
+                    <div className="flex items-center gap-2 text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-4">
+                      <Palette className="h-4 w-4" /> Identidad Visual
+                    </div>
+                    <div className="flex flex-wrap gap-2.5">
+                      {ASSISTANT_COLORS.map((c) => (
+                        <button
+                          key={c}
+                          onClick={() => handleManualUpdate('color', c)}
+                          className={cn(
+                            "h-8 w-8 rounded-full transition-all hover:scale-110 flex items-center justify-center relative shadow-sm border",
+                            agent.color === c && "ring-2 ring-offset-2 ring-secondary"
+                          )}
+                          style={{ backgroundColor: c }}
+                        >
+                          {agent.color === c && <Check className="h-4 w-4 text-white drop-shadow-sm" />}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="instrucciones" className="border-b px-6">
+                <AccordionTrigger className="hover:no-underline py-5 data-[state=open]:text-secondary transition-colors">
+                  <div className="flex items-center gap-4 text-sm font-black uppercase tracking-widest">
+                    <Code2 className="h-5 w-5" /> Instrucciones
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent className="pb-8 pt-2 space-y-6">
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 text-[10px] font-black text-muted-foreground uppercase tracking-widest">
+                      <Target className="h-4 w-4" /> Objetivo Crítico
+                    </div>
+                    <Textarea 
+                      value={agent.objective} 
+                      onChange={(e) => handleManualUpdate('objective', e.target.value)}
+                      className="min-h-[80px] text-sm bg-white resize-none"
+                    />
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 text-[10px] font-black text-muted-foreground uppercase tracking-widest">
+                        <Palette className="h-4 w-4" /> Personalidad y Tono
+                      </div>
+                      <Textarea 
+                        value={agent.tone} 
+                        onChange={(e) => handleManualUpdate('tone', e.target.value)}
+                        className="min-h-[120px] text-sm italic bg-white resize-none"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2 text-[10px] font-black text-muted-foreground uppercase tracking-widest">
+                        <LayoutGrid className="h-4 w-4" /> Base de Conocimiento
+                      </div>
+                      <Textarea 
+                        value={agent.knowledge} 
+                        onChange={(e) => handleManualUpdate('knowledge', e.target.value)}
+                        className="min-h-[120px] text-[12px] font-mono bg-white resize-none"
+                      />
+                    </div>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+
+              <AccordionItem value="integraciones" className="border-0 px-6">
+                <AccordionTrigger className="hover:no-underline py-5 data-[state=open]:text-secondary transition-colors">
+                  <div className="flex items-center gap-4 text-sm font-black uppercase tracking-widest">
+                    <Share2 className="h-5 w-5" /> Integraciones
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent className="pb-8 pt-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {[
+                      { title: "WhatsApp Business", icon: Smartphone },
+                      { title: "Calendario Bitrix24", icon: Calendar },
+                      { title: "Catálogo Bitrix24", icon: LayoutGrid },
+                      { title: "Documentos Bitrix24", icon: FilePlus },
+                      { title: "Analizador Documento", icon: Search },
+                      { title: "Drive Bitrix24", icon: Cloud },
+                      { title: "Calls API", icon: PhoneCall },
+                    ].map((int, i) => (
+                      <div 
+                        key={i} 
+                        className="flex items-center justify-between p-4 border rounded-2xl bg-white hover:bg-slate-50 transition-colors shadow-sm"
+                      >
+                        <div className="flex items-center gap-3">
+                          <int.icon className={cn("h-5 w-5", agent.integrations?.[int.title] ? "text-secondary" : "text-muted-foreground")} />
+                          <span className="text-[11px] font-black uppercase tracking-wider">{int.title}</span>
+                        </div>
+                        <Switch 
+                          checked={agent.integrations?.[int.title] || false} 
+                          onCheckedChange={(checked) => {
+                            const newInts = { ...agent.integrations, [int.title]: checked };
+                            handleManualUpdate('integrations', newInts);
+                          }}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+          </ScrollArea>
+
+          {/* DISPARADOR: Pegado a la última sección cuando está cerrado */}
           <CollapsibleTrigger asChild>
             <button className={cn(
-              "flex items-center justify-between px-6 py-5 bg-secondary/5 hover:bg-secondary/10 transition-colors w-full border-t border-secondary/10",
-              isChatOpen && "bg-secondary/10"
+              "flex items-center justify-between px-6 py-4 bg-secondary/10 hover:bg-secondary/15 transition-colors border-t border-secondary/20 shrink-0",
+              isChatOpen ? "bg-secondary/15" : ""
             )}>
-              <div className="flex items-center gap-4">
-                <Wand2 className="h-6 w-6 text-secondary" />
+              <div className="flex items-center gap-3">
+                <Wand2 className="h-5 w-5 text-secondary" />
                 <div className="text-left">
-                  <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-secondary">Editar Ajuste con AI</h3>
-                  <p className="text-[10px] font-bold text-muted-foreground uppercase">Optimización inteligente mediante lenguaje natural</p>
+                  <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-secondary">Editar Ajuste con AI</h3>
                 </div>
               </div>
-              {isChatOpen ? <ChevronDown className="h-5 w-5 text-secondary" /> : <ChevronUp className="h-5 w-5 text-secondary" />}
+              {isChatOpen ? <ChevronDown className="h-4 w-4 text-secondary" /> : <ChevronUp className="h-4 w-4 text-secondary" />}
             </button>
           </CollapsibleTrigger>
         </div>
 
-        {/* CONTENIDO DEL CHAT: Solo visible y flexible cuando está abierto */}
-        <CollapsibleContent className="flex-1 flex flex-col min-h-0 overflow-hidden bg-white">
-          <div className="flex-1 flex flex-col h-full">
-            <ScrollArea className="flex-1 p-6" ref={scrollRef}>
-              <div className="space-y-6 pb-6">
-                {history.length === 0 && !isRefining && (
-                  <div className="text-center py-12 space-y-4 opacity-40">
-                    <div className="h-14 w-14 bg-secondary/10 rounded-full flex items-center justify-center mx-auto text-secondary">
-                      <UserCog className="h-7 w-7" />
-                    </div>
-                    <p className="text-[11px] font-black uppercase tracking-widest max-w-[220px] mx-auto leading-relaxed">
-                      Escribe qué quieres mejorar y la IA ajustará los parámetros automáticamente.
-                    </p>
-                  </div>
-                )}
-
-                {history.map((item, idx) => (
-                  <div 
-                    key={idx} 
-                    className={cn(
-                      "flex flex-col max-w-[90%] space-y-1 animate-in fade-in slide-in-from-bottom-2",
-                      item.role === 'user' ? "ml-auto items-end" : "items-start"
-                    )}
-                  >
-                    <div className={cn(
-                      "px-5 py-4 rounded-2xl text-[12px] leading-relaxed shadow-sm border",
-                      item.role === 'user' 
-                        ? "bg-secondary text-white border-secondary rounded-tr-none" 
-                        : "bg-white text-foreground border-slate-100 rounded-tl-none"
-                    )}>
-                      {item.content}
-                      {item.explanation && (
-                        <div className="mt-4 pt-4 border-t border-slate-50">
-                          <p className="text-[9px] font-black text-secondary uppercase mb-1 tracking-widest">Rediseño Aplicado:</p>
-                          <p className="text-[11px] italic text-muted-foreground">{item.explanation}</p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                ))}
-
-                {isRefining && (
-                  <div className="flex items-start gap-2 animate-pulse">
-                    <div className="bg-white px-5 py-4 rounded-2xl rounded-tl-none border flex flex-col gap-2 shadow-sm">
-                      <div className="flex items-center gap-2">
-                        <Loader2 className="h-4 w-4 animate-spin text-secondary" />
-                        <span className="text-[11px] font-black uppercase text-secondary">Arquitecto trabajando...</span>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </ScrollArea>
-
-            <div className="p-4 bg-white border-t mt-auto">
-              <div className="flex items-center gap-3 bg-[#F8FAFC] p-2.5 rounded-2xl border focus-within:border-secondary transition-colors shadow-inner">
-                <div className="p-2 text-secondary">
-                  <Sparkles className="h-5 w-5" />
+        {/* CONTENIDO DEL OPTIMIZADOR AI */}
+        <CollapsibleContent className="flex-1 flex flex-col min-h-0 bg-white overflow-hidden">
+          <ScrollArea className="flex-1 p-6" ref={scrollRef}>
+            <div className="space-y-5 pb-4">
+              {history.length === 0 && !isRefining && (
+                <div className="text-center py-10 space-y-3 opacity-30">
+                  <UserCog className="h-10 w-10 mx-auto text-secondary" />
+                  <p className="text-[9px] font-black uppercase tracking-widest max-w-[180px] mx-auto leading-relaxed">
+                    Escribe tu instrucción y la IA rediseñará el agente.
+                  </p>
                 </div>
-                <Input 
-                  placeholder="Ej: 'Cambia el tono a uno más ejecutivo'..." 
-                  className="flex-1 border-none bg-transparent focus-visible:ring-0 text-[12px] h-10 px-1"
-                  value={feedbackInput}
-                  onChange={(e) => setFeedbackInput(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && !isRefining && handleRefine()}
-                  disabled={isRefining}
-                />
-                <Button 
-                  size="icon" 
-                  className="rounded-xl h-10 w-10 bg-secondary hover:bg-secondary/90 shadow-lg"
-                  onClick={handleRefine}
-                  disabled={!feedbackInput.trim() || isRefining}
+              )}
+
+              {history.map((item, idx) => (
+                <div 
+                  key={idx} 
+                  className={cn(
+                    "flex flex-col max-w-[85%] space-y-1 animate-in fade-in slide-in-from-bottom-1",
+                    item.role === 'user' ? "ml-auto items-end" : "items-start"
+                  )}
                 >
-                  {isRefining ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
-                </Button>
-              </div>
+                  <div className={cn(
+                    "px-4 py-3 rounded-2xl text-[12px] leading-relaxed shadow-sm border",
+                    item.role === 'user' 
+                      ? "bg-secondary text-white border-secondary rounded-tr-none" 
+                      : "bg-white text-foreground border-slate-100 rounded-tl-none"
+                  )}>
+                    {item.content}
+                    {item.explanation && (
+                      <div className="mt-3 pt-3 border-t border-slate-50">
+                        <p className="text-[8px] font-black text-secondary uppercase mb-1 tracking-widest">Log de Cambios:</p>
+                        <p className="text-[11px] italic text-muted-foreground">{item.explanation}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+
+              {isRefining && (
+                <div className="flex items-start gap-2 animate-pulse">
+                  <div className="bg-white px-4 py-3 rounded-2xl rounded-tl-none border flex flex-col gap-2 shadow-sm">
+                    <div className="flex items-center gap-2">
+                      <Loader2 className="h-3.5 w-3.5 animate-spin text-secondary" />
+                      <span className="text-[10px] font-black uppercase text-secondary">Procesando Arquitectura...</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </ScrollArea>
+
+          <div className="p-4 bg-white border-t">
+            <div className="flex items-center gap-3 bg-slate-50 p-2 rounded-2xl border focus-within:border-secondary transition-colors">
+              <Sparkles className="h-4 w-4 text-secondary ml-2" />
+              <Input 
+                placeholder="Ej: 'Cambia el tono a uno más ejecutivo'..." 
+                className="flex-1 border-none bg-transparent focus-visible:ring-0 text-[12px] h-9"
+                value={feedbackInput}
+                onChange={(e) => setFeedbackInput(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && !isRefining && handleRefine()}
+                disabled={isRefining}
+              />
+              <Button 
+                size="icon" 
+                className="rounded-xl h-9 w-9 bg-secondary hover:bg-secondary/90"
+                onClick={handleRefine}
+                disabled={!feedbackInput.trim() || isRefining}
+              >
+                {isRefining ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+              </Button>
             </div>
           </div>
         </CollapsibleContent>
