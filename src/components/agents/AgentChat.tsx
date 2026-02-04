@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useRef, useEffect } from "react";
@@ -24,7 +25,8 @@ import {
   Check,
   ChevronDown,
   ChevronUp,
-  Briefcase
+  Briefcase,
+  BookOpen
 } from "lucide-react";
 import {
   Accordion,
@@ -82,7 +84,7 @@ export function AgentChat({ agent }: AgentChatProps) {
     updateDoc(agentRef, { [field]: value })
       .then(() => {
         if (title) {
-          toast({ title: "Integración Activada", description: `${title} vinculada correctamente.` });
+          toast({ title: "Cambio guardado", description: `Campo ${title} actualizado.` });
         }
       })
       .catch(async (error) => {
@@ -148,10 +150,18 @@ export function AgentChat({ agent }: AgentChatProps) {
               </AccordionTrigger>
               <AccordionContent className="pb-8 pt-2 space-y-6">
                 <div className="space-y-4">
-                  {['name', 'role', 'company'].map(field => (
-                    <div key={field} className="space-y-1.5">
-                      <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">{field === 'name' ? 'Nombre' : field === 'role' ? 'Rol' : 'Empresa'}</Label>
-                      <Input value={(agent as any)[field]} onChange={(e) => handleManualUpdate(field, e.target.value)} className="h-10 text-sm font-bold bg-slate-50" />
+                  {[
+                    { key: 'name', label: 'Nombre' },
+                    { key: 'role', label: 'Rol' },
+                    { key: 'company', label: 'Empresa' }
+                  ].map(field => (
+                    <div key={field.key} className="space-y-1.5">
+                      <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">{field.label}</Label>
+                      <Input 
+                        value={(agent as any)[field.key]} 
+                        onChange={(e) => handleManualUpdate(field.key, e.target.value)} 
+                        className="h-10 text-sm font-bold bg-slate-50" 
+                      />
                     </div>
                   ))}
                   <div className="pt-4">
@@ -168,17 +178,43 @@ export function AgentChat({ agent }: AgentChatProps) {
               </AccordionContent>
             </AccordionItem>
 
-            <AccordionItem value="instrucciones" className="border-b px-6 border-slate-100">
+            <AccordionItem value="conocimiento" className="border-b px-6 border-slate-100">
               <AccordionTrigger className="hover:no-underline py-6">
                 <div className="flex items-center gap-4 text-[14px] font-black uppercase tracking-widest text-slate-700">
-                  <Code2 className="h-5 w-5" /> Instrucciones
+                  <BookOpen className="h-5 w-5" /> Base de Conocimiento
                 </div>
               </AccordionTrigger>
               <AccordionContent className="pb-8 pt-2 space-y-6">
-                {['objective', 'tone', 'knowledge'].map(field => (
-                  <div key={field} className="space-y-1.5">
-                    <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">{field === 'objective' ? 'Objetivo Crítico' : field === 'tone' ? 'Tono' : 'Instrucciones'}</Label>
-                    <Textarea value={(agent as any)[field]} onChange={(e) => handleManualUpdate(field, e.target.value)} className={cn("text-sm bg-slate-50", field === 'knowledge' ? "min-h-[250px] font-mono" : "min-h-[100px]")} />
+                <div className="space-y-1.5">
+                  <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Instrucciones Técnicas y FAQs</Label>
+                  <Textarea 
+                    value={agent.knowledge} 
+                    onChange={(e) => handleManualUpdate('knowledge', e.target.value, 'Conocimiento')} 
+                    className="min-h-[350px] font-mono text-sm bg-slate-50 leading-relaxed" 
+                    placeholder="Escribe aquí las reglas de negocio, manuales y conocimientos específicos..."
+                  />
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="instrucciones" className="border-b px-6 border-slate-100">
+              <AccordionTrigger className="hover:no-underline py-6">
+                <div className="flex items-center gap-4 text-[14px] font-black uppercase tracking-widest text-slate-700">
+                  <Code2 className="h-5 w-5" /> Estilo y Objetivos
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="pb-8 pt-2 space-y-6">
+                {[
+                  { key: 'objective', label: 'Objetivo Crítico' },
+                  { key: 'tone', label: 'Tono y Personalidad' }
+                ].map(field => (
+                  <div key={field.key} className="space-y-1.5">
+                    <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">{field.label}</Label>
+                    <Textarea 
+                      value={(agent as any)[field.key]} 
+                      onChange={(e) => handleManualUpdate(field.key, e.target.value)} 
+                      className="min-h-[100px] text-sm bg-slate-50" 
+                    />
                   </div>
                 ))}
               </AccordionContent>
@@ -218,7 +254,7 @@ export function AgentChat({ agent }: AgentChatProps) {
             <CollapsibleTrigger asChild>
               <button className="flex items-center justify-between px-6 py-6 w-full border-t bg-white">
                 <div className="flex items-center gap-4 text-[14px] font-black uppercase tracking-widest text-secondary">
-                  <Wand2 className="h-6 w-6" /> Editar Ajuste con AI
+                  <Wand2 className="h-6 w-6" /> Refinar con AI
                 </div>
                 {isChatOpen ? <ChevronDown className="h-5 w-5" /> : <ChevronUp className="h-5 w-5" />}
               </button>
@@ -235,7 +271,7 @@ export function AgentChat({ agent }: AgentChatProps) {
                 </ScrollArea>
                 <div className="p-4 border-t bg-slate-50">
                   <div className="flex items-center gap-2 bg-white p-1 rounded-2xl border">
-                    <Input placeholder="Ej: Cambia el tono a ejecutivo" className="border-none bg-transparent h-10 text-[13px]" value={feedbackInput} onChange={(e) => setFeedbackInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleRefine()} />
+                    <Input placeholder="Ej: Haz que el conocimiento incluya los precios actuales" className="border-none bg-transparent h-10 text-[13px]" value={feedbackInput} onChange={(e) => setFeedbackInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleRefine()} />
                     <Button size="icon" className="rounded-xl h-10 w-10 bg-secondary" onClick={handleRefine} disabled={!feedbackInput.trim() || isRefining}><Send className="h-5 w-5" /></Button>
                   </div>
                 </div>
