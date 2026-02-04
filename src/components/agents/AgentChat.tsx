@@ -360,7 +360,7 @@ export function AgentChat({ agent }: AgentChatProps) {
                   </div>
                   <div className="space-y-2">
                     <div className="flex items-center gap-2 text-[10px] font-black text-muted-foreground uppercase tracking-widest">
-                      <LayoutGrid className="h-4 w-4" /> Base de Conocimiento
+                      <LayoutGrid className="h-4 w-4" /> Instrucciones al agente
                     </div>
                     <Textarea 
                       value={agent.knowledge} 

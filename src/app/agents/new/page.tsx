@@ -24,7 +24,7 @@ const CONFIG_STEPS = [
   { key: 'company', question: "¿Para qué empresa o marca estará operando?", label: "Empresa" },
   { key: 'objective', question: "Crucial. ¿Cuál es el objetivo principal que debe cumplir en cada interacción?", label: "Objetivo" },
   { key: 'tone', question: "¿Qué tono de voz y personalidad prefieres? (Ej: Ejecutivo y directo, Amable y cercano...)", label: "Tono" },
-  { key: 'knowledge', question: "Finalmente, entrégame su base de conocimiento. Instrucciones, manuales, FAQs o cualquier dato técnico esencial.", label: "Conocimiento" },
+  { key: 'knowledge', question: "Finalmente, entrégame las instrucciones detalladas para el agente. Reglas, manuales, FAQs o cualquier dato técnico esencial.", label: "Instrucciones" },
 ];
 
 export default function NewAgentPage() {
@@ -288,7 +288,7 @@ export default function NewAgentPage() {
                                 <p className="text-[11px] p-2 bg-white rounded-lg border italic">{config.tone}</p>
                               </div>
                               <div className="space-y-1">
-                                <p className="text-[8px] font-black text-muted-foreground uppercase">Base de Conocimiento</p>
+                                <p className="text-[8px] font-black text-muted-foreground uppercase">Instrucciones al agente</p>
                                 <div className="max-h-32 overflow-y-auto text-[10px] p-3 bg-white rounded-xl border border-dashed font-mono leading-relaxed">
                                   {config.knowledge}
                                 </div>
