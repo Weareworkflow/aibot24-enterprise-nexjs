@@ -105,9 +105,6 @@ export function AgentCard({ agent }: AgentCardProps) {
         !isActive && "grayscale-[0.8] opacity-80 bg-slate-50/50"
       )}
     >
-      {/* Background decoration refined */}
-      <div className="absolute top-0 right-0 w-32 h-32 bg-secondary/5 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none" />
-
       <div className="flex justify-between items-start w-full relative z-10">
         <div className="space-y-4 flex-1 min-w-0">
           {/* Header Status & Type */}
@@ -146,14 +143,14 @@ export function AgentCard({ agent }: AgentCardProps) {
               {agent.name}
             </h3>
             
-            {/* Rol del Agente - Destacado en Verde Bitrix */}
+            {/* Rol del Agente - Destacado en Verde Bitrix (Texto reducido) */}
             <div className={cn(
-              "flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.15em] py-1.5 px-3 rounded-full border shadow-sm transition-all",
+              "inline-flex items-center gap-1.5 text-[9px] font-black uppercase tracking-[0.15em] py-1.5 px-3 rounded-full border shadow-sm transition-all",
               isActive 
                 ? "bg-accent/10 text-accent border-accent/20" 
                 : "bg-slate-100 text-slate-500 border-slate-200"
             )}>
-              <Briefcase className="h-3.5 w-3.5" />
+              <Briefcase className="h-3 w-3" />
               <span className="truncate">{agent.role}</span>
             </div>
 
