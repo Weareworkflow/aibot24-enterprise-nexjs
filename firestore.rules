@@ -1,20 +1,19 @@
-
 rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
     // Permitir acceso público total para la integración embebida (Iframe)
-    // El aislamiento de datos se maneja a nivel de aplicación mediante tenantId
+    // El aislamiento de datos se maneja a nivel de aplicación mediante el tenantId (member_id de Bitrix)
     match /agents/{agentId} {
       allow read, write: if true;
     }
     
-    // Permitir registro de instalaciones desde el portal de Bitrix24
+    // Permitir el registro y verificación de instalaciones de portales Bitrix24
     match /installations/{memberId} {
       allow read, write: if true;
     }
     
-    // Bloquear el resto de las colecciones por seguridad
+    // Bloquear el acceso al resto de las colecciones por seguridad
     match /{document=**} {
       allow read, write: if false;
     }
