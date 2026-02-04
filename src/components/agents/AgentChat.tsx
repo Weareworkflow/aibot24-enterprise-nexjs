@@ -1,40 +1,30 @@
-
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { AIAgent, APIEndpoint } from "@/lib/types";
+import { AIAgent } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import { 
   Send, 
   Loader2, 
   Wand2, 
-  Sparkles,
-  UserCog,
   Settings2,
   Code2,
   Share2,
-  UserRound,
-  Building2,
-  Target,
   Smartphone,
   Calendar,
   LayoutGrid,
   FilePlus,
   Cloud,
   Globe,
-  Palette,
   Check,
   ChevronDown,
   ChevronUp,
-  Briefcase,
-  Database,
-  Upload,
-  AlignLeft,
-  Trash2
+  Briefcase
 } from "lucide-react";
 import {
   Accordion,
