@@ -4,8 +4,8 @@
 import { useMemo } from "react";
 import { Navbar } from "@/components/layout/Navbar";
 import { AgentCard } from "@/components/dashboard/AgentCard";
-import { useCollection, useFirestore } from "@/firebase";
-import { collection, query, orderBy } from "firebase/firestore";
+import { useCollection, useFirestore, useUser } from "@/firebase";
+import { collection, query, orderBy, where } from "firebase/firestore";
 import { AIAgent } from "@/lib/types";
 import { Loader2, Sparkles, LayoutDashboard, SearchX } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -14,12 +14,17 @@ import { useUIStore } from "@/lib/store";
 
 export default function DashboardPage() {
   const db = useFirestore();
+  const { user } = useUser();
   const { searchQuery } = useUIStore();
   
   const agentsQuery = useMemo(() => {
-    if (!db) return null;
-    return query(collection(db, "agents"), orderBy("createdAt", "desc"));
-  }, [db]);
+    if (!db || !user) return null;
+    return query(
+      collection(db, "agents"), 
+      where("tenantId", "==", user.uid),
+      orderBy("createdAt", "desc")
+    );
+  }, [db, user]);
 
   const { data: agents, loading: collectionLoading, error } = useCollection<AIAgent>(agentsQuery);
 

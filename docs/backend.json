@@ -3,10 +3,11 @@
   "entities": {
     "AIAgent": {
       "title": "AI Agent",
-      "description": "Configuración técnica y métricas operativas de un agente de IA.",
+      "description": "Configuración técnica, métricas operativas y propiedad de un agente de IA.",
       "type": "object",
       "properties": {
         "id": { "type": "string" },
+        "tenantId": { "type": "string", "description": "ID del propietario o empresa creadora." },
         "name": { "type": "string" },
         "type": { "type": "string", "enum": ["voice", "text"] },
         "role": { "type": "string" },
@@ -34,7 +35,7 @@
           }
         }
       },
-      "required": ["name", "type", "role", "company", "objective", "tone", "knowledge"]
+      "required": ["tenantId", "name", "type", "role", "company", "objective", "tone", "knowledge"]
     }
   },
   "auth": {

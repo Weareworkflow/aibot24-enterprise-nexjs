@@ -11,6 +11,7 @@ export interface APIEndpoint {
 
 export interface AIAgent {
   id: string;
+  tenantId: string; // ID del creador/empresa
   name: string;
   type: AgentType;
   role: string;

@@ -13,7 +13,7 @@ import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { AgentType, ChatMessage, AIAgent } from "@/lib/types";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useFirestore } from "@/firebase";
+import { useFirestore, useUser } from "@/firebase";
 import { collection, doc, setDoc } from "firebase/firestore";
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
@@ -48,6 +48,7 @@ export default function NewAgentPage() {
   const { toast } = useToast();
   const router = useRouter();
   const db = useFirestore();
+  const { user } = useUser();
 
   useEffect(() => {
     if (step === 2 && messages.length === 0) {
@@ -115,6 +116,7 @@ export default function NewAgentPage() {
     const agentId = Date.now().toString();
     const newAgent: AIAgent = {
       id: agentId,
+      tenantId: user?.uid || "anonymous",
       name: config.name,
       type: agentType || 'text',
       role: config.role,
