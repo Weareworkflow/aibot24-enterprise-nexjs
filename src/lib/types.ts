@@ -9,6 +9,13 @@ export interface APIEndpoint {
   body?: string;
 }
 
+export interface KnowledgeFile {
+  name: string;
+  type: string;
+  size: string;
+  uploadedAt: string;
+}
+
 export interface AIAgent {
   id: string;
   tenantId: string; // ID del creador/empresa
@@ -19,6 +26,7 @@ export interface AIAgent {
   objective: string;
   tone: string;
   knowledge: string;
+  knowledgeFiles?: KnowledgeFile[];
   color?: string;
   createdAt: string;
   isActive?: boolean;

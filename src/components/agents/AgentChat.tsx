@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { AIAgent } from "@/lib/types";
+import { AIAgent, KnowledgeFile } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -26,7 +26,13 @@ import {
   ChevronDown,
   ChevronUp,
   Briefcase,
-  BookOpen
+  BookOpen,
+  FileText,
+  FileSpreadsheet,
+  FileCode,
+  Trash2,
+  UploadCloud,
+  Paperclip
 } from "lucide-react";
 import {
   Accordion,
@@ -64,6 +70,7 @@ export function AgentChat({ agent }: AgentChatProps) {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [history, setHistory] = useState<{role: 'user' | 'assistant', content: string, explanation?: string}[]>([]);
   const [activeModal, setActiveModal] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const scrollRef = useRef<HTMLDivElement>(null);
   const db = useFirestore();
@@ -94,6 +101,36 @@ export function AgentChat({ agent }: AgentChatProps) {
           requestResourceData: { [field]: value }
         }));
       });
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0 || !db) return;
+
+    const newFiles: KnowledgeFile[] = Array.from(files).map(file => ({
+      name: file.name,
+      type: file.type || 'application/octet-stream',
+      size: (file.size / 1024 / 1024).toFixed(2) + ' MB',
+      uploadedAt: new Date().toISOString()
+    }));
+
+    const updatedFiles = [...(agent.knowledgeFiles || []), ...newFiles];
+    handleManualUpdate('knowledgeFiles', updatedFiles, 'Archivos de Conocimiento');
+    
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const removeFile = (index: number) => {
+    if (!agent.knowledgeFiles) return;
+    const updatedFiles = agent.knowledgeFiles.filter((_, i) => i !== index);
+    handleManualUpdate('knowledgeFiles', updatedFiles, 'Archivo eliminado');
+  };
+
+  const getFileIcon = (type: string) => {
+    if (type.includes('pdf')) return <FileText className="h-5 w-5 text-red-500" />;
+    if (type.includes('sheet') || type.includes('excel') || type.includes('csv')) return <FileSpreadsheet className="h-5 w-5 text-green-500" />;
+    if (type.includes('word') || type.includes('document')) return <FileText className="h-5 w-5 text-blue-500" />;
+    return <Paperclip className="h-5 w-5 text-slate-400" />;
   };
 
   const handleRefine = async () => {
@@ -207,13 +244,62 @@ export function AgentChat({ agent }: AgentChatProps) {
                   <BookOpen className="h-5 w-5" /> Conocimiento
                 </div>
               </AccordionTrigger>
-              <AccordionContent className="pb-8 pt-2 space-y-6">
+              <AccordionContent className="pb-8 pt-2 space-y-8">
+                {/* File Upload Section */}
+                <div className="space-y-4">
+                  <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Base Documental (PDF, DOC, Excel, TXT)</Label>
+                  <div 
+                    onClick={() => fileInputRef.current?.click()}
+                    className="border-2 border-dashed border-slate-200 rounded-[2rem] p-8 flex flex-col items-center justify-center gap-3 bg-slate-50 hover:bg-slate-100 hover:border-secondary/40 transition-all cursor-pointer group"
+                  >
+                    <input 
+                      type="file" 
+                      multiple 
+                      hidden 
+                      ref={fileInputRef} 
+                      onChange={handleFileUpload}
+                      accept=".pdf,.doc,.docx,.xls,.xlsx,.txt,.csv"
+                    />
+                    <div className="h-12 w-12 rounded-full bg-white shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform">
+                      <UploadCloud className="h-6 w-6 text-secondary" />
+                    </div>
+                    <div className="text-center">
+                      <p className="text-xs font-bold text-slate-600">Haz clic para subir archivos</p>
+                      <p className="text-[9px] text-muted-foreground uppercase font-black tracking-widest mt-1">Soporte multi-formato Enterprise</p>
+                    </div>
+                  </div>
+
+                  {agent.knowledgeFiles && agent.knowledgeFiles.length > 0 && (
+                    <div className="grid gap-2">
+                      {agent.knowledgeFiles.map((file, idx) => (
+                        <div key={idx} className="flex items-center justify-between p-3 border rounded-2xl bg-white shadow-sm animate-in fade-in slide-in-from-top-1">
+                          <div className="flex items-center gap-3 overflow-hidden">
+                            {getFileIcon(file.type)}
+                            <div className="flex flex-col truncate">
+                              <span className="text-[11px] font-bold truncate">{file.name}</span>
+                              <span className="text-[8px] font-black uppercase text-muted-foreground tracking-widest">{file.size}</span>
+                            </div>
+                          </div>
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/5"
+                            onClick={() => removeFile(idx)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
                 <div className="space-y-1.5">
-                  <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Instrucciones Técnicas y FAQs</Label>
+                  <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Instrucciones Técnicas y FAQs Manuales</Label>
                   <Textarea 
                     value={agent.knowledge} 
                     onChange={(e) => handleManualUpdate('knowledge', e.target.value, 'Conocimiento')} 
-                    className="min-h-[350px] font-mono text-sm bg-slate-50 leading-relaxed" 
+                    className="min-h-[250px] font-mono text-sm bg-slate-50 leading-relaxed" 
                     placeholder="Escribe aquí las reglas de negocio, manuales y conocimientos específicos..."
                   />
                 </div>
