@@ -151,182 +151,183 @@ export function AgentChat({ agent }: AgentChatProps) {
 
   return (
     <div className="flex flex-col h-full border rounded-[2rem] bg-white shadow-xl overflow-hidden">
-      {/* SECCIÓN MANUAL: Ocupa el espacio restante cuando el chat está cerrado */}
-      <div className={cn(
-        "bg-muted/10 transition-all duration-500 ease-in-out flex flex-col min-h-0",
-        isChatOpen ? "h-auto" : "flex-1 overflow-y-auto"
-      )}>
-        <Accordion type="single" collapsible className="w-full">
-          <AccordionItem value="identidad" className="border-b px-6">
-            <AccordionTrigger className="hover:no-underline py-5 data-[state=open]:text-secondary transition-colors">
-              <div className="flex items-center gap-4 text-base font-black uppercase tracking-widest">
-                <Settings2 className="h-6 w-6" /> Identidad
-              </div>
-            </AccordionTrigger>
-            <AccordionContent className="pb-8 pt-2">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 text-[11px] font-black text-muted-foreground uppercase tracking-widest">
-                    <UserRound className="h-4 w-4" /> Nombre
-                  </div>
-                  <Input 
-                    value={agent.name} 
-                    onChange={(e) => handleManualUpdate('name', e.target.value)}
-                    className="h-12 text-sm font-bold bg-white/80"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 text-[11px] font-black text-muted-foreground uppercase tracking-widest">
-                    <Sparkles className="h-4 w-4" /> Rol
-                  </div>
-                  <Input 
-                    value={agent.role} 
-                    onChange={(e) => handleManualUpdate('role', e.target.value)}
-                    className="h-12 text-sm font-bold bg-white/80"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 text-[11px] font-black text-muted-foreground uppercase tracking-widest">
-                    <Building2 className="h-4 w-4" /> Empresa
-                  </div>
-                  <Input 
-                    value={agent.company} 
-                    onChange={(e) => handleManualUpdate('company', e.target.value)}
-                    className="h-12 text-sm font-bold bg-white/80"
-                  />
-                </div>
-              </div>
-
-              <div className="mt-8 pt-6 border-t">
-                <div className="flex items-center gap-2 text-[11px] font-black text-muted-foreground uppercase tracking-widest mb-4">
-                  <Palette className="h-5 w-5" /> Identidad Visual del Asistente
-                </div>
-                <div className="flex flex-wrap gap-3">
-                  {ASSISTANT_COLORS.map((c) => (
-                    <button
-                      key={c}
-                      onClick={() => handleManualUpdate('color', c)}
-                      className={cn(
-                        "h-10 w-10 rounded-full transition-all hover:scale-110 flex items-center justify-center relative shadow-sm border",
-                        agent.color === c && "ring-2 ring-offset-2 ring-secondary"
-                      )}
-                      style={{ backgroundColor: c }}
-                    >
-                      {agent.color === c && <Check className="h-5 w-5 text-white drop-shadow-sm" />}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </AccordionContent>
-          </AccordionItem>
-
-          <AccordionItem value="instrucciones" className="border-b px-6">
-            <AccordionTrigger className="hover:no-underline py-5 data-[state=open]:text-secondary transition-colors">
-              <div className="flex items-center gap-4 text-base font-black uppercase tracking-widest">
-                <Code2 className="h-6 w-6" /> Instrucciones
-              </div>
-            </AccordionTrigger>
-            <AccordionContent className="pb-8 pt-2 space-y-8">
-              <div className="space-y-3">
-                <div className="flex items-center gap-2 text-[11px] font-black text-muted-foreground uppercase tracking-widest">
-                  <Target className="h-5 w-5" /> Objetivo Crítico
-                </div>
-                <Textarea 
-                  value={agent.objective} 
-                  onChange={(e) => handleManualUpdate('objective', e.target.value)}
-                  className="min-h-[80px] text-sm font-bold leading-relaxed bg-white/80 resize-none"
-                />
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2 text-[11px] font-black text-muted-foreground uppercase tracking-widest">
-                    <Palette className="h-5 w-5" /> Personalidad y Tono
-                  </div>
-                  <Textarea 
-                    value={agent.tone} 
-                    onChange={(e) => handleManualUpdate('tone', e.target.value)}
-                    className="min-h-[120px] text-sm italic bg-white/80 leading-relaxed resize-none"
-                  />
-                </div>
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2 text-[11px] font-black text-muted-foreground uppercase tracking-widest">
-                    <LayoutGrid className="h-5 w-5" /> Base de Conocimiento
-                  </div>
-                  <Textarea 
-                    value={agent.knowledge} 
-                    onChange={(e) => handleManualUpdate('knowledge', e.target.value)}
-                    className="min-h-[120px] text-[12px] font-mono bg-white/80 leading-relaxed resize-none"
-                  />
-                </div>
-              </div>
-            </AccordionContent>
-          </AccordionItem>
-
-          <AccordionItem value="integraciones" className="border-b px-6">
-            <AccordionTrigger className="hover:no-underline py-5 data-[state=open]:text-secondary transition-colors">
-              <div className="flex items-center gap-4 text-base font-black uppercase tracking-widest">
-                <Share2 className="h-6 w-6" /> Integraciones
-              </div>
-            </AccordionTrigger>
-            <AccordionContent className="pb-8 pt-2">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {[
-                  { title: "WhatsApp Business", icon: Smartphone },
-                  { title: "Calendario Bitrix24", icon: Calendar },
-                  { title: "Catálogo Bitrix24", icon: LayoutGrid },
-                  { title: "Documentos Bitrix24", icon: FilePlus },
-                  { title: "Analizador Documento", icon: Search },
-                  { title: "Drive Bitrix24", icon: Cloud },
-                  { title: "Calls API", icon: PhoneCall },
-                ].map((int, i) => (
-                  <div 
-                    key={i} 
-                    className="flex items-center justify-between p-5 border rounded-2xl bg-white/50 hover:bg-white transition-colors shadow-sm"
-                  >
-                    <div className="flex items-center gap-4">
-                      <int.icon className={cn("h-6 w-6", agent.integrations?.[int.title] ? "text-secondary" : "text-muted-foreground")} />
-                      <span className="text-[12px] font-black uppercase tracking-wider">{int.title}</span>
-                    </div>
-                    <Switch 
-                      className="scale-110"
-                      checked={agent.integrations?.[int.title] || false} 
-                      onCheckedChange={(checked) => {
-                        const newInts = { ...agent.integrations, [int.title]: checked };
-                        handleManualUpdate('integrations', newInts);
-                      }}
-                    />
-                  </div>
-                ))}
-              </div>
-            </AccordionContent>
-          </AccordionItem>
-        </Accordion>
-      </div>
-
-      {/* OPTIMIZADOR AI: Parte inferior, colapsable */}
       <Collapsible 
         open={isChatOpen} 
         onOpenChange={setIsChatOpen}
-        className={cn(
-          "flex flex-col overflow-hidden min-h-0 border-t",
-          isChatOpen ? "flex-1" : "h-auto"
-        )}
+        className="flex flex-col h-full"
       >
-        <CollapsibleTrigger asChild>
-          <button className="flex items-center justify-between px-6 py-5 bg-secondary/5 hover:bg-secondary/10 transition-colors">
-            <div className="flex items-center gap-4">
-              <Wand2 className="h-6 w-6 text-secondary" />
-              <div className="text-left">
-                <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-secondary">Editar Ajuste con AI</h3>
-                <p className="text-[10px] font-bold text-muted-foreground uppercase">Optimización inteligente mediante lenguaje natural</p>
+        {/* SECCIÓN SUPERIOR: Contiene acordeones y el botón pegado a ellos */}
+        <div className={cn(
+          "bg-muted/10 transition-all duration-500 ease-in-out flex flex-col min-h-0",
+          isChatOpen ? "h-auto border-b" : "flex-1 overflow-y-auto"
+        )}>
+          <Accordion type="single" collapsible className="w-full">
+            <AccordionItem value="identidad" className="border-b px-6">
+              <AccordionTrigger className="hover:no-underline py-5 data-[state=open]:text-secondary transition-colors">
+                <div className="flex items-center gap-4 text-base font-black uppercase tracking-widest">
+                  <Settings2 className="h-6 w-6" /> Identidad
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="pb-8 pt-2">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 text-[11px] font-black text-muted-foreground uppercase tracking-widest">
+                      <UserRound className="h-4 w-4" /> Nombre
+                    </div>
+                    <Input 
+                      value={agent.name} 
+                      onChange={(e) => handleManualUpdate('name', e.target.value)}
+                      className="h-12 text-sm font-bold bg-white/80"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 text-[11px] font-black text-muted-foreground uppercase tracking-widest">
+                      <Sparkles className="h-4 w-4" /> Rol
+                    </div>
+                    <Input 
+                      value={agent.role} 
+                      onChange={(e) => handleManualUpdate('role', e.target.value)}
+                      className="h-12 text-sm font-bold bg-white/80"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 text-[11px] font-black text-muted-foreground uppercase tracking-widest">
+                      <Building2 className="h-4 w-4" /> Empresa
+                    </div>
+                    <Input 
+                      value={agent.company} 
+                      onChange={(e) => handleManualUpdate('company', e.target.value)}
+                      className="h-12 text-sm font-bold bg-white/80"
+                    />
+                  </div>
+                </div>
+
+                <div className="mt-8 pt-6 border-t">
+                  <div className="flex items-center gap-2 text-[11px] font-black text-muted-foreground uppercase tracking-widest mb-4">
+                    <Palette className="h-5 w-5" /> Identidad Visual del Asistente
+                  </div>
+                  <div className="flex flex-wrap gap-3">
+                    {ASSISTANT_COLORS.map((c) => (
+                      <button
+                        key={c}
+                        onClick={() => handleManualUpdate('color', c)}
+                        className={cn(
+                          "h-10 w-10 rounded-full transition-all hover:scale-110 flex items-center justify-center relative shadow-sm border",
+                          agent.color === c && "ring-2 ring-offset-2 ring-secondary"
+                        )}
+                        style={{ backgroundColor: c }}
+                      >
+                        {agent.color === c && <Check className="h-5 w-5 text-white drop-shadow-sm" />}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="instrucciones" className="border-b px-6">
+              <AccordionTrigger className="hover:no-underline py-5 data-[state=open]:text-secondary transition-colors">
+                <div className="flex items-center gap-4 text-base font-black uppercase tracking-widest">
+                  <Code2 className="h-6 w-6" /> Instrucciones
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="pb-8 pt-2 space-y-8">
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 text-[11px] font-black text-muted-foreground uppercase tracking-widest">
+                    <Target className="h-5 w-5" /> Objetivo Crítico
+                  </div>
+                  <Textarea 
+                    value={agent.objective} 
+                    onChange={(e) => handleManualUpdate('objective', e.target.value)}
+                    className="min-h-[80px] text-sm font-bold leading-relaxed bg-white/80 resize-none"
+                  />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2 text-[11px] font-black text-muted-foreground uppercase tracking-widest">
+                      <Palette className="h-5 w-5" /> Personalidad y Tono
+                    </div>
+                    <Textarea 
+                      value={agent.tone} 
+                      onChange={(e) => handleManualUpdate('tone', e.target.value)}
+                      className="min-h-[120px] text-sm italic bg-white/80 leading-relaxed resize-none"
+                    />
+                  </div>
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-2 text-[11px] font-black text-muted-foreground uppercase tracking-widest">
+                      <LayoutGrid className="h-5 w-5" /> Base de Conocimiento
+                    </div>
+                    <Textarea 
+                      value={agent.knowledge} 
+                      onChange={(e) => handleManualUpdate('knowledge', e.target.value)}
+                      className="min-h-[120px] text-[12px] font-mono bg-white/80 leading-relaxed resize-none"
+                    />
+                  </div>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="integraciones" className="border-b px-6">
+              <AccordionTrigger className="hover:no-underline py-5 data-[state=open]:text-secondary transition-colors">
+                <div className="flex items-center gap-4 text-base font-black uppercase tracking-widest">
+                  <Share2 className="h-6 w-6" /> Integraciones
+                </div>
+              </AccordionTrigger>
+              <AccordionContent className="pb-8 pt-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {[
+                    { title: "WhatsApp Business", icon: Smartphone },
+                    { title: "Calendario Bitrix24", icon: Calendar },
+                    { title: "Catálogo Bitrix24", icon: LayoutGrid },
+                    { title: "Documentos Bitrix24", icon: FilePlus },
+                    { title: "Analizador Documento", icon: Search },
+                    { title: "Drive Bitrix24", icon: Cloud },
+                    { title: "Calls API", icon: PhoneCall },
+                  ].map((int, i) => (
+                    <div 
+                      key={i} 
+                      className="flex items-center justify-between p-5 border rounded-2xl bg-white/50 hover:bg-white transition-colors shadow-sm"
+                    >
+                      <div className="flex items-center gap-4">
+                        <int.icon className={cn("h-6 w-6", agent.integrations?.[int.title] ? "text-secondary" : "text-muted-foreground")} />
+                        <span className="text-[12px] font-black uppercase tracking-wider">{int.title}</span>
+                      </div>
+                      <Switch 
+                        className="scale-110"
+                        checked={agent.integrations?.[int.title] || false} 
+                        onCheckedChange={(checked) => {
+                          const newInts = { ...agent.integrations, [int.title]: checked };
+                          handleManualUpdate('integrations', newInts);
+                        }}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+
+          {/* BOTÓN DE OPTIMIZADOR AI: Pegado a la última sección del acordeón */}
+          <CollapsibleTrigger asChild>
+            <button className={cn(
+              "flex items-center justify-between px-6 py-5 bg-secondary/5 hover:bg-secondary/10 transition-colors w-full border-t border-secondary/10",
+              isChatOpen && "bg-secondary/10"
+            )}>
+              <div className="flex items-center gap-4">
+                <Wand2 className="h-6 w-6 text-secondary" />
+                <div className="text-left">
+                  <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-secondary">Editar Ajuste con AI</h3>
+                  <p className="text-[10px] font-bold text-muted-foreground uppercase">Optimización inteligente mediante lenguaje natural</p>
+                </div>
               </div>
-            </div>
-            {isChatOpen ? <ChevronDown className="h-5 w-5 text-secondary" /> : <ChevronUp className="h-5 w-5 text-secondary" />}
-          </button>
-        </CollapsibleTrigger>
-        
-        <CollapsibleContent className="flex-1 flex flex-col min-h-0 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0">
-          <div className="flex-1 flex flex-col h-[400px]">
+              {isChatOpen ? <ChevronDown className="h-5 w-5 text-secondary" /> : <ChevronUp className="h-5 w-5 text-secondary" />}
+            </button>
+          </CollapsibleTrigger>
+        </div>
+
+        {/* CONTENIDO DEL CHAT: Solo visible y flexible cuando está abierto */}
+        <CollapsibleContent className="flex-1 flex flex-col min-h-0 overflow-hidden bg-white">
+          <div className="flex-1 flex flex-col h-full">
             <ScrollArea className="flex-1 p-6" ref={scrollRef}>
               <div className="space-y-6 pb-6">
                 {history.length === 0 && !isRefining && (
