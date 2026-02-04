@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useRef, useEffect } from "react";
@@ -32,7 +31,8 @@ import {
   ChevronDown,
   ChevronUp,
   KeyRound,
-  SmartphoneNfc
+  SmartphoneNfc,
+  AlertCircle
 } from "lucide-react";
 import {
   Accordion,
@@ -179,6 +179,7 @@ export function AgentChat({ agent }: AgentChatProps) {
     <div className="flex flex-col h-full border rounded-[2rem] bg-white shadow-xl overflow-hidden border-slate-200">
       <ScrollArea className="flex-1" ref={scrollRef}>
         <div className="flex flex-col min-h-full">
+          {/* Accordion principal: todas las secciones cerradas por defecto */}
           <Accordion type="single" collapsible className="w-full">
             {/* IDENTIDAD */}
             <AccordionItem value="identidad" className="border-b px-6 border-slate-100">
@@ -304,34 +305,48 @@ export function AgentChat({ agent }: AgentChatProps) {
                     { title: "Analizador Documento", icon: Search },
                     { title: "Drive Bitrix24", icon: Cloud },
                     { title: "Calls API", icon: PhoneCall },
-                  ].map((int, i) => (
-                    <div 
-                      key={i} 
-                      className="flex items-center justify-between p-4 border border-slate-100 rounded-2xl bg-white hover:bg-slate-50 transition-colors shadow-sm"
-                    >
-                      <div className="flex items-center gap-4">
-                        <int.icon className={cn("h-6 w-6", agent.integrations?.[int.title] ? "text-secondary" : "text-muted-foreground")} />
-                        <span className="text-[12px] font-black uppercase tracking-wider">{int.title}</span>
+                  ].map((int, i) => {
+                    const isCalendar = int.title === "Calendario Bitrix24";
+                    const isActive = agent.integrations?.[int.title] || false;
+
+                    return (
+                      <div key={i} className="flex flex-col gap-2">
+                        <div className="flex items-center justify-between p-4 border border-slate-100 rounded-2xl bg-white hover:bg-slate-50 transition-colors shadow-sm">
+                          <div className="flex items-center gap-4">
+                            <int.icon className={cn("h-6 w-6", isActive ? "text-secondary" : "text-muted-foreground")} />
+                            <span className="text-[12px] font-black uppercase tracking-wider">{int.title}</span>
+                          </div>
+                          <Switch 
+                            checked={isActive} 
+                            onCheckedChange={(checked) => {
+                              if (int.title === "WhatsApp Business" && checked) {
+                                setIsWhatsAppModalOpen(true);
+                              } else {
+                                const newInts = { ...agent.integrations, [int.title]: checked };
+                                handleManualUpdate('integrations', newInts);
+                              }
+                            }}
+                          />
+                        </div>
+                        {/* Lista de Calendarios cuando Calendario está activo */}
+                        {isCalendar && isActive && (
+                          <div className="mx-4 p-4 rounded-2xl bg-slate-50 border border-dashed border-slate-200 animate-in fade-in slide-in-from-top-1">
+                            <div className="flex flex-col items-center justify-center py-2 text-center gap-2">
+                              <AlertCircle className="h-5 w-5 text-muted-foreground/50" />
+                              <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Lista de Calendarios</p>
+                              <p className="text-[11px] italic text-muted-foreground">No se encontraron calendarios vinculados en este portal.</p>
+                            </div>
+                          </div>
+                        )}
                       </div>
-                      <Switch 
-                        checked={agent.integrations?.[int.title] || false} 
-                        onCheckedChange={(checked) => {
-                          if (int.title === "WhatsApp Business" && checked) {
-                            setIsWhatsAppModalOpen(true);
-                          } else {
-                            const newInts = { ...agent.integrations, [int.title]: checked };
-                            handleManualUpdate('integrations', newInts);
-                          }
-                        }}
-                      />
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </AccordionContent>
             </AccordionItem>
           </Accordion>
 
-          {/* EDITAR CON AI */}
+          {/* EDITAR CON AI: Recogido por defecto, anclado a integraciones */}
           <Collapsible open={isChatOpen} onOpenChange={setIsChatOpen} className="w-full">
             <CollapsibleTrigger asChild>
               <button className={cn(
