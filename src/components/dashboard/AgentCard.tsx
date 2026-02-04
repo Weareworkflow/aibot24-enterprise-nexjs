@@ -1,3 +1,4 @@
+
 "use client";
 
 import { AIAgent } from "@/lib/types";
@@ -16,7 +17,8 @@ import {
   ArrowRightLeft, 
   UserX, 
   Building2,
-  Clock
+  Clock,
+  Briefcase
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -99,18 +101,18 @@ export function AgentCard({ agent }: AgentCardProps) {
     <Card 
       onClick={handleCardClick}
       className={cn(
-        "card-rounded relative hover:scale-[1.02] transition-all duration-500 border border-white/40 pill-shadow overflow-hidden p-8 flex flex-col gap-6 group cursor-pointer",
+        "card-rounded relative hover:scale-[1.02] transition-all duration-500 border border-white/60 pill-shadow overflow-hidden p-8 flex flex-col gap-6 group cursor-pointer",
         isActive ? "bg-white alive-bg" : "bg-slate-100/80 grayscale-[0.8]"
       )}
     >
-      {/* Decorative pulse indicator */}
+      {/* Indicador de Estado - Reubicado y en Verde */}
       {isActive && (
-        <div className="absolute top-6 right-6 flex items-center gap-1.5 px-2 py-1 rounded-full bg-secondary/5 border border-secondary/10">
+        <div className="absolute top-6 right-6 flex items-center gap-1.5 px-3 py-1 rounded-full bg-accent/10 border border-accent/20">
           <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-secondary opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-secondary"></span>
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-accent"></span>
           </span>
-          <span className="text-[7px] font-black uppercase tracking-widest text-secondary">En Línea</span>
+          <span className="text-[7px] font-black uppercase tracking-widest text-accent">En Línea</span>
         </div>
       )}
 
@@ -137,8 +139,16 @@ export function AgentCard({ agent }: AgentCardProps) {
             )}>
               {agent.name}
             </h3>
+            {/* Rol del Agente - En Verde */}
             <div className={cn(
-              "flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest",
+              "flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest",
+              isActive ? "text-accent" : "text-slate-500"
+            )}>
+              <Briefcase className="h-3.5 w-3.5" />
+              {agent.role}
+            </div>
+            <div className={cn(
+              "flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest opacity-60",
               isActive ? "text-muted-foreground" : "text-slate-500"
             )}>
               <Building2 className="h-3 w-3" />
