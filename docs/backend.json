@@ -7,7 +7,7 @@
       "type": "object",
       "properties": {
         "id": { "type": "string" },
-        "tenantId": { "type": "string", "description": "ID del propietario o empresa creadora." },
+        "tenantId": { "type": "string", "description": "ID del propietario o empresa creadora (member_id de Bitrix)." },
         "name": { "type": "string" },
         "type": { "type": "string", "enum": ["voice", "text"] },
         "role": { "type": "string" },
@@ -36,6 +36,21 @@
         }
       },
       "required": ["tenantId", "name", "type", "role", "company", "objective", "tone", "knowledge"]
+    },
+    "BitrixInstallation": {
+      "title": "Bitrix Installation",
+      "description": "Registro de vinculación exitosa de un portal Bitrix24.",
+      "type": "object",
+      "properties": {
+        "memberId": { "type": "string" },
+        "domain": { "type": "string" },
+        "accessToken": { "type": "string" },
+        "refreshToken": { "type": "string" },
+        "expiresIn": { "type": "number" },
+        "status": { "type": "string", "enum": ["active", "suspended"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["memberId", "domain", "status", "createdAt"]
     }
   },
   "auth": {
@@ -44,7 +59,11 @@
   "firestore": {
     "/agents/{agentId}": {
       "schema": { "$ref": "#/entities/AIAgent" },
-      "description": "Repositorio central de agentes inteligentes accesible mediante Iframe."
+      "description": "Repositorio central de agentes inteligentes."
+    },
+    "/installations/{memberId}": {
+      "schema": { "$ref": "#/entities/BitrixInstallation" },
+      "description": "Registro de portales que han instalado la aplicación."
     }
   }
 }

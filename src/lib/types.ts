@@ -18,7 +18,7 @@ export interface KnowledgeFile {
 
 export interface AIAgent {
   id: string;
-  tenantId: string; // ID del creador/empresa
+  tenantId: string; // ID del portal (member_id)
   name: string;
   type: AgentType;
   role: string;
@@ -42,6 +42,16 @@ export interface AIAgent {
     abandoned?: number;
   };
   feedback?: string[];
+}
+
+export interface BitrixInstallation {
+  memberId: string;
+  domain: string;
+  accessToken?: string;
+  refreshToken?: string;
+  expiresIn?: number;
+  status: 'active' | 'suspended';
+  createdAt: string;
 }
 
 export interface ChatMessage {
