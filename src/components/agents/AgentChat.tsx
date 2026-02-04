@@ -32,7 +32,8 @@ import {
   KeyRound,
   SmartphoneNfc,
   AlertCircle,
-  CalendarDays
+  CalendarDays,
+  ShoppingBag
 } from "lucide-react";
 import {
   Accordion,
@@ -81,6 +82,7 @@ export function AgentChat({ agent }: AgentChatProps) {
   // Modals States
   const [isWhatsAppModalOpen, setIsWhatsAppModalOpen] = useState(false);
   const [isCalendarModalOpen, setIsCalendarModalOpen] = useState(false);
+  const [isCatalogModalOpen, setIsCatalogModalOpen] = useState(false);
   const [waCredentials, setWaCredentials] = useState({ phoneId: "", token: "" });
   
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -184,6 +186,17 @@ export function AgentChat({ agent }: AgentChatProps) {
     toast({
       title: "Calendario Vinculado",
       description: "Se ha establecido el enlace con el servicio de calendario.",
+    });
+  };
+
+  const handleCatalogIntegration = () => {
+    if (!db || !agent) return;
+    const newInts = { ...agent.integrations, "Catálogo Bitrix24": true };
+    handleManualUpdate('integrations', newInts);
+    setIsCatalogModalOpen(false);
+    toast({
+      title: "Catálogo Sincronizado",
+      description: "El catálogo de productos ha sido vinculado al agente.",
     });
   };
 
@@ -333,6 +346,8 @@ export function AgentChat({ agent }: AgentChatProps) {
                                 setIsWhatsAppModalOpen(true);
                               } else if (int.title === "Calendario Bitrix24" && checked) {
                                 setIsCalendarModalOpen(true);
+                              } else if (int.title === "Catálogo Bitrix24" && checked) {
+                                setIsCatalogModalOpen(true);
                               } else {
                                 const newInts = { ...agent.integrations, [int.title]: checked };
                                 handleManualUpdate('integrations', newInts);
@@ -501,6 +516,42 @@ export function AgentChat({ agent }: AgentChatProps) {
               variant="outline"
               className="w-full h-12 pill-rounded border-slate-200 text-muted-foreground font-black text-[11px] uppercase tracking-[0.2em]"
               onClick={() => setIsCalendarModalOpen(false)}
+            >
+              Cerrar Protocolo
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Catalog Configuration Modal */}
+      <Dialog open={isCatalogModalOpen} onOpenChange={setIsCatalogModalOpen}>
+        <DialogContent className="sm:max-w-[425px] rounded-[2rem] border-none shadow-2xl">
+          <DialogHeader>
+            <div className="h-16 w-16 bg-secondary/10 rounded-full flex items-center justify-center mb-4 mx-auto">
+              <ShoppingBag className="h-8 w-8 text-secondary" />
+            </div>
+            <DialogTitle className="text-center font-headline font-bold text-xl">Catálogo de Productos</DialogTitle>
+            <DialogDescription className="text-center text-xs text-muted-foreground uppercase font-black tracking-widest pt-2">
+              Sincronización de Inventario Bitrix24
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="py-8 flex flex-col items-center justify-center text-center gap-4 bg-slate-50 rounded-3xl border border-dashed border-slate-200 mx-2">
+            <AlertCircle className="h-10 w-10 text-muted-foreground/30" />
+            <div className="space-y-1">
+              <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Sin Catálogos Disponibles</p>
+              <p className="text-[11px] italic text-muted-foreground px-6">
+                Se debe crear un Catálogo de Productos en Bitrix24 para seleccionarlo aquí.
+              </p>
+            </div>
+          </div>
+
+          <DialogFooter className="sm:justify-center">
+            <Button 
+              type="button" 
+              variant="outline"
+              className="w-full h-12 pill-rounded border-slate-200 text-muted-foreground font-black text-[11px] uppercase tracking-[0.2em]"
+              onClick={() => setIsCatalogModalOpen(false)}
             >
               Cerrar Protocolo
             </Button>
