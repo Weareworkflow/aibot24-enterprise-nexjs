@@ -19,20 +19,17 @@ import {
   Smartphone,
   Calendar,
   LayoutGrid,
-  FilePlus,
-  Cloud,
-  Globe,
+  BookOpen,
+  FileText,
+  FileSpreadsheet,
+  Trash2,
+  UploadCloud,
+  Paperclip,
   Check,
   ChevronDown,
   ChevronUp,
   Briefcase,
-  BookOpen,
-  FileText,
-  FileSpreadsheet,
-  FileCode,
-  Trash2,
-  UploadCloud,
-  Paperclip
+  Globe
 } from "lucide-react";
 import {
   Accordion,
@@ -178,7 +175,7 @@ export function AgentChat({ agent }: AgentChatProps) {
     <div className="flex flex-col h-full border rounded-[2rem] bg-white shadow-xl overflow-hidden border-slate-200">
       <ScrollArea className="flex-1" ref={scrollRef}>
         <div className="flex flex-col min-h-full">
-          <Accordion type="single" collapsible className="w-full">
+          <Accordion type="single" collapsible defaultValue="identidad" className="w-full">
             <AccordionItem value="identidad" className="border-b px-6 border-slate-100">
               <AccordionTrigger className="hover:no-underline py-6">
                 <div className="flex items-center gap-4 text-[14px] font-black uppercase tracking-widest text-slate-700">
@@ -218,23 +215,35 @@ export function AgentChat({ agent }: AgentChatProps) {
             <AccordionItem value="instrucciones" className="border-b px-6 border-slate-100">
               <AccordionTrigger className="hover:no-underline py-6">
                 <div className="flex items-center gap-4 text-[14px] font-black uppercase tracking-widest text-slate-700">
-                  <Code2 className="h-5 w-5" /> Estilo y Objetivos
+                  <Code2 className="h-5 w-5" /> Instrucciones
                 </div>
               </AccordionTrigger>
               <AccordionContent className="pb-8 pt-2 space-y-6">
-                {[
-                  { key: 'objective', label: 'Objetivo Crítico' },
-                  { key: 'tone', label: 'Tono y Personalidad' }
-                ].map(field => (
-                  <div key={field.key} className="space-y-1.5">
-                    <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">{field.label}</Label>
+                <div className="space-y-6">
+                  {[
+                    { key: 'objective', label: 'Objetivo Crítico' },
+                    { key: 'tone', label: 'Tono y Personalidad' }
+                  ].map(field => (
+                    <div key={field.key} className="space-y-1.5">
+                      <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">{field.label}</Label>
+                      <Textarea 
+                        value={(agent as any)[field.key]} 
+                        onChange={(e) => handleManualUpdate(field.key, e.target.value)} 
+                        className="min-h-[100px] text-sm bg-slate-50" 
+                      />
+                    </div>
+                  ))}
+                  
+                  <div className="space-y-1.5">
+                    <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Instrucciones Técnicas y Reglas de Negocio</Label>
                     <Textarea 
-                      value={(agent as any)[field.key]} 
-                      onChange={(e) => handleManualUpdate(field.key, e.target.value)} 
-                      className="min-h-[100px] text-sm bg-slate-50" 
+                      value={agent.knowledge} 
+                      onChange={(e) => handleManualUpdate('knowledge', e.target.value, 'Instrucciones')} 
+                      className="min-h-[250px] font-mono text-sm bg-slate-50 leading-relaxed" 
+                      placeholder="Escribe aquí las reglas específicas, manuales y comportamientos esperados..."
                     />
                   </div>
-                ))}
+                </div>
               </AccordionContent>
             </AccordionItem>
 
@@ -245,7 +254,6 @@ export function AgentChat({ agent }: AgentChatProps) {
                 </div>
               </AccordionTrigger>
               <AccordionContent className="pb-8 pt-2 space-y-8">
-                {/* File Upload Section */}
                 <div className="space-y-4">
                   <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Base Documental (PDF, DOC, Excel, TXT)</Label>
                   <div 
@@ -293,16 +301,6 @@ export function AgentChat({ agent }: AgentChatProps) {
                     </div>
                   )}
                 </div>
-
-                <div className="space-y-1.5">
-                  <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Instrucciones Técnicas y FAQs Manuales</Label>
-                  <Textarea 
-                    value={agent.knowledge} 
-                    onChange={(e) => handleManualUpdate('knowledge', e.target.value, 'Conocimiento')} 
-                    className="min-h-[250px] font-mono text-sm bg-slate-50 leading-relaxed" 
-                    placeholder="Escribe aquí las reglas de negocio, manuales y conocimientos específicos..."
-                  />
-                </div>
               </AccordionContent>
             </AccordionItem>
 
@@ -319,8 +317,8 @@ export function AgentChat({ agent }: AgentChatProps) {
                     { title: "CRM Bitrix24", icon: Briefcase },
                     { title: "Calendario Bitrix24", icon: Calendar },
                     { title: "Catálogo Bitrix24", icon: LayoutGrid },
-                    { title: "Documentos Bitrix24", icon: FilePlus },
-                    { title: "Drive Bitrix24", icon: Cloud },
+                    { title: "Documentos Bitrix24", icon: FileText },
+                    { title: "Drive Bitrix24", icon: UploadCloud },
                     { title: "API REST", icon: Globe },
                   ].map((int) => (
                     <div key={int.title} className="flex items-center justify-between p-4 border rounded-2xl bg-white shadow-sm">
