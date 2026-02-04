@@ -3,8 +3,8 @@
 
 import { Navbar } from "@/components/layout/Navbar";
 import { AgentCard } from "@/components/dashboard/AgentCard";
-import { useCollection, useFirestore, useUser } from "@/firebase";
-import { collection, query, orderBy, where } from "firebase/firestore";
+import { useCollection, useFirestore } from "@/firebase";
+import { collection, query, orderBy } from "firebase/firestore";
 import { AIAgent } from "@/lib/types";
 import { useMemo } from "react";
 import { Loader2, Sparkles, SearchX, Database } from "lucide-react";
@@ -14,21 +14,16 @@ import { useUIStore } from "@/lib/store";
 
 export default function HomePage() {
   const db = useFirestore();
-  const { user, loading: authLoading } = useUser();
   const { searchQuery } = useUIStore();
   
   const agentsQuery = useMemo(() => {
-    if (!db || authLoading) return null;
-    
-    // Si no hay usuario, buscamos agentes "anonymous" como fallback para la demo
-    const uid = user?.uid || "anonymous";
+    if (!db) return null;
     
     return query(
       collection(db, "agents"), 
-      where("tenantId", "==", uid),
       orderBy("createdAt", "desc")
     );
-  }, [db, user, authLoading]);
+  }, [db]);
 
   const { data: agents, loading: collectionLoading, error } = useCollection<AIAgent>(agentsQuery);
 
@@ -55,7 +50,7 @@ export default function HomePage() {
     <div className="flex flex-col min-h-screen bg-[#F7F9FB]">
       <Navbar />
       <main className="container mx-auto px-4 py-8 space-y-8">
-        {(collectionLoading || authLoading) ? (
+        {collectionLoading ? (
           <div className="flex flex-col items-center justify-center py-20 gap-4">
             <Loader2 className="h-8 w-8 animate-spin text-secondary" />
             <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Sincronizando con Bitrix24...</p>
