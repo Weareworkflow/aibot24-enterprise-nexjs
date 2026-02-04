@@ -17,6 +17,7 @@ import { FirestorePermissionError } from '@/firebase/errors';
 /**
  * Página de Instalación de Bitrix24.
  * Captura el member_id para usarlo como tenantId global y guarda el registro en la DB.
+ * URL de instalación: /install
  */
 export default function InstallPage() {
   const [status, setStatus] = useState<'loading' | 'ready' | 'success' | 'error'>('loading');
@@ -31,18 +32,18 @@ export default function InstallPage() {
       try {
         const auth = BX24.getAuth();
         const queryParams = new URLSearchParams(window.location.search);
-        const domain = queryParams.get('DOMAIN') || auth?.domain;
         
         // El member_id es el identificador único de la instalación en el portal
-        const memberId = auth?.member_id;
+        const memberId = auth?.member_id || queryParams.get('member_id');
+        const domain = auth?.domain || queryParams.get('DOMAIN');
 
         if (memberId) {
           const installationRecord: BitrixInstallation = {
             memberId,
             domain: domain || "unknown",
-            accessToken: auth?.access_token,
-            refreshToken: auth?.refresh_token,
-            expiresIn: auth?.expires_in,
+            accessToken: auth?.access_token || "",
+            refreshToken: auth?.refresh_token || "",
+            expiresIn: auth?.expires_in || 3600,
             status: 'active',
             createdAt: new Date().toISOString()
           };
@@ -52,6 +53,7 @@ export default function InstallPage() {
           
           setDoc(installRef, installationRecord)
             .then(() => {
+              // Guardamos en el store global para persistencia en la sesión
               setTenantId(memberId);
               if (domain) setDomain(domain);
               setInstallData(installationRecord);
@@ -60,6 +62,7 @@ export default function InstallPage() {
               BX24.installFinish();
               setStatus('success');
               
+              // Redirigimos al home después de un momento
               setTimeout(() => {
                 window.location.href = '/';
               }, 3000);
@@ -85,7 +88,6 @@ export default function InstallPage() {
   };
 
   useEffect(() => {
-    // Pequeña espera para asegurar que BX24 esté disponible si el script cargó rápido
     const checkBX24 = setInterval(() => {
       if ((window as any).BX24) {
         setStatus('ready');
@@ -153,10 +155,10 @@ export default function InstallPage() {
                 <div className="w-full p-4 bg-slate-50 rounded-xl border flex flex-col gap-2">
                   <div className="flex items-center gap-3">
                     <Database className="h-3 w-3 text-slate-400" />
-                    <span className="text-[9px] font-mono text-slate-500 truncate">ID: {installData?.memberId}</span>
+                    <span className="text-[9px] font-mono text-slate-500 truncate">Portal ID: {installData?.memberId}</span>
                   </div>
                 </div>
-                <p className="text-[9px] text-muted-foreground italic">Redirigiendo a la consola de agentes...</p>
+                <p className="text-[9px] text-muted-foreground italic">Redirigiendo a tu consola...</p>
               </div>
             )}
 
