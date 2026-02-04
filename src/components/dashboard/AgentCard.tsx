@@ -101,14 +101,17 @@ export function AgentCard({ agent }: AgentCardProps) {
     <Card 
       onClick={handleCardClick}
       className={cn(
-        "card-rounded relative hover:scale-[1.02] transition-all duration-500 border border-slate-100 pill-shadow overflow-hidden p-8 flex flex-col gap-6 group cursor-pointer",
-        isActive ? "bg-white alive-bg" : "bg-slate-50/80 grayscale-[0.8]"
+        "card-rounded relative hover:scale-[1.02] transition-all duration-500 border border-slate-100 pill-shadow overflow-hidden p-8 flex flex-col gap-6 group cursor-pointer bg-white",
+        !isActive && "grayscale-[0.8] opacity-80 bg-slate-50/50"
       )}
     >
-      <div className="flex justify-between items-start w-full">
-        <div className="space-y-4 flex-1">
+      {/* Background decoration refined */}
+      <div className="absolute top-0 right-0 w-32 h-32 bg-secondary/5 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none" />
+
+      <div className="flex justify-between items-start w-full relative z-10">
+        <div className="space-y-4 flex-1 min-w-0">
           {/* Header Status & Type */}
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2">
             <div className={cn(
               "flex items-center gap-2 text-[10px] font-black uppercase tracking-widest",
               isActive ? "text-muted-foreground" : "text-slate-500"
@@ -121,35 +124,37 @@ export function AgentCard({ agent }: AgentCardProps) {
               )}>
                 {isVoice ? <Mic2 className="h-3 w-3" /> : <MessageSquareText className="h-3 w-3" />}
               </div>
-              {isVoice ? "VOICE AGENT" : "TEXT AGENT"}
+              <span className="truncate max-w-[80px]">{isVoice ? "VOICE" : "TEXT"}</span>
             </div>
 
             {isActive && (
-              <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-accent/10 border border-accent/20 animate-in fade-in zoom-in duration-700">
+              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-accent/10 border border-accent/20 animate-in fade-in zoom-in duration-700">
                 <span className="relative flex h-1.5 w-1.5">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span>
                   <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-accent"></span>
                 </span>
-                <span className="text-[7px] font-black uppercase tracking-widest text-accent">En Línea</span>
+                <span className="text-[7px] font-black uppercase tracking-[0.2em] text-accent">ON</span>
               </div>
             )}
           </div>
 
-          <div className="space-y-1">
+          <div className="space-y-1.5">
             <h3 className={cn(
-              "text-2xl font-headline font-black leading-tight transition-colors",
+              "text-2xl font-headline font-black leading-tight transition-colors truncate",
               isActive ? "text-primary group-hover:text-secondary" : "text-slate-700"
             )}>
               {agent.name}
             </h3>
             
-            {/* Rol del Agente - Destacado en Verde */}
+            {/* Rol del Agente - Destacado en Verde Bitrix */}
             <div className={cn(
-              "flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest py-1 px-2 rounded-md bg-accent/5 w-fit",
-              isActive ? "text-accent" : "text-slate-500"
+              "flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.15em] py-1.5 px-3 rounded-full border shadow-sm transition-all",
+              isActive 
+                ? "bg-accent/10 text-accent border-accent/20" 
+                : "bg-slate-100 text-slate-500 border-slate-200"
             )}>
               <Briefcase className="h-3.5 w-3.5" />
-              {agent.role}
+              <span className="truncate">{agent.role}</span>
             </div>
 
             <div className={cn(
@@ -162,7 +167,7 @@ export function AgentCard({ agent }: AgentCardProps) {
           </div>
         </div>
         
-        <div className="flex gap-2 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+        <div className="flex gap-2 flex-shrink-0 ml-4" onClick={(e) => e.stopPropagation()}>
           <Button 
             variant="outline" 
             size="icon" 
@@ -193,22 +198,22 @@ export function AgentCard({ agent }: AgentCardProps) {
                 <Trash2 className="h-4 w-4" />
               </Button>
             </AlertDialogTrigger>
-            <AlertDialogContent className="rounded-3xl border-none p-8">
+            <AlertDialogContent className="rounded-[2.5rem] border-none p-10 shadow-2xl">
               <AlertDialogHeader>
-                <AlertDialogTitle className="font-headline font-bold text-xl">¿Eliminar este agente?</AlertDialogTitle>
-                <AlertDialogDescription className="text-xs leading-relaxed">
-                  Esta acción no se puede deshacer. Se eliminarán permanentemente las configuraciones de <strong>{agent.name}</strong> en la infraestructura de la nube.
+                <AlertDialogTitle className="font-headline font-bold text-xl text-center">¿Eliminar Agente?</AlertDialogTitle>
+                <AlertDialogDescription className="text-xs leading-relaxed text-center py-2">
+                  Esta acción no se puede deshacer. Se eliminarán permanentemente las configuraciones de <strong>{agent.name}</strong>.
                 </AlertDialogDescription>
               </AlertDialogHeader>
-              <AlertDialogFooter className="mt-6">
-                <AlertDialogCancel className="rounded-xl text-[10px] font-black uppercase h-12" onClick={(e) => e.stopPropagation()}>
+              <AlertDialogFooter className="mt-8 flex gap-3 sm:justify-center">
+                <AlertDialogCancel className="pill-rounded text-[10px] font-black uppercase h-12 flex-1" onClick={(e) => e.stopPropagation()}>
                   Cancelar
                 </AlertDialogCancel>
                 <AlertDialogAction 
                   onClick={handleDelete}
-                  className="bg-destructive hover:bg-destructive/90 rounded-xl text-[10px] font-black uppercase h-12"
+                  className="bg-destructive hover:bg-destructive/90 pill-rounded text-[10px] font-black uppercase h-12 flex-1"
                 >
-                  Confirmar Eliminación
+                  Confirmar
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
@@ -216,38 +221,40 @@ export function AgentCard({ agent }: AgentCardProps) {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      {/* Metrics Section */}
+      <div className="grid grid-cols-2 gap-4 relative z-10">
         <div className={cn(
-          "p-4 rounded-[1.8rem] border transition-all duration-500 flex items-center gap-3 premium-relief",
-          isActive ? "bg-slate-50 border-white/60" : "bg-slate-200/50 border-slate-300 shadow-none"
+          "p-5 rounded-[2rem] border transition-all duration-500 flex items-center gap-4 premium-relief",
+          isActive ? "bg-white border-slate-100" : "bg-slate-200/50 border-slate-300 shadow-none"
         )}>
-          <div className={cn("p-2 rounded-full premium-relief", isActive ? "bg-white text-primary" : "bg-slate-300 text-slate-500 shadow-none")}>
+          <div className={cn("p-2.5 rounded-xl premium-relief", isActive ? "bg-primary text-white" : "bg-slate-300 text-slate-500 shadow-none")}>
             {isVoice ? <Clock className="h-4 w-4" /> : <MessageCircle className="h-4 w-4" />}
           </div>
           <div>
             <p className={cn("text-[8px] font-black uppercase tracking-widest", isActive ? "text-muted-foreground" : "text-slate-600")}>
               {isVoice ? "Minutos" : "Mensajes"}
             </p>
-            <p className={cn("text-lg font-headline font-black", isActive ? "text-primary" : "text-slate-800")}>
+            <p className={cn("text-xl font-headline font-black", isActive ? "text-primary" : "text-slate-800")}>
               {agent.metrics.totalInteractionMetric || "0"}
             </p>
           </div>
         </div>
         <div className={cn(
-          "p-4 rounded-[1.8rem] border transition-all duration-500 flex items-center gap-3 premium-relief",
-          isActive ? "bg-slate-50 border-white/60" : "bg-slate-200/50 border-slate-300 shadow-none"
+          "p-5 rounded-[2rem] border transition-all duration-500 flex items-center gap-4 premium-relief",
+          isActive ? "bg-white border-slate-100" : "bg-slate-200/50 border-slate-300 shadow-none"
         )}>
-          <div className={cn("p-2 rounded-full premium-relief", isActive ? "bg-white text-secondary" : "bg-slate-300 text-slate-500 shadow-none")}>
+          <div className={cn("p-2.5 rounded-xl premium-relief", isActive ? "bg-secondary text-white" : "bg-slate-300 text-slate-500 shadow-none")}>
             <Database className="h-4 w-4" />
           </div>
           <div>
             <p className={cn("text-[8px] font-black uppercase tracking-widest", isActive ? "text-muted-foreground" : "text-slate-600")}>Tokens</p>
-            <p className={cn("text-lg font-headline font-black", isActive ? "text-secondary" : "text-slate-800")}>{agent.metrics.tokens || "0"}</p>
+            <p className={cn("text-xl font-headline font-black", isActive ? "text-secondary" : "text-slate-800")}>{agent.metrics.tokens || "0"}</p>
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-3">
+      {/* Footer Stats */}
+      <div className="grid grid-cols-3 gap-3 relative z-10">
         {[
           { 
             label: isVoice ? "LLAMADAS" : "CHATS", 
@@ -269,11 +276,11 @@ export function AgentCard({ agent }: AgentCardProps) {
           },
         ].map((m, i) => (
           <div key={i} className={cn(
-            "text-center py-3 border rounded-2xl flex flex-col items-center justify-center transition-all duration-500 premium-relief",
-            isActive ? "bg-white border-slate-100" : "bg-slate-100 border-slate-300 shadow-none"
+            "text-center py-3.5 border rounded-2xl flex flex-col items-center justify-center transition-all duration-500 premium-relief bg-white",
+            isActive ? "border-slate-100" : "border-slate-300 shadow-none bg-slate-100"
           )}>
-            <m.icon className={cn("h-3.5 w-3.5 mb-1", m.color)} />
-            <p className={cn("text-[7px] font-black uppercase tracking-[0.15em] mb-1 opacity-70", isActive ? "text-muted-foreground" : "text-slate-500")}>{m.label}</p>
+            <m.icon className={cn("h-3.5 w-3.5 mb-1.5", m.color)} />
+            <p className={cn("text-[7px] font-black uppercase tracking-[0.2em] mb-1 opacity-70", isActive ? "text-muted-foreground" : "text-slate-500")}>{m.label}</p>
             <p className={cn("text-sm font-headline font-black", m.color)}>{m.val}</p>
           </div>
         ))}
