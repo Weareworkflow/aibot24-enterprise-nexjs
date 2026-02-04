@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useRef, useEffect } from "react";
@@ -7,7 +8,6 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Switch } from "@/components/ui/switch";
-import { Checkbox } from "@/components/ui/checkbox";
 import { 
   Send, 
   Loader2, 
@@ -30,21 +30,11 @@ import {
   Check,
   ChevronDown,
   ChevronUp,
-  KeyRound,
-  SmartphoneNfc,
-  AlertCircle,
-  CalendarDays,
-  ShoppingBag,
-  FileText,
-  FolderOpen,
-  Plus,
-  Trash2,
-  Link2,
-  Braces,
   Briefcase,
   Database,
   Upload,
-  AlignLeft
+  AlignLeft,
+  Trash2
 } from "lucide-react";
 import {
   Accordion,
@@ -57,22 +47,6 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { refineAgentConfig } from "@/ai/flows/refine-agent-config";
 import { useFirestore } from "@/firebase";
@@ -80,6 +54,7 @@ import { doc, updateDoc } from "firebase/firestore";
 import { useToast } from "@/hooks/use-toast";
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
+import { IntegrationModals } from "./IntegrationModals";
 
 interface AgentChatProps {
   agent: AIAgent;
@@ -91,34 +66,12 @@ const ASSISTANT_COLORS = [
   "#2563eb", "#fef08a", "#f97316", "#475569", "#94a3b8", "#1e293b"
 ];
 
-const DEPARTMENTS = [
-  "Departamento de Ventas",
-  "Soporte Técnico",
-  "Atención al Cliente",
-  "Marketing y Publicidad",
-  "Recursos Humanos",
-  "Administración y Finanzas",
-  "Logística"
-];
-
 export function AgentChat({ agent }: AgentChatProps) {
   const [feedbackInput, setFeedbackInput] = useState("");
   const [isRefining, setIsRefining] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [history, setHistory] = useState<{role: 'user' | 'assistant', content: string, explanation?: string}[]>([]);
-  
-  // Modals States
-  const [isWhatsAppModalOpen, setIsWhatsAppModalOpen] = useState(false);
-  const [isCrmModalOpen, setIsCrmModalOpen] = useState(false);
-  const [isCalendarModalOpen, setIsCalendarModalOpen] = useState(false);
-  const [isCatalogModalOpen, setIsCatalogModalOpen] = useState(false);
-  const [isDocumentsModalOpen, setIsDocumentsModalOpen] = useState(false);
-  const [isDriveModalOpen, setIsDriveModalOpen] = useState(false);
-  const [isApiRestModalOpen, setIsApiRestModalOpen] = useState(false);
-  
-  const [waCredentials, setWaCredentials] = useState({ phoneId: "", token: "" });
-  const [selectedDepts, setSelectedDepts] = useState<string[]>([]);
-  const [newApi, setNewApi] = useState<APIEndpoint>({ name: "", url: "", method: "POST", headers: "", body: "" });
+  const [activeModal, setActiveModal] = useState<string | null>(null);
   
   const scrollRef = useRef<HTMLDivElement>(null);
   const db = useFirestore();
@@ -131,12 +84,17 @@ export function AgentChat({ agent }: AgentChatProps) {
         scrollContainer.scrollTop = scrollContainer.scrollHeight;
       }
     }
-  }, [history, isRefining, isChatOpen, agent.apiEndpoints]);
+  }, [history, isRefining, isChatOpen]);
 
-  const handleManualUpdate = (field: keyof AIAgent, value: any) => {
+  const handleManualUpdate = (field: string, value: any, title?: string) => {
     if (!db || !agent) return;
     const agentRef = doc(db, "agents", agent.id);
     updateDoc(agentRef, { [field]: value })
+      .then(() => {
+        if (title) {
+          toast({ title: "Integración Activada", description: `${title} vinculada correctamente.` });
+        }
+      })
       .catch(async (error) => {
         errorEmitter.emit('permission-error', new FirestorePermissionError({
           path: agentRef.path,
@@ -148,11 +106,9 @@ export function AgentChat({ agent }: AgentChatProps) {
 
   const handleRefine = async () => {
     if (!feedbackInput.trim() || !db) return;
-    
     const userFeedback = feedbackInput;
     setFeedbackInput("");
     setIsRefining(true);
-    
     setHistory(prev => [...prev, { role: 'user', content: userFeedback }]);
     
     try {
@@ -178,90 +134,15 @@ export function AgentChat({ agent }: AgentChatProps) {
 
       setHistory(prev => [...prev, { 
         role: 'assistant', 
-        content: `He actualizado la arquitectura de ${agent.name} siguiendo tus instrucciones.`,
+        content: `Arquitectura de ${agent.name} optimizada con éxito.`,
         explanation: suggestion.explanation
       }]);
 
-      toast({
-        title: "Arquitectura Actualizada",
-        description: "Los cambios se han aplicado automáticamente.",
-      });
-
     } catch (error: any) {
-      if (error?.name === 'FirestorePermissionError') {
-         errorEmitter.emit('permission-error', error);
-      } else {
-        toast({
-          variant: "destructive",
-          title: "Error de Optimización",
-          description: "No pudimos aplicar los cambios en este momento.",
-        });
-      }
+      errorEmitter.emit('permission-error', error);
     } finally {
       setIsRefining(false);
     }
-  };
-
-  const handleWhatsAppIntegration = () => {
-    if (!db || !agent) return;
-    const newInts = { ...agent.integrations, "WhatsApp Business": true };
-    handleManualUpdate('integrations', newInts);
-    setIsWhatsAppModalOpen(false);
-    toast({
-      title: "Conexión Establecida",
-      description: "WhatsApp API se ha integrado correctamente con Bitrix24.",
-    });
-  };
-
-  const handleCrmIntegration = () => {
-    if (!db || !agent || selectedDepts.length === 0) return;
-    const newInts = { ...agent.integrations, "CRM Bitrix24": true };
-    handleManualUpdate('integrations', newInts);
-    setIsCrmModalOpen(false);
-    toast({
-      title: "CRM Vinculado",
-      description: `Agente conectado a ${selectedDepts.length} departamentos.`,
-    });
-  };
-
-  const toggleDept = (dept: string) => {
-    setSelectedDepts(prev => 
-      prev.includes(dept) ? prev.filter(d => d !== dept) : [...prev, dept]
-    );
-  };
-
-  const handleApiRestAdd = () => {
-    if (!newApi.url || !newApi.name) return;
-    const updatedEndpoints = [...(agent.apiEndpoints || []), newApi];
-    handleManualUpdate('apiEndpoints', updatedEndpoints);
-    setNewApi({ name: "", url: "", method: "POST", headers: "", body: "" });
-  };
-
-  const handleApiRestRemove = (idx: number) => {
-    const updatedEndpoints = (agent.apiEndpoints || []).filter((_, i) => i !== idx);
-    handleManualUpdate('apiEndpoints', updatedEndpoints);
-  };
-
-  const handleApiRestSave = () => {
-    if (!db || !agent) return;
-    const newInts = { ...agent.integrations, "API REST": true };
-    handleManualUpdate('integrations', newInts);
-    setIsApiRestModalOpen(false);
-    toast({
-      title: "Protocolo API Activado",
-      description: "Servicios externos vinculados correctamente.",
-    });
-  };
-
-  const handleGenericIntegration = (title: string, setModal: (val: boolean) => void) => {
-    if (!db || !agent) return;
-    const newInts = { ...agent.integrations, [title]: true };
-    handleManualUpdate('integrations', newInts);
-    setModal(false);
-    toast({
-      title: "Integración Activada",
-      description: `${title} se ha vinculado correctamente.`,
-    });
   };
 
   return (
@@ -270,60 +151,25 @@ export function AgentChat({ agent }: AgentChatProps) {
         <div className="flex flex-col min-h-full">
           <Accordion type="single" collapsible className="w-full">
             <AccordionItem value="identidad" className="border-b px-6 border-slate-100">
-              <AccordionTrigger className="hover:no-underline py-6 text-slate-700 data-[state=open]:text-secondary transition-colors outline-none [&[data-state=open]>svg]:rotate-180">
-                <div className="flex items-center gap-4 text-[14px] font-black uppercase tracking-widest">
+              <AccordionTrigger className="hover:no-underline py-6">
+                <div className="flex items-center gap-4 text-[14px] font-black uppercase tracking-widest text-slate-700">
                   <Settings2 className="h-5 w-5" /> Identidad
                 </div>
               </AccordionTrigger>
-              <AccordionContent className="pb-8 pt-2">
-                <div className="space-y-6">
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2 text-[10px] font-black text-muted-foreground uppercase tracking-widest">
-                      <UserRound className="h-4 w-4" /> Nombre
+              <AccordionContent className="pb-8 pt-2 space-y-6">
+                <div className="space-y-4">
+                  {['name', 'role', 'company'].map(field => (
+                    <div key={field} className="space-y-1.5">
+                      <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">{field === 'name' ? 'Nombre' : field === 'role' ? 'Rol' : 'Empresa'}</Label>
+                      <Input value={(agent as any)[field]} onChange={(e) => handleManualUpdate(field, e.target.value)} className="h-10 text-sm font-bold bg-slate-50" />
                     </div>
-                    <Input 
-                      value={agent.name} 
-                      onChange={(e) => handleManualUpdate('name', e.target.value)}
-                      className="h-10 text-sm font-bold bg-slate-50 border-slate-200 focus-visible:ring-secondary/30"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2 text-[10px] font-black text-muted-foreground uppercase tracking-widest">
-                      <Sparkles className="h-4 w-4" /> Rol
-                    </div>
-                    <Input 
-                      value={agent.role} 
-                      onChange={(e) => handleManualUpdate('role', e.target.value)}
-                      className="h-10 text-sm font-bold bg-slate-50 border-slate-200 focus-visible:ring-secondary/30"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2 text-[10px] font-black text-muted-foreground uppercase tracking-widest">
-                      <Building2 className="h-4 w-4" /> Empresa
-                    </div>
-                    <Input 
-                      value={agent.company} 
-                      onChange={(e) => handleManualUpdate('company', e.target.value)}
-                      className="h-10 text-sm font-bold bg-slate-50 border-slate-200 focus-visible:ring-secondary/30"
-                    />
-                  </div>
-
-                  <div className="pt-6 border-t border-slate-100">
-                    <div className="flex items-center gap-2 text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-4">
-                      <Palette className="h-4 w-4" /> Identidad Visual
-                    </div>
+                  ))}
+                  <div className="pt-4">
+                    <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest block mb-3">Identidad Visual</Label>
                     <div className="flex flex-wrap gap-2.5">
-                      {ASSISTANT_COLORS.map((c) => (
-                        <button
-                          key={c}
-                          onClick={() => handleManualUpdate('color', c)}
-                          className={cn(
-                            "h-8 w-8 rounded-full transition-all hover:scale-110 flex items-center justify-center relative shadow-sm border border-slate-200",
-                            agent.color === c && "ring-2 ring-offset-2 ring-secondary"
-                          )}
-                          style={{ backgroundColor: c }}
-                        >
-                          {agent.color === c && <Check className="h-4 w-4 text-white drop-shadow-sm" />}
+                      {ASSISTANT_COLORS.map(c => (
+                        <button key={c} onClick={() => handleManualUpdate('color', c)} className={cn("h-7 w-7 rounded-full border shadow-sm transition-transform hover:scale-110 flex items-center justify-center", agent.color === c && "ring-2 ring-secondary ring-offset-2")} style={{ backgroundColor: c }}>
+                          {agent.color === c && <Check className="h-3 w-3 text-white" />}
                         </button>
                       ))}
                     </div>
@@ -333,70 +179,24 @@ export function AgentChat({ agent }: AgentChatProps) {
             </AccordionItem>
 
             <AccordionItem value="instrucciones" className="border-b px-6 border-slate-100">
-              <AccordionTrigger className="hover:no-underline py-6 text-slate-700 data-[state=open]:text-secondary transition-colors outline-none [&[data-state=open]>svg]:rotate-180">
-                <div className="flex items-center gap-4 text-[14px] font-black uppercase tracking-widest">
+              <AccordionTrigger className="hover:no-underline py-6">
+                <div className="flex items-center gap-4 text-[14px] font-black uppercase tracking-widest text-slate-700">
                   <Code2 className="h-5 w-5" /> Instrucciones
                 </div>
               </AccordionTrigger>
               <AccordionContent className="pb-8 pt-2 space-y-6">
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 text-[10px] font-black text-muted-foreground uppercase tracking-widest">
-                    <Target className="h-4 w-4" /> Objetivo Crítico
+                {['objective', 'tone', 'knowledge'].map(field => (
+                  <div key={field} className="space-y-1.5">
+                    <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">{field === 'objective' ? 'Objetivo Crítico' : field === 'tone' ? 'Tono' : 'Instrucciones'}</Label>
+                    <Textarea value={(agent as any)[field]} onChange={(e) => handleManualUpdate(field, e.target.value)} className={cn("text-sm bg-slate-50", field === 'knowledge' ? "min-h-[250px] font-mono" : "min-h-[100px]")} />
                   </div>
-                  <Textarea 
-                    value={agent.objective} 
-                    onChange={(e) => handleManualUpdate('objective', e.target.value)}
-                    className="min-h-[100px] text-sm bg-slate-50 border-slate-200 resize-none focus-visible:ring-secondary/30"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 text-[10px] font-black text-muted-foreground uppercase tracking-widest">
-                    <Palette className="h-4 w-4" /> Personalidad y Tono
-                  </div>
-                  <Textarea 
-                    value={agent.tone} 
-                    onChange={(e) => handleManualUpdate('tone', e.target.value)}
-                    className="min-h-[120px] text-sm italic bg-slate-50 border-slate-200 resize-none focus-visible:ring-secondary/30"
-                  />
-                </div>
-                <div className="space-y-2 pt-2 border-t border-slate-100 mt-4">
-                  <div className="flex items-center gap-2 text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-2">
-                    <AlignLeft className="h-4 w-4" /> Instrucciones
-                  </div>
-                  <Textarea 
-                    value={agent.knowledge} 
-                    onChange={(e) => handleManualUpdate('knowledge', e.target.value)}
-                    className="min-h-[250px] text-[12px] font-mono bg-slate-50 border-slate-200 resize-none focus-visible:ring-secondary/30"
-                  />
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-
-            <AccordionItem value="conocimiento" className="border-b px-6 border-slate-100">
-              <AccordionTrigger className="hover:no-underline py-6 text-slate-700 data-[state=open]:text-secondary transition-colors outline-none [&[data-state=open]>svg]:rotate-180">
-                <div className="flex items-center gap-4 text-[14px] font-black uppercase tracking-widest">
-                  <Database className="h-5 w-5" /> Conocimiento
-                </div>
-              </AccordionTrigger>
-              <AccordionContent className="pb-8 pt-2 space-y-6">
-                <div className="p-5 bg-slate-50 rounded-[2rem] border border-dashed border-slate-200 flex flex-col items-center justify-center text-center gap-4">
-                  <div className="h-12 w-12 rounded-full bg-white flex items-center justify-center shadow-sm">
-                    <FileText className="h-6 w-6 text-muted-foreground/40" />
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-[10px] font-black uppercase tracking-widest">Entrenamiento Avanzado</p>
-                    <p className="text-[9px] text-muted-foreground uppercase font-bold">Carga manual de documentos PDF, DOC o TXT</p>
-                  </div>
-                  <Button variant="outline" size="sm" className="h-8 pill-rounded bg-white border-slate-200 text-[9px] font-black uppercase tracking-widest gap-2">
-                    <Upload className="h-3 w-3" /> Subir Archivo
-                  </Button>
-                </div>
+                ))}
               </AccordionContent>
             </AccordionItem>
 
             <AccordionItem value="integraciones" className="border-b px-6 border-slate-100">
-              <AccordionTrigger className="hover:no-underline py-6 text-slate-700 data-[state=open]:text-secondary transition-colors outline-none [&[data-state=open]>svg]:rotate-180">
-                <div className="flex items-center gap-4 text-[14px] font-black uppercase tracking-widest">
+              <AccordionTrigger className="hover:no-underline py-6">
+                <div className="flex items-center gap-4 text-[14px] font-black uppercase tracking-widest text-slate-700">
                   <Share2 className="h-5 w-5" /> Integraciones
                 </div>
               </AccordionTrigger>
@@ -410,61 +210,15 @@ export function AgentChat({ agent }: AgentChatProps) {
                     { title: "Documentos Bitrix24", icon: FilePlus },
                     { title: "Drive Bitrix24", icon: Cloud },
                     { title: "API REST", icon: Globe },
-                  ].map((int, i) => {
-                    const isActive = agent.integrations?.[int.title] || false;
-
-                    return (
-                      <div key={i} className="flex flex-col gap-2">
-                        <div className="flex items-center justify-between p-4 border border-slate-100 rounded-2xl bg-white hover:bg-slate-50 transition-colors shadow-sm">
-                          <div className="flex items-center gap-4">
-                            <int.icon className={cn("h-6 w-6", isActive ? "text-secondary" : "text-muted-foreground")} />
-                            <span className="text-[12px] font-black uppercase tracking-wider">{int.title}</span>
-                          </div>
-                          <Switch 
-                            checked={isActive} 
-                            onCheckedChange={(checked) => {
-                              if (checked) {
-                                switch (int.title) {
-                                  case "WhatsApp Business": setIsWhatsAppModalOpen(true); break;
-                                  case "CRM Bitrix24": setIsCrmModalOpen(true); break;
-                                  case "Calendario Bitrix24": setIsCalendarModalOpen(true); break;
-                                  case "Catálogo Bitrix24": setIsCatalogModalOpen(true); break;
-                                  case "Documentos Bitrix24": setIsDocumentsModalOpen(true); break;
-                                  case "Drive Bitrix24": setIsDriveModalOpen(true); break;
-                                  case "API REST": setIsApiRestModalOpen(true); break;
-                                  default:
-                                    const newInts = { ...agent.integrations, [int.title]: checked };
-                                    handleManualUpdate('integrations', newInts);
-                                }
-                              } else {
-                                const newInts = { ...agent.integrations, [int.title]: checked };
-                                handleManualUpdate('integrations', newInts);
-                              }
-                            }}
-                          />
-                        </div>
-                        
-                        {int.title === "API REST" && isActive && agent.apiEndpoints && agent.apiEndpoints.length > 0 && (
-                          <div className="px-4 py-2 space-y-2">
-                            {agent.apiEndpoints.map((ep, idx) => (
-                              <div key={idx} className="flex items-center justify-between p-2.5 bg-slate-50 rounded-xl border border-slate-200 border-dashed animate-in fade-in slide-in-from-top-1">
-                                <div className="flex flex-col gap-0.5 overflow-hidden">
-                                  <span className="text-[10px] font-black uppercase tracking-tight text-primary truncate">{ep.name}</span>
-                                  <div className="flex items-center gap-1.5">
-                                    <span className="text-[7px] font-black bg-secondary/10 text-secondary px-1.5 py-0.5 rounded uppercase">{ep.method}</span>
-                                    <span className="text-[8px] text-muted-foreground truncate max-w-[150px]">{ep.url}</span>
-                                  </div>
-                                </div>
-                                <Button variant="ghost" size="icon" onClick={() => handleApiRestRemove(idx)} className="h-7 w-7 text-destructive hover:bg-destructive/10">
-                                  <Trash2 className="h-3 w-3" />
-                                </Button>
-                              </div>
-                            ))}
-                          </div>
-                        )}
+                  ].map((int) => (
+                    <div key={int.title} className="flex items-center justify-between p-4 border rounded-2xl bg-white shadow-sm">
+                      <div className="flex items-center gap-4">
+                        <int.icon className={cn("h-5 w-5", agent.integrations?.[int.title] ? "text-secondary" : "text-muted-foreground")} />
+                        <span className="text-[12px] font-black uppercase tracking-wider">{int.title}</span>
                       </div>
-                    );
-                  })}
+                      <Switch checked={agent.integrations?.[int.title] || false} onCheckedChange={(checked) => checked ? setActiveModal(int.title) : handleManualUpdate('integrations', { ...agent.integrations, [int.title]: false })} />
+                    </div>
+                  ))}
                 </div>
               </AccordionContent>
             </AccordionItem>
@@ -472,67 +226,27 @@ export function AgentChat({ agent }: AgentChatProps) {
 
           <Collapsible open={isChatOpen} onOpenChange={setIsChatOpen} className="w-full">
             <CollapsibleTrigger asChild>
-              <button className={cn(
-                "flex items-center justify-between px-6 py-6 w-full border-t border-slate-100 transition-colors outline-none bg-white",
-                isChatOpen ? "bg-secondary/5" : "hover:bg-slate-50"
-              )}>
+              <button className="flex items-center justify-between px-6 py-6 w-full border-t bg-white">
                 <div className="flex items-center gap-4 text-[14px] font-black uppercase tracking-widest text-secondary">
                   <Wand2 className="h-6 w-6" /> Editar Ajuste con AI
                 </div>
-                {isChatOpen ? <ChevronDown className="h-5 w-5 text-secondary" /> : <ChevronUp className="h-5 w-5 text-secondary" />}
+                {isChatOpen ? <ChevronDown className="h-5 w-5" /> : <ChevronUp className="h-5 w-5" />}
               </button>
             </CollapsibleTrigger>
-            <CollapsibleContent className="bg-white border-t border-slate-100">
-              <div className="flex flex-col h-[400px]">
+            <CollapsibleContent className="bg-white border-t">
+              <div className="flex flex-col h-[350px]">
                 <ScrollArea className="flex-1 p-6">
-                  <div className="space-y-5 pb-4">
-                    {history.length === 0 && !isRefining && (
-                      <div className="text-center py-10 space-y-3 opacity-30">
-                        <UserCog className="h-10 w-10 mx-auto text-secondary" />
-                        <p className="text-[10px] font-black uppercase tracking-widest max-w-[200px] mx-auto leading-relaxed">
-                          Instruye a la IA para rediseñar el agente de inmediato.
-                        </p>
-                      </div>
-                    )}
-                    {history.map((item, idx) => (
-                      <div key={idx} className={cn("flex flex-col max-w-[85%] space-y-1 animate-in fade-in slide-in-from-bottom-1", item.role === 'user' ? "ml-auto items-end" : "items-start")}>
-                        <div className={cn("px-4 py-3 rounded-2xl text-[13px] leading-relaxed shadow-sm border", item.role === 'user' ? "bg-secondary text-white border-secondary rounded-tr-none" : "bg-white text-foreground border-slate-100 rounded-tl-none")}>
-                          {item.content}
-                          {item.explanation && (
-                            <div className="mt-3 pt-3 border-t border-slate-50">
-                              <p className="text-[9px] font-black text-secondary uppercase mb-1 tracking-widest">Log de Cambios:</p>
-                              <p className="text-[12px] italic text-muted-foreground">{item.explanation}</p>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                    {isRefining && (
-                      <div className="flex items-start gap-2 animate-pulse">
-                        <div className="bg-white px-4 py-3 rounded-2xl rounded-tl-none border border-slate-100 flex flex-col gap-2 shadow-sm">
-                          <div className="flex items-center gap-2">
-                            <Loader2 className="h-4 w-4 animate-spin text-secondary" />
-                            <span className="text-[11px] font-black uppercase text-secondary">Procesando Arquitectura...</span>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
+                  {history.map((item, idx) => (
+                    <div key={idx} className={cn("flex flex-col max-w-[85%] mb-4 space-y-1", item.role === 'user' ? "ml-auto items-end" : "items-start")}>
+                      <div className={cn("px-4 py-3 rounded-2xl text-[13px] border", item.role === 'user' ? "bg-secondary text-white" : "bg-white")}>{item.content}</div>
+                    </div>
+                  ))}
+                  {isRefining && <Loader2 className="h-6 w-6 animate-spin mx-auto text-secondary" />}
                 </ScrollArea>
-                <div className="p-4 bg-white border-t border-slate-100">
-                  <div className="flex items-center gap-3 bg-slate-50 p-2 rounded-2xl border border-slate-200 focus-within:border-secondary transition-colors">
-                    <Sparkles className="h-5 w-5 text-secondary ml-2" />
-                    <Input 
-                      placeholder="Ej: 'Cambia el tono a uno más ejecutivo'..." 
-                      className="flex-1 border-none bg-transparent focus-visible:ring-0 text-[13px] h-10"
-                      value={feedbackInput}
-                      onChange={(e) => setFeedbackInput(e.target.value)}
-                      onKeyDown={(e) => e.key === 'Enter' && !isRefining && handleRefine()}
-                      disabled={isRefining}
-                    />
-                    <Button size="icon" className="rounded-xl h-10 w-10 bg-secondary hover:bg-secondary/90" onClick={handleRefine} disabled={!feedbackInput.trim() || isRefining}>
-                      {isRefining ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
-                    </Button>
+                <div className="p-4 border-t bg-slate-50">
+                  <div className="flex items-center gap-2 bg-white p-1 rounded-2xl border">
+                    <Input placeholder="Ej: Cambia el tono a ejecutivo" className="border-none bg-transparent h-10 text-[13px]" value={feedbackInput} onChange={(e) => setFeedbackInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleRefine()} />
+                    <Button size="icon" className="rounded-xl h-10 w-10 bg-secondary" onClick={handleRefine} disabled={!feedbackInput.trim() || isRefining}><Send className="h-5 w-5" /></Button>
                   </div>
                 </div>
               </div>
@@ -541,280 +255,13 @@ export function AgentChat({ agent }: AgentChatProps) {
         </div>
       </ScrollArea>
 
-      {/* WhatsApp Modal */}
-      <Dialog open={isWhatsAppModalOpen} onOpenChange={setIsWhatsAppModalOpen}>
-        <DialogContent className="sm:max-w-[425px] rounded-[2rem] border-none shadow-2xl">
-          <DialogHeader>
-            <div className="h-16 w-16 bg-secondary/10 rounded-full flex items-center justify-center mb-4 mx-auto">
-              <SmartphoneNfc className="h-8 w-8 text-secondary" />
-            </div>
-            <DialogTitle className="text-center font-headline font-bold text-xl">WhatsApp API</DialogTitle>
-            <DialogDescription className="text-center text-xs text-muted-foreground uppercase font-black tracking-widest pt-2">
-              Credenciales de Meta
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-6 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="phoneId" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Phone Number ID</Label>
-              <Input
-                id="phoneId"
-                placeholder="Ej: 1029384756..."
-                className="pill-rounded bg-slate-50"
-                value={waCredentials.phoneId}
-                onChange={(e) => setWaCredentials(prev => ({ ...prev, phoneId: e.target.value }))}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="token" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Access Token</Label>
-              <Input
-                id="token"
-                type="password"
-                placeholder="EAAB..."
-                className="pill-rounded bg-slate-50"
-                value={waCredentials.token}
-                onChange={(e) => setWaCredentials(prev => ({ ...prev, token: e.target.value }))}
-              />
-            </div>
-          </div>
-          <DialogFooter className="sm:justify-center">
-            <Button className="w-full h-12 pill-rounded bg-secondary" onClick={handleWhatsAppIntegration} disabled={!waCredentials.phoneId || !waCredentials.token}>
-              Vincular WhatsApp
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* CRM Modal */}
-      <Dialog open={isCrmModalOpen} onOpenChange={setIsCrmModalOpen}>
-        <DialogContent className="sm:max-w-[425px] rounded-[2rem] border-none shadow-2xl">
-          <DialogHeader>
-            <div className="h-16 w-16 bg-secondary/10 rounded-full flex items-center justify-center mb-4 mx-auto">
-              <Briefcase className="h-8 w-8 text-secondary" />
-            </div>
-            <DialogTitle className="text-center font-headline font-bold text-xl">CRM Bitrix24</DialogTitle>
-            <DialogDescription className="text-center text-xs text-muted-foreground uppercase font-black tracking-widest pt-2">
-              Selección de Departamentos
-            </DialogDescription>
-          </DialogHeader>
-          <div className="py-4 space-y-3">
-            <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest mb-2">Departamentos Disponibles:</p>
-            <ScrollArea className="h-[200px] pr-4">
-              <div className="space-y-2">
-                {DEPARTMENTS.map((dept) => (
-                  <div key={dept} className="flex items-center space-x-3 p-3 rounded-xl border border-slate-100 hover:bg-slate-50 transition-colors cursor-pointer" onClick={() => toggleDept(dept)}>
-                    <Checkbox checked={selectedDepts.includes(dept)} onCheckedChange={() => toggleDept(dept)} />
-                    <span className="text-[11px] font-bold text-slate-700">{dept}</span>
-                  </div>
-                ))}
-              </div>
-            </ScrollArea>
-          </div>
-          <DialogFooter className="sm:justify-center">
-            <Button className="w-full h-12 pill-rounded bg-secondary" onClick={handleCrmIntegration} disabled={selectedDepts.length === 0}>
-              Vincular {selectedDepts.length > 0 ? `(${selectedDepts.length})` : ""}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* API REST Modal */}
-      <Dialog open={isApiRestModalOpen} onOpenChange={setIsApiRestModalOpen}>
-        <DialogContent className="sm:max-w-[550px] rounded-[2rem] border-none shadow-2xl max-h-[90vh] flex flex-col">
-          <DialogHeader>
-            <div className="h-16 w-16 bg-secondary/10 rounded-full flex items-center justify-center mb-4 mx-auto">
-              <Globe className="h-8 w-8 text-secondary" />
-            </div>
-            <DialogTitle className="text-center font-headline font-bold text-xl">Protocolos API REST</DialogTitle>
-            <DialogDescription className="text-center text-xs text-muted-foreground uppercase font-black tracking-widest pt-2">
-              Configuración de Servicios Externos
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="flex-1 overflow-y-auto pr-2 space-y-6 py-4">
-            <div className="bg-slate-50 p-5 rounded-3xl border border-slate-200 space-y-4">
-              <h4 className="text-[9px] font-black uppercase text-secondary tracking-widest flex items-center gap-2">
-                <Plus className="h-3 w-3" /> Definir Nueva Petición
-              </h4>
-              <div className="space-y-4">
-                <Input 
-                  placeholder="Nombre del servicio (Ej: Webhook CRM)" 
-                  className="h-10 text-[11px] bg-white pill-rounded border-slate-200"
-                  value={newApi.name}
-                  onChange={(e) => setNewApi({...newApi, name: e.target.value})}
-                />
-                <div className="flex gap-2">
-                  <Select value={newApi.method} onValueChange={(val) => setNewApi({...newApi, method: val})}>
-                    <SelectTrigger className="w-[110px] h-10 text-[11px] bg-white pill-rounded border-slate-200">
-                      <SelectValue placeholder="Method" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="GET">GET</SelectItem>
-                      <SelectItem value="POST">POST</SelectItem>
-                      <SelectItem value="PUT">PUT</SelectItem>
-                      <SelectItem value="DELETE">DELETE</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <Input 
-                    placeholder="https://api.servidor.com/v1/endpoint" 
-                    className="flex-1 h-10 text-[11px] bg-white pill-rounded border-slate-200"
-                    value={newApi.url}
-                    onChange={(e) => setNewApi({...newApi, url: e.target.value})}
-                  />
-                </div>
-                
-                <div className="space-y-3">
-                  <div className="space-y-1.5">
-                    <Label className="text-[8px] font-black uppercase text-muted-foreground tracking-widest">Headers (JSON)</Label>
-                    <Textarea 
-                      placeholder='{ "Authorization": "Bearer ...", "Content-Type": "application/json" }'
-                      className="min-h-[60px] text-[10px] font-mono bg-white rounded-xl"
-                      value={newApi.headers}
-                      onChange={(e) => setNewApi({...newApi, headers: e.target.value})}
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label className="text-[8px] font-black uppercase text-muted-foreground tracking-widest">Request Body (JSON)</Label>
-                    <Textarea 
-                      placeholder='{ "action": "create_lead", "data": { ... } }'
-                      className="min-h-[80px] text-[10px] font-mono bg-white rounded-xl"
-                      value={newApi.body}
-                      onChange={(e) => setNewApi({...newApi, body: e.target.value})}
-                    />
-                  </div>
-                </div>
-
-                <Button onClick={handleApiRestAdd} className="w-full h-11 bg-slate-900 text-white pill-rounded text-[10px] font-black uppercase" disabled={!newApi.url || !newApi.name}>
-                  Registrar Servicio
-                </Button>
-              </div>
-            </div>
-
-            <div className="space-y-3 px-1">
-              <h4 className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">Servicios Registrados ({agent.apiEndpoints?.length || 0})</h4>
-              {!agent.apiEndpoints || agent.apiEndpoints.length === 0 ? (
-                <div className="text-center py-10 border-2 border-dashed rounded-3xl opacity-30">
-                  <p className="text-[10px] font-bold uppercase tracking-widest">Esperando Conexiones</p>
-                </div>
-              ) : (
-                <div className="space-y-2.5">
-                  {agent.apiEndpoints.map((ep, i) => (
-                    <div key={i} className="flex items-center justify-between p-4 bg-white border border-slate-100 rounded-2xl shadow-sm">
-                      <div className="flex flex-col gap-1 overflow-hidden">
-                        <span className="text-[11px] font-black uppercase text-primary truncate">{ep.name}</span>
-                        <div className="flex items-center gap-2">
-                          <span className="text-[8px] font-black bg-secondary/10 text-secondary px-2 py-0.5 rounded uppercase">{ep.method}</span>
-                          <span className="text-[9px] text-muted-foreground truncate max-w-[280px]">{ep.url}</span>
-                        </div>
-                      </div>
-                      <Button variant="ghost" size="icon" onClick={() => handleApiRestRemove(i)} className="text-destructive">
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-
-          <DialogFooter className="sm:justify-center pt-4 border-t">
-            <Button className="w-full h-12 pill-rounded bg-secondary" onClick={handleApiRestSave}>
-              Vincular Protocolos
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Calendario Modal */}
-      <Dialog open={isCalendarModalOpen} onOpenChange={setIsCalendarModalOpen}>
-        <DialogContent className="sm:max-w-[425px] rounded-[2rem] border-none shadow-2xl">
-          <DialogHeader>
-            <div className="h-16 w-16 bg-secondary/10 rounded-full flex items-center justify-center mb-4 mx-auto">
-              <CalendarDays className="h-8 w-8 text-secondary" />
-            </div>
-            <DialogTitle className="text-center font-headline font-bold text-xl">Calendario Bitrix24</DialogTitle>
-          </DialogHeader>
-          <div className="py-8 flex flex-col items-center justify-center text-center gap-4 bg-slate-50 rounded-3xl border border-dashed mx-2">
-            <AlertCircle className="h-10 w-10 text-muted-foreground/30" />
-            <p className="text-[11px] italic text-muted-foreground px-6">
-              Se debe crear un Calendario en Bitrix24 para seleccionarlo aquí.
-            </p>
-          </div>
-          <DialogFooter className="sm:justify-center">
-            <Button className="w-full h-12 pill-rounded bg-secondary" onClick={() => handleGenericIntegration("Calendario Bitrix24", setIsCalendarModalOpen)}>
-              Cerrar y Vincular
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Catalogo Modal */}
-      <Dialog open={isCatalogModalOpen} onOpenChange={setIsCatalogModalOpen}>
-        <DialogContent className="sm:max-w-[425px] rounded-[2rem] border-none shadow-2xl">
-          <DialogHeader>
-            <div className="h-16 w-16 bg-secondary/10 rounded-full flex items-center justify-center mb-4 mx-auto">
-              <ShoppingBag className="h-8 w-8 text-secondary" />
-            </div>
-            <DialogTitle className="text-center font-headline font-bold text-xl">Catálogo</DialogTitle>
-          </DialogHeader>
-          <div className="py-8 flex flex-col items-center justify-center text-center gap-4 bg-slate-50 rounded-3xl border border-dashed mx-2">
-            <AlertCircle className="h-10 w-10 text-muted-foreground/30" />
-            <p className="text-[11px] italic text-muted-foreground px-6">
-              Se debe crear un Catálogo de Productos en Bitrix24 para seleccionarlo aquí.
-            </p>
-          </div>
-          <DialogFooter className="sm:justify-center">
-            <Button className="w-full h-12 pill-rounded bg-secondary" onClick={() => handleGenericIntegration("Catálogo Bitrix24", setIsCatalogModalOpen)}>
-              Cerrar y Vincular
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Documentos Modal */}
-      <Dialog open={isDocumentsModalOpen} onOpenChange={setIsDocumentsModalOpen}>
-        <DialogContent className="sm:max-w-[425px] rounded-[2rem] border-none shadow-2xl">
-          <DialogHeader>
-            <div className="h-16 w-16 bg-secondary/10 rounded-full flex items-center justify-center mb-4 mx-auto">
-              <FileText className="h-8 w-8 text-secondary" />
-            </div>
-            <DialogTitle className="text-center font-headline font-bold text-xl">Documentos</DialogTitle>
-          </DialogHeader>
-          <div className="py-8 flex flex-col items-center justify-center text-center gap-4 bg-slate-50 rounded-3xl border border-dashed mx-2">
-            <AlertCircle className="h-10 w-10 text-muted-foreground/30" />
-            <p className="text-[11px] italic text-muted-foreground px-6">
-              Se debe crear una Plantilla de Documento en Bitrix24 para seleccionarla aquí.
-            </p>
-          </div>
-          <DialogFooter className="sm:justify-center">
-            <Button className="w-full h-12 pill-rounded bg-secondary" onClick={() => handleGenericIntegration("Documentos Bitrix24", setIsDocumentsModalOpen)}>
-              Cerrar y Vincular
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Drive Modal */}
-      <Dialog open={isDriveModalOpen} onOpenChange={setIsDriveModalOpen}>
-        <DialogContent className="sm:max-w-[425px] rounded-[2rem] border-none shadow-2xl">
-          <DialogHeader>
-            <div className="h-16 w-16 bg-secondary/10 rounded-full flex items-center justify-center mb-4 mx-auto">
-              <FolderOpen className="h-8 w-8 text-secondary" />
-            </div>
-            <DialogTitle className="text-center font-headline font-bold text-xl">Drive</DialogTitle>
-          </DialogHeader>
-          <div className="py-8 flex flex-col items-center justify-center text-center gap-4 bg-slate-50 rounded-3xl border border-dashed mx-2">
-            <AlertCircle className="h-10 w-10 text-muted-foreground/30" />
-            <p className="text-[11px] italic text-muted-foreground px-6">
-              Se debe crear una Carpeta en Bitrix24 para seleccionarla aquí.
-            </p>
-          </div>
-          <DialogFooter className="sm:justify-center">
-            <Button className="w-full h-12 pill-rounded bg-secondary" onClick={() => handleGenericIntegration("Drive Bitrix24", setIsDriveModalOpen)}>
-              Cerrar y Vincular
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <IntegrationModals 
+        agent={agent} 
+        activeModal={activeModal} 
+        onClose={() => setActiveModal(null)} 
+        onSave={handleManualUpdate}
+        onApiUpdate={(endpoints) => handleManualUpdate('apiEndpoints', endpoints)}
+      />
     </div>
   );
 }
