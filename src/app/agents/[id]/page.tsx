@@ -25,10 +25,6 @@ import {
   Search,
   Cloud,
   PhoneCall,
-  Clock,
-  PhoneIncoming,
-  PhoneForwarded,
-  PhoneOff,
   Loader2
 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -99,45 +95,12 @@ export default function AgentConsolePage({ params }: { params: Promise<{ id: str
 
   const isVoice = agent.type === 'voice';
 
-  const metrics = [
-    { 
-      label: isVoice ? "MINUTOS" : "MENSAJES", 
-      val: agent.metrics.totalInteractionMetric || 0, 
-      color: "text-primary", 
-      icon: isVoice ? Clock : MessageCircle 
-    },
-    { 
-      label: "TOKENS", 
-      val: agent.metrics.tokens || 0, 
-      color: "text-secondary", 
-      icon: Database 
-    },
-    { 
-      label: isVoice ? "LLAMADAS" : "CHATS", 
-      val: agent.metrics.usageCount || 0, 
-      color: "text-primary", 
-      icon: isVoice ? PhoneIncoming : MessageCircle 
-    },
-    { 
-      label: "TRANSF", 
-      val: agent.metrics.transfers || 0, 
-      color: "text-secondary", 
-      icon: isVoice ? PhoneForwarded : ArrowRightLeft 
-    },
-    { 
-      label: "ABAND", 
-      val: agent.metrics.abandoned || 0, 
-      color: "text-destructive", 
-      icon: isVoice ? PhoneOff : UserX 
-    },
-  ];
-
   return (
     <div className="flex flex-col min-h-screen bg-[#F0F3F5]">
       <Navbar />
       <main className="container mx-auto px-4 py-6">
         {/* Header Minimalista */}
-        <div className="flex items-center justify-between mb-6 bg-white p-4 rounded-3xl border shadow-sm">
+        <div className="flex items-center justify-between mb-8 bg-white p-4 rounded-3xl border shadow-sm">
           <div className="flex items-center gap-4">
             <Button 
               variant="ghost" 
@@ -157,17 +120,6 @@ export default function AgentConsolePage({ params }: { params: Promise<{ id: str
               <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">ID: {agent.id} • {agent.company}</p>
             </div>
           </div>
-        </div>
-
-        {/* Métrica de Estilo Tarjeta */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-8">
-          {metrics.map((m, i) => (
-            <div key={i} className="text-center p-4 bg-white rounded-3xl border shadow-sm flex flex-col items-center justify-center transition-all hover:scale-[1.02]">
-              <m.icon className={cn("h-4 w-4 mb-2", m.color)} />
-              <p className="text-[8px] font-black uppercase tracking-widest mb-1 text-muted-foreground">{m.label}</p>
-              <p className={cn("text-lg font-headline font-black", m.color)}>{m.val}</p>
-            </div>
-          ))}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
