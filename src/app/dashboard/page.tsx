@@ -1,11 +1,10 @@
-
 "use client";
 
 import { useMemo } from "react";
 import { Navbar } from "@/components/layout/Navbar";
 import { AgentCard } from "@/components/dashboard/AgentCard";
 import { useCollection, useFirestore } from "@/firebase";
-import { collection, query, where, orderBy } from "firebase/firestore";
+import { collection, query, where } from "firebase/firestore";
 import { AIAgent } from "@/lib/types";
 import { Loader2, Sparkles, LayoutDashboard, SearchX, Database, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -20,10 +19,10 @@ export default function DashboardPage() {
     if (!db) return null;
     const effectiveTenantId = tenantId || "anonymous";
     
+    // Consulta simple
     return query(
       collection(db, "agents"), 
-      where("tenantId", "==", effectiveTenantId),
-      orderBy("createdAt", "desc")
+      where("tenantId", "==", effectiveTenantId)
     );
   }, [db, tenantId]);
 
@@ -31,10 +30,16 @@ export default function DashboardPage() {
 
   const filteredAgents = useMemo(() => {
     if (!agents) return [];
-    const q = searchQuery.toLowerCase().trim();
-    if (!q) return agents;
 
-    return agents.filter(agent => {
+    // Ordenar en memoria
+    const sorted = [...agents].sort((a, b) => 
+      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+
+    const q = searchQuery.toLowerCase().trim();
+    if (!q) return sorted;
+
+    return sorted.filter(agent => {
       const typeMatch = agent.type === 'voice' 
         ? ('voz'.includes(q) || 'voice'.includes(q))
         : ('texto'.includes(q) || 'text'.includes(q));
@@ -75,7 +80,7 @@ export default function DashboardPage() {
               <Database className="h-8 w-8 text-destructive/40" />
             </div>
             <p className="text-destructive font-black uppercase tracking-widest text-[10px]">Error de Sincronización</p>
-            <p className="text-xs text-muted-foreground max-w-sm">No pudimos conectar con el flujo de datos para este inquilino.</p>
+            <p className="text-xs text-muted-foreground max-w-sm">No pudimos conectar con el flujo de datos para este inquilino ({tenantId}).</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">

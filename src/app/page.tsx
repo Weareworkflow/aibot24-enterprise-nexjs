@@ -1,10 +1,9 @@
-
 "use client";
 
 import { Navbar } from "@/components/layout/Navbar";
 import { AgentCard } from "@/components/dashboard/AgentCard";
 import { useCollection, useFirestore } from "@/firebase";
-import { collection, query, where, orderBy } from "firebase/firestore";
+import { collection, query, where } from "firebase/firestore";
 import { AIAgent } from "@/lib/types";
 import { useMemo, useEffect } from "react";
 import { Loader2, Sparkles, SearchX, Database, Info, Plus } from "lucide-react";
@@ -27,10 +26,10 @@ export default function HomePage() {
   const agentsQuery = useMemo(() => {
     if (!db || !tenantId) return null;
     
+    // Consulta simple para evitar requisitos de índices compuestos manuales
     return query(
       collection(db, "agents"), 
-      where("tenantId", "==", tenantId),
-      orderBy("createdAt", "desc")
+      where("tenantId", "==", tenantId)
     );
   }, [db, tenantId]);
 
@@ -38,10 +37,16 @@ export default function HomePage() {
 
   const filteredAgents = useMemo(() => {
     if (!agents) return [];
-    const q = searchQuery.toLowerCase().trim();
-    if (!q) return agents;
+    
+    // Ordenar en memoria por fecha de creación descendente
+    const sorted = [...agents].sort((a, b) => 
+      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
 
-    return agents.filter(agent => {
+    const q = searchQuery.toLowerCase().trim();
+    if (!q) return sorted;
+
+    return sorted.filter(agent => {
       const matchesText = 
         agent.name.toLowerCase().includes(q) ||
         agent.role.toLowerCase().includes(q) ||
@@ -89,7 +94,7 @@ export default function HomePage() {
           <div className="flex flex-col items-center justify-center py-20 text-center space-y-4">
             <Database className="h-8 w-8 text-destructive/40" />
             <p className="text-destructive font-black uppercase tracking-widest text-[10px]">Error de Sincronización</p>
-            <p className="text-xs text-muted-foreground max-w-sm">No pudimos obtener la lista de agentes para tu portal ({tenantId || "sin-id"}). Revisa los permisos de Firestore.</p>
+            <p className="text-xs text-muted-foreground max-w-sm">No pudimos obtener la lista de agentes para tu portal ({tenantId || "sin-id"}). Revisa los permisos de Firestore e índices.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">

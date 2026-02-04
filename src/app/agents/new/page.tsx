@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect, useRef } from "react";
@@ -7,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { Sparkles, Loader2, Phone, MessageSquareText, Send, Bot, Rocket, AlertTriangle } from "lucide-react";
+import { Sparkles, Loader2, Phone, MessageSquareText, Send, Bot, Rocket } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -123,17 +122,16 @@ export default function NewAgentPage() {
     setIsSaving(true);
 
     try {
-      // 1. Validar nombre duplicado para el mismo tenant
+      // 1. Validar nombre duplicado para el mismo tenant usando consulta simple
       const agentsRef = collection(db, "agents");
-      const q = query(
-        agentsRef, 
-        where("tenantId", "==", tenantId), 
-        where("name", "==", config.name)
-      );
-      
+      const q = query(agentsRef, where("tenantId", "==", tenantId));
       const querySnapshot = await getDocs(q);
       
-      if (!querySnapshot.empty) {
+      const isDuplicate = querySnapshot.docs.some(doc => 
+        doc.data().name.toLowerCase() === config.name.toLowerCase()
+      );
+      
+      if (isDuplicate) {
         setIsSaving(false);
         toast({
           variant: "destructive",
