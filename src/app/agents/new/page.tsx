@@ -7,14 +7,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { Sparkles, Loader2, Phone, MessageSquareText, Send, Bot, Rocket } from "lucide-react";
+import { Sparkles, Loader2, Phone, MessageSquareText, Send, Bot, Rocket, AlertTriangle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { AgentType, ChatMessage, AIAgent } from "@/lib/types";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useFirestore } from "@/firebase";
-import { collection, doc, setDoc } from "firebase/firestore";
+import { collection, doc, setDoc, query, where, getDocs } from "firebase/firestore";
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { useUIStore } from "@/lib/store";
@@ -111,59 +111,89 @@ export default function NewAgentPage() {
   };
 
   const handleSave = async () => {
-    if (!db) return;
-    setIsSaving(true);
-    
-    const agentId = Date.now().toString();
-    const newAgent: AIAgent = {
-      id: agentId,
-      tenantId: tenantId || "anonymous", // Vinculamos con el portal de Bitrix24
-      name: config.name,
-      type: agentType || 'text',
-      role: config.role,
-      company: config.company,
-      objective: config.objective,
-      tone: config.tone,
-      knowledge: config.knowledge,
-      isActive: true,
-      createdAt: new Date().toISOString(),
-      integrations: {
-        "WhatsApp Business": false,
-        "CRM Bitrix24": false,
-        "Calendario Bitrix24": false,
-        "Catálogo Bitrix24": false,
-        "Documentos Bitrix24": false,
-        "Drive Bitrix24": false,
-        "API REST": false
-      },
-      metrics: {
-        usageCount: 0,
-        performanceRating: 5.0,
-        totalInteractionMetric: 0,
-        tokens: "0",
-        transfers: 0,
-        abandoned: 0
-      }
-    };
+    if (!db || !tenantId) {
+      toast({
+        variant: "destructive",
+        title: "Error de Sesión",
+        description: "No se ha detectado un member_id válido de Bitrix24.",
+      });
+      return;
+    }
 
-    const agentRef = doc(db, "agents", agentId);
-    setDoc(agentRef, newAgent)
-      .then(() => {
+    setIsSaving(true);
+
+    try {
+      // 1. Validar nombre duplicado para el mismo tenant
+      const agentsRef = collection(db, "agents");
+      const q = query(
+        agentsRef, 
+        where("tenantId", "==", tenantId), 
+        where("name", "==", config.name)
+      );
+      
+      const querySnapshot = await getDocs(q);
+      
+      if (!querySnapshot.empty) {
         setIsSaving(false);
         toast({
-          title: "Agente Desplegado",
-          description: `${config.name} ha sido activado correctamente en tu portal.`,
+          variant: "destructive",
+          title: "Nombre Duplicado",
+          description: `Ya existe un agente llamado "${config.name}" en tu portal. Por favor, elige otro nombre.`,
         });
-        router.push("/");
-      })
-      .catch(async (error) => {
-        setIsSaving(false);
-        errorEmitter.emit('permission-error', new FirestorePermissionError({
-          path: agentRef.path,
-          operation: 'create',
-          requestResourceData: newAgent
-        }));
+        return;
+      }
+
+      // 2. Proceder con el guardado si no hay duplicados
+      const agentId = Date.now().toString();
+      const newAgent: AIAgent = {
+        id: agentId,
+        tenantId: tenantId,
+        name: config.name,
+        type: agentType || 'text',
+        role: config.role,
+        company: config.company,
+        objective: config.objective,
+        tone: config.tone,
+        knowledge: config.knowledge,
+        isActive: true,
+        createdAt: new Date().toISOString(),
+        integrations: {
+          "WhatsApp Business": false,
+          "CRM Bitrix24": false,
+          "Calendario Bitrix24": false,
+          "Catálogo Bitrix24": false,
+          "Documentos Bitrix24": false,
+          "Drive Bitrix24": false,
+          "API REST": false
+        },
+        metrics: {
+          usageCount: 0,
+          performanceRating: 5.0,
+          totalInteractionMetric: 0,
+          tokens: "0",
+          transfers: 0,
+          abandoned: 0
+        }
+      };
+
+      const agentRef = doc(db, "agents", agentId);
+      await setDoc(agentRef, newAgent);
+      
+      setIsSaving(false);
+      toast({
+        title: "Agente Desplegado",
+        description: `${config.name} ha sido activado correctamente en tu portal.`,
       });
+      router.push("/");
+
+    } catch (error: any) {
+      setIsSaving(false);
+      console.error("Error al guardar agente:", error);
+      errorEmitter.emit('permission-error', new FirestorePermissionError({
+        path: "agents",
+        operation: 'create'
+      }));
+    }
   };
 
   return (
@@ -175,9 +205,16 @@ export default function NewAgentPage() {
             <Bot className="h-6 w-6 text-secondary" />
             Arquitecto de Agentes IA
           </h1>
-          <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">
-            {step === 1 ? "Iniciando Protocolo" : isFinished ? "Revisión de Arquitectura" : `Fase: ${CONFIG_STEPS[currentConfigIndex].label}`}
-          </p>
+          <div className="flex items-center gap-4">
+            <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">
+              {step === 1 ? "Iniciando Protocolo" : isFinished ? "Revisión de Arquitectura" : `Fase: ${CONFIG_STEPS[currentConfigIndex].label}`}
+            </p>
+            {tenantId && (
+              <p className="text-[9px] bg-secondary/10 text-secondary px-2 py-0.5 rounded-full font-black uppercase tracking-widest">
+                Tenant: {tenantId.substring(0, 8)}...
+              </p>
+            )}
+          </div>
         </div>
 
         <div className="grid gap-6">
@@ -292,7 +329,7 @@ export default function NewAgentPage() {
                                 <p className="text-[11px] p-2 bg-white rounded-lg border italic">{config.tone}</p>
                               </div>
                               <div className="space-y-1">
-                                <p className="text-[8px] font-black text-muted-foreground uppercase">Instrucciones</p>
+                                <p className="text-[8px] font-black text-muted-foreground uppercase">Instrucciones de Comportamiento</p>
                                 <div className="max-h-32 overflow-y-auto text-[10px] p-3 bg-white rounded-xl border border-dashed font-mono leading-relaxed">
                                   {config.knowledge}
                                 </div>
@@ -307,7 +344,7 @@ export default function NewAgentPage() {
                                 {isSaving ? (
                                   <>
                                     <Loader2 className="h-4 w-4 animate-spin" />
-                                    Sincronizando con la Nube...
+                                    Verificando Protocolos...
                                   </>
                                 ) : (
                                   <>
@@ -329,7 +366,7 @@ export default function NewAgentPage() {
                     <div className="flex items-center gap-3 w-full bg-muted/30 p-2 rounded-2xl">
                       {CONFIG_STEPS[currentConfigIndex].key === 'knowledge' ? (
                         <Textarea 
-                          placeholder="Carga aquí el manual, instrucciones o FAQs..."
+                          placeholder="Define aquí el manual de comportamiento, reglas de negocio o FAQs..."
                           className="flex-1 bg-transparent border-none focus-visible:ring-0 min-h-[60px] text-xs resize-none"
                           value={inputValue}
                           onChange={(e) => setInputValue(e.target.value)}
