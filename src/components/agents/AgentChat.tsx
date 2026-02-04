@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Switch } from "@/components/ui/switch";
+import { Checkbox } from "@/components/ui/checkbox";
 import { 
   Send, 
   Loader2, 
@@ -40,7 +41,8 @@ import {
   Plus,
   Trash2,
   Link2,
-  Braces
+  Braces,
+  Briefcase
 } from "lucide-react";
 import {
   Accordion,
@@ -87,6 +89,16 @@ const ASSISTANT_COLORS = [
   "#2563eb", "#fef08a", "#f97316", "#475569", "#94a3b8", "#1e293b"
 ];
 
+const DEPARTMENTS = [
+  "Departamento de Ventas",
+  "Soporte Técnico",
+  "Atención al Cliente",
+  "Marketing y Publicidad",
+  "Recursos Humanos",
+  "Administración y Finanzas",
+  "Logística"
+];
+
 export function AgentChat({ agent }: AgentChatProps) {
   const [feedbackInput, setFeedbackInput] = useState("");
   const [isRefining, setIsRefining] = useState(false);
@@ -95,6 +107,7 @@ export function AgentChat({ agent }: AgentChatProps) {
   
   // Modals States
   const [isWhatsAppModalOpen, setIsWhatsAppModalOpen] = useState(false);
+  const [isCrmModalOpen, setIsCrmModalOpen] = useState(false);
   const [isCalendarModalOpen, setIsCalendarModalOpen] = useState(false);
   const [isCatalogModalOpen, setIsCatalogModalOpen] = useState(false);
   const [isDocumentsModalOpen, setIsDocumentsModalOpen] = useState(false);
@@ -102,6 +115,7 @@ export function AgentChat({ agent }: AgentChatProps) {
   const [isApiRestModalOpen, setIsApiRestModalOpen] = useState(false);
   
   const [waCredentials, setWaCredentials] = useState({ phoneId: "", token: "" });
+  const [selectedDepts, setSelectedDepts] = useState<string[]>([]);
   const [newApi, setNewApi] = useState<APIEndpoint>({ name: "", url: "", method: "POST", headers: "", body: "" });
   
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -195,6 +209,23 @@ export function AgentChat({ agent }: AgentChatProps) {
       title: "Conexión Establecida",
       description: "WhatsApp API se ha integrado correctamente con Bitrix24.",
     });
+  };
+
+  const handleCrmIntegration = () => {
+    if (!db || !agent || selectedDepts.length === 0) return;
+    const newInts = { ...agent.integrations, "CRM Bitrix24": true };
+    handleManualUpdate('integrations', newInts);
+    setIsCrmModalOpen(false);
+    toast({
+      title: "CRM Vinculado",
+      description: `Agente conectado a ${selectedDepts.length} departamentos.`,
+    });
+  };
+
+  const toggleDept = (dept: string) => {
+    setSelectedDepts(prev => 
+      prev.includes(dept) ? prev.filter(d => d !== dept) : [...prev, dept]
+    );
   };
 
   const handleApiRestAdd = () => {
@@ -351,6 +382,7 @@ export function AgentChat({ agent }: AgentChatProps) {
                 <div className="flex flex-col gap-3">
                   {[
                     { title: "WhatsApp Business", icon: Smartphone },
+                    { title: "CRM Bitrix24", icon: Briefcase },
                     { title: "Calendario Bitrix24", icon: Calendar },
                     { title: "Catálogo Bitrix24", icon: LayoutGrid },
                     { title: "Documentos Bitrix24", icon: FilePlus },
@@ -372,6 +404,7 @@ export function AgentChat({ agent }: AgentChatProps) {
                               if (checked) {
                                 switch (int.title) {
                                   case "WhatsApp Business": setIsWhatsAppModalOpen(true); break;
+                                  case "CRM Bitrix24": setIsCrmModalOpen(true); break;
                                   case "Calendario Bitrix24": setIsCalendarModalOpen(true); break;
                                   case "Catálogo Bitrix24": setIsCatalogModalOpen(true); break;
                                   case "Documentos Bitrix24": setIsDocumentsModalOpen(true); break;
@@ -389,7 +422,6 @@ export function AgentChat({ agent }: AgentChatProps) {
                           />
                         </div>
                         
-                        {/* Listado de Endpoints debajo de API REST */}
                         {int.title === "API REST" && isActive && agent.apiEndpoints && agent.apiEndpoints.length > 0 && (
                           <div className="px-4 py-2 space-y-2">
                             {agent.apiEndpoints.map((ep, idx) => (
@@ -487,59 +519,83 @@ export function AgentChat({ agent }: AgentChatProps) {
         </div>
       </ScrollArea>
 
-      {/* WhatsApp Configuration Modal */}
+      {/* WhatsApp Modal */}
       <Dialog open={isWhatsAppModalOpen} onOpenChange={setIsWhatsAppModalOpen}>
         <DialogContent className="sm:max-w-[425px] rounded-[2rem] border-none shadow-2xl">
           <DialogHeader>
             <div className="h-16 w-16 bg-secondary/10 rounded-full flex items-center justify-center mb-4 mx-auto">
               <SmartphoneNfc className="h-8 w-8 text-secondary" />
             </div>
-            <DialogTitle className="text-center font-headline font-bold text-xl">Integración WhatsApp API</DialogTitle>
+            <DialogTitle className="text-center font-headline font-bold text-xl">WhatsApp API</DialogTitle>
             <DialogDescription className="text-center text-xs text-muted-foreground uppercase font-black tracking-widest pt-2">
-              Credenciales de Meta for Developers
+              Credenciales de Meta
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-6 py-4">
             <div className="space-y-2">
-              <Label htmlFor="phoneId" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                <Smartphone className="h-3 w-3" /> Phone Number ID
-              </Label>
+              <Label htmlFor="phoneId" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Phone Number ID</Label>
               <Input
                 id="phoneId"
                 placeholder="Ej: 1029384756..."
-                className="pill-rounded bg-slate-50 border-slate-200 focus:ring-secondary/20"
+                className="pill-rounded bg-slate-50"
                 value={waCredentials.phoneId}
                 onChange={(e) => setWaCredentials(prev => ({ ...prev, phoneId: e.target.value }))}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="token" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">
-                <KeyRound className="h-3 w-3" /> Permanent Access Token
-              </Label>
+              <Label htmlFor="token" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Access Token</Label>
               <Input
                 id="token"
                 type="password"
                 placeholder="EAAB..."
-                className="pill-rounded bg-slate-50 border-slate-200 focus:ring-secondary/20"
+                className="pill-rounded bg-slate-50"
                 value={waCredentials.token}
                 onChange={(e) => setWaCredentials(prev => ({ ...prev, token: e.target.value }))}
               />
             </div>
           </div>
           <DialogFooter className="sm:justify-center">
-            <Button 
-              type="submit" 
-              className="w-full h-12 pill-rounded bg-secondary hover:bg-secondary/90 text-white font-black text-[11px] uppercase tracking-[0.2em] shadow-lg shadow-secondary/20"
-              onClick={handleWhatsAppIntegration}
-              disabled={!waCredentials.phoneId || !waCredentials.token}
-            >
-              Vincular con Bitrix24
+            <Button className="w-full h-12 pill-rounded bg-secondary" onClick={handleWhatsAppIntegration} disabled={!waCredentials.phoneId || !waCredentials.token}>
+              Vincular WhatsApp
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* API REST Modal Avanzado */}
+      {/* CRM Modal */}
+      <Dialog open={isCrmModalOpen} onOpenChange={setIsCrmModalOpen}>
+        <DialogContent className="sm:max-w-[425px] rounded-[2rem] border-none shadow-2xl">
+          <DialogHeader>
+            <div className="h-16 w-16 bg-secondary/10 rounded-full flex items-center justify-center mb-4 mx-auto">
+              <Briefcase className="h-8 w-8 text-secondary" />
+            </div>
+            <DialogTitle className="text-center font-headline font-bold text-xl">CRM Bitrix24</DialogTitle>
+            <DialogDescription className="text-center text-xs text-muted-foreground uppercase font-black tracking-widest pt-2">
+              Selección de Departamentos
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4 space-y-3">
+            <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest mb-2">Departamentos Disponibles:</p>
+            <ScrollArea className="h-[200px] pr-4">
+              <div className="space-y-2">
+                {DEPARTMENTS.map((dept) => (
+                  <div key={dept} className="flex items-center space-x-3 p-3 rounded-xl border border-slate-100 hover:bg-slate-50 transition-colors cursor-pointer" onClick={() => toggleDept(dept)}>
+                    <Checkbox checked={selectedDepts.includes(dept)} onCheckedChange={() => toggleDept(dept)} />
+                    <span className="text-[11px] font-bold text-slate-700">{dept}</span>
+                  </div>
+                ))}
+              </div>
+            </ScrollArea>
+          </div>
+          <DialogFooter className="sm:justify-center">
+            <Button className="w-full h-12 pill-rounded bg-secondary" onClick={handleCrmIntegration} disabled={selectedDepts.length === 0}>
+              Vincular {selectedDepts.length > 0 ? `(${selectedDepts.length})` : ""}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* API REST Modal */}
       <Dialog open={isApiRestModalOpen} onOpenChange={setIsApiRestModalOpen}>
         <DialogContent className="sm:max-w-[550px] rounded-[2rem] border-none shadow-2xl max-h-[90vh] flex flex-col">
           <DialogHeader>
@@ -586,60 +642,49 @@ export function AgentChat({ agent }: AgentChatProps) {
                 
                 <div className="space-y-3">
                   <div className="space-y-1.5">
-                    <Label className="text-[8px] font-black uppercase text-muted-foreground tracking-widest flex items-center gap-1.5">
-                      <KeyRound className="h-2.5 w-2.5" /> Headers (JSON)
-                    </Label>
+                    <Label className="text-[8px] font-black uppercase text-muted-foreground tracking-widest">Headers (JSON)</Label>
                     <Textarea 
                       placeholder='{ "Authorization": "Bearer ...", "Content-Type": "application/json" }'
-                      className="min-h-[60px] text-[10px] font-mono bg-white rounded-xl border-slate-200 resize-none"
+                      className="min-h-[60px] text-[10px] font-mono bg-white rounded-xl"
                       value={newApi.headers}
                       onChange={(e) => setNewApi({...newApi, headers: e.target.value})}
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-[8px] font-black uppercase text-muted-foreground tracking-widest flex items-center gap-1.5">
-                      <Braces className="h-2.5 w-2.5" /> Request Body (JSON)
-                    </Label>
+                    <Label className="text-[8px] font-black uppercase text-muted-foreground tracking-widest">Request Body (JSON)</Label>
                     <Textarea 
                       placeholder='{ "action": "create_lead", "data": { ... } }'
-                      className="min-h-[80px] text-[10px] font-mono bg-white rounded-xl border-slate-200 resize-none"
+                      className="min-h-[80px] text-[10px] font-mono bg-white rounded-xl"
                       value={newApi.body}
                       onChange={(e) => setNewApi({...newApi, body: e.target.value})}
                     />
                   </div>
                 </div>
 
-                <Button 
-                  onClick={handleApiRestAdd}
-                  className="w-full h-11 bg-slate-900 text-white pill-rounded text-[10px] font-black uppercase tracking-widest gap-2 hover:bg-slate-800 transition-colors"
-                  disabled={!newApi.url || !newApi.name}
-                >
-                  <Plus className="h-3 w-3" /> Registrar Servicio
+                <Button onClick={handleApiRestAdd} className="w-full h-11 bg-slate-900 text-white pill-rounded text-[10px] font-black uppercase" disabled={!newApi.url || !newApi.name}>
+                  Registrar Servicio
                 </Button>
               </div>
             </div>
 
             <div className="space-y-3 px-1">
-              <h4 className="text-[9px] font-black uppercase text-muted-foreground tracking-widest flex items-center gap-2">
-                Servicios Registrados ({agent.apiEndpoints?.length || 0})
-              </h4>
+              <h4 className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">Servicios Registrados ({agent.apiEndpoints?.length || 0})</h4>
               {!agent.apiEndpoints || agent.apiEndpoints.length === 0 ? (
-                <div className="text-center py-10 border-2 border-dashed rounded-3xl opacity-30 bg-slate-50/50">
-                  <Link2 className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
+                <div className="text-center py-10 border-2 border-dashed rounded-3xl opacity-30">
                   <p className="text-[10px] font-bold uppercase tracking-widest">Esperando Conexiones</p>
                 </div>
               ) : (
                 <div className="space-y-2.5">
                   {agent.apiEndpoints.map((ep, i) => (
-                    <div key={i} className="flex items-center justify-between p-4 bg-white border border-slate-100 rounded-2xl shadow-sm animate-in fade-in slide-in-from-top-1 group">
+                    <div key={i} className="flex items-center justify-between p-4 bg-white border border-slate-100 rounded-2xl shadow-sm">
                       <div className="flex flex-col gap-1 overflow-hidden">
-                        <span className="text-[11px] font-black uppercase tracking-tight text-primary truncate">{ep.name}</span>
+                        <span className="text-[11px] font-black uppercase text-primary truncate">{ep.name}</span>
                         <div className="flex items-center gap-2">
                           <span className="text-[8px] font-black bg-secondary/10 text-secondary px-2 py-0.5 rounded uppercase">{ep.method}</span>
                           <span className="text-[9px] text-muted-foreground truncate max-w-[280px]">{ep.url}</span>
                         </div>
                       </div>
-                      <Button variant="ghost" size="icon" onClick={() => handleApiRestRemove(i)} className="h-9 w-9 text-destructive hover:bg-destructive/10 group-hover:scale-105 transition-transform">
+                      <Button variant="ghost" size="icon" onClick={() => handleApiRestRemove(i)} className="text-destructive">
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
@@ -649,13 +694,9 @@ export function AgentChat({ agent }: AgentChatProps) {
             </div>
           </div>
 
-          <DialogFooter className="sm:justify-center pt-4 border-t border-slate-100">
-            <Button 
-              type="button" 
-              className="w-full h-12 pill-rounded bg-secondary hover:bg-secondary/90 text-white font-black text-[11px] uppercase tracking-[0.2em] shadow-lg shadow-secondary/20"
-              onClick={handleApiRestSave}
-            >
-              Vincular Protocolos al Agente
+          <DialogFooter className="sm:justify-center pt-4 border-t">
+            <Button className="w-full h-12 pill-rounded bg-secondary" onClick={handleApiRestSave}>
+              Vincular Protocolos
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -669,25 +710,15 @@ export function AgentChat({ agent }: AgentChatProps) {
               <CalendarDays className="h-8 w-8 text-secondary" />
             </div>
             <DialogTitle className="text-center font-headline font-bold text-xl">Calendario Bitrix24</DialogTitle>
-            <DialogDescription className="text-center text-xs text-muted-foreground uppercase font-black tracking-widest pt-2">
-              Selección de Agenda Operativa
-            </DialogDescription>
           </DialogHeader>
-          <div className="py-8 flex flex-col items-center justify-center text-center gap-4 bg-slate-50 rounded-3xl border border-dashed border-slate-200 mx-2">
+          <div className="py-8 flex flex-col items-center justify-center text-center gap-4 bg-slate-50 rounded-3xl border border-dashed mx-2">
             <AlertCircle className="h-10 w-10 text-muted-foreground/30" />
-            <div className="space-y-1">
-              <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Sin Agendas Disponibles</p>
-              <p className="text-[11px] italic text-muted-foreground px-6">
-                Se debe crear un Calendario en Bitrix24 para seleccionarlo aquí.
-              </p>
-            </div>
+            <p className="text-[11px] italic text-muted-foreground px-6">
+              Se debe crear un Calendario en Bitrix24 para seleccionarlo aquí.
+            </p>
           </div>
           <DialogFooter className="sm:justify-center">
-            <Button 
-              type="button" 
-              className="w-full h-12 pill-rounded bg-secondary hover:bg-secondary/90 text-white font-black text-[11px] uppercase tracking-[0.2em]"
-              onClick={() => handleGenericIntegration("Calendario Bitrix24", setIsCalendarModalOpen)}
-            >
+            <Button className="w-full h-12 pill-rounded bg-secondary" onClick={() => handleGenericIntegration("Calendario Bitrix24", setIsCalendarModalOpen)}>
               Cerrar y Vincular
             </Button>
           </DialogFooter>
@@ -701,26 +732,16 @@ export function AgentChat({ agent }: AgentChatProps) {
             <div className="h-16 w-16 bg-secondary/10 rounded-full flex items-center justify-center mb-4 mx-auto">
               <ShoppingBag className="h-8 w-8 text-secondary" />
             </div>
-            <DialogTitle className="text-center font-headline font-bold text-xl">Catálogo de Productos</DialogTitle>
-            <DialogDescription className="text-center text-xs text-muted-foreground uppercase font-black tracking-widest pt-2">
-              Sincronización de Inventario Bitrix24
-            </DialogDescription>
+            <DialogTitle className="text-center font-headline font-bold text-xl">Catálogo</DialogTitle>
           </DialogHeader>
-          <div className="py-8 flex flex-col items-center justify-center text-center gap-4 bg-slate-50 rounded-3xl border border-dashed border-slate-200 mx-2">
+          <div className="py-8 flex flex-col items-center justify-center text-center gap-4 bg-slate-50 rounded-3xl border border-dashed mx-2">
             <AlertCircle className="h-10 w-10 text-muted-foreground/30" />
-            <div className="space-y-1">
-              <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Sin Catálogos Disponibles</p>
-              <p className="text-[11px] italic text-muted-foreground px-6">
-                Se debe crear un Catálogo de Productos en Bitrix24 para seleccionarlo aquí.
-              </p>
-            </div>
+            <p className="text-[11px] italic text-muted-foreground px-6">
+              Se debe crear un Catálogo de Productos en Bitrix24 para seleccionarlo aquí.
+            </p>
           </div>
           <DialogFooter className="sm:justify-center">
-            <Button 
-              type="button" 
-              className="w-full h-12 pill-rounded bg-secondary hover:bg-secondary/90 text-white font-black text-[11px] uppercase tracking-[0.2em]"
-              onClick={() => handleGenericIntegration("Catálogo Bitrix24", setIsCatalogModalOpen)}
-            >
+            <Button className="w-full h-12 pill-rounded bg-secondary" onClick={() => handleGenericIntegration("Catálogo Bitrix24", setIsCatalogModalOpen)}>
               Cerrar y Vincular
             </Button>
           </DialogFooter>
@@ -734,26 +755,16 @@ export function AgentChat({ agent }: AgentChatProps) {
             <div className="h-16 w-16 bg-secondary/10 rounded-full flex items-center justify-center mb-4 mx-auto">
               <FileText className="h-8 w-8 text-secondary" />
             </div>
-            <DialogTitle className="text-center font-headline font-bold text-xl">Documentos Bitrix24</DialogTitle>
-            <DialogDescription className="text-center text-xs text-muted-foreground uppercase font-black tracking-widest pt-2">
-              Gestión de Plantillas Operativas
-            </DialogDescription>
+            <DialogTitle className="text-center font-headline font-bold text-xl">Documentos</DialogTitle>
           </DialogHeader>
-          <div className="py-8 flex flex-col items-center justify-center text-center gap-4 bg-slate-50 rounded-3xl border border-dashed border-slate-200 mx-2">
+          <div className="py-8 flex flex-col items-center justify-center text-center gap-4 bg-slate-50 rounded-3xl border border-dashed mx-2">
             <AlertCircle className="h-10 w-10 text-muted-foreground/30" />
-            <div className="space-y-1">
-              <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Sin Plantillas Disponibles</p>
-              <p className="text-[11px] italic text-muted-foreground px-6">
-                Se debe crear una Plantilla de Documento en Bitrix24 para seleccionarla aquí.
-              </p>
-            </div>
+            <p className="text-[11px] italic text-muted-foreground px-6">
+              Se debe crear una Plantilla de Documento en Bitrix24 para seleccionarla aquí.
+            </p>
           </div>
           <DialogFooter className="sm:justify-center">
-            <Button 
-              type="button" 
-              className="w-full h-12 pill-rounded bg-secondary hover:bg-secondary/90 text-white font-black text-[11px] uppercase tracking-[0.2em]"
-              onClick={() => handleGenericIntegration("Documentos Bitrix24", setIsDocumentsModalOpen)}
-            >
+            <Button className="w-full h-12 pill-rounded bg-secondary" onClick={() => handleGenericIntegration("Documentos Bitrix24", setIsDocumentsModalOpen)}>
               Cerrar y Vincular
             </Button>
           </DialogFooter>
@@ -767,26 +778,16 @@ export function AgentChat({ agent }: AgentChatProps) {
             <div className="h-16 w-16 bg-secondary/10 rounded-full flex items-center justify-center mb-4 mx-auto">
               <FolderOpen className="h-8 w-8 text-secondary" />
             </div>
-            <DialogTitle className="text-center font-headline font-bold text-xl">Drive Bitrix24</DialogTitle>
-            <DialogDescription className="text-center text-xs text-muted-foreground uppercase font-black tracking-widest pt-2">
-              Gestión de Carpetas de Almacenamiento
-            </DialogDescription>
+            <DialogTitle className="text-center font-headline font-bold text-xl">Drive</DialogTitle>
           </DialogHeader>
-          <div className="py-8 flex flex-col items-center justify-center text-center gap-4 bg-slate-50 rounded-3xl border border-dashed border-slate-200 mx-2">
+          <div className="py-8 flex flex-col items-center justify-center text-center gap-4 bg-slate-50 rounded-3xl border border-dashed mx-2">
             <AlertCircle className="h-10 w-10 text-muted-foreground/30" />
-            <div className="space-y-1">
-              <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Sin Carpetas Disponibles</p>
-              <p className="text-[11px] italic text-muted-foreground px-6">
-                Se debe crear una Carpeta en Bitrix24 para seleccionarla aquí.
-              </p>
-            </div>
+            <p className="text-[11px] italic text-muted-foreground px-6">
+              Se debe crear una Carpeta en Bitrix24 para seleccionarla aquí.
+            </p>
           </div>
           <DialogFooter className="sm:justify-center">
-            <Button 
-              type="button" 
-              className="w-full h-12 pill-rounded bg-secondary hover:bg-secondary/90 text-white font-black text-[11px] uppercase tracking-[0.2em]"
-              onClick={() => handleGenericIntegration("Drive Bitrix24", setIsDriveModalOpen)}
-            >
+            <Button className="w-full h-12 pill-rounded bg-secondary" onClick={() => handleGenericIntegration("Drive Bitrix24", setIsDriveModalOpen)}>
               Cerrar y Vincular
             </Button>
           </DialogFooter>
