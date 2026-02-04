@@ -7,25 +7,28 @@ import { useCollection, useFirestore, useUser } from "@/firebase";
 import { collection, query, orderBy, where } from "firebase/firestore";
 import { AIAgent } from "@/lib/types";
 import { useMemo } from "react";
-import { Loader2, Sparkles, SearchX } from "lucide-react";
+import { Loader2, Sparkles, SearchX, Database } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useUIStore } from "@/lib/store";
 
 export default function HomePage() {
   const db = useFirestore();
-  const { user } = useUser();
+  const { user, loading: authLoading } = useUser();
   const { searchQuery } = useUIStore();
   
   const agentsQuery = useMemo(() => {
-    if (!db || !user) return null;
-    // Filtramos por tenantId para que el usuario solo vea sus propios agentes
+    if (!db || authLoading) return null;
+    
+    // Si no hay usuario, buscamos agentes "anonymous" como fallback para la demo
+    const uid = user?.uid || "anonymous";
+    
     return query(
       collection(db, "agents"), 
-      where("tenantId", "==", user.uid),
+      where("tenantId", "==", uid),
       orderBy("createdAt", "desc")
     );
-  }, [db, user]);
+  }, [db, user, authLoading]);
 
   const { data: agents, loading: collectionLoading, error } = useCollection<AIAgent>(agentsQuery);
 
@@ -52,15 +55,16 @@ export default function HomePage() {
     <div className="flex flex-col min-h-screen bg-[#F7F9FB]">
       <Navbar />
       <main className="container mx-auto px-4 py-8 space-y-8">
-        {collectionLoading ? (
+        {(collectionLoading || authLoading) ? (
           <div className="flex flex-col items-center justify-center py-20 gap-4">
             <Loader2 className="h-8 w-8 animate-spin text-secondary" />
             <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Sincronizando con Bitrix24...</p>
           </div>
         ) : error ? (
           <div className="flex flex-col items-center justify-center py-20 text-center space-y-4">
-            <p className="text-destructive font-black uppercase tracking-widest text-[10px]">Error de Conexión</p>
-            <p className="text-xs text-muted-foreground max-w-sm">No pudimos obtener la lista de agentes. Verifica la configuración de Firestore.</p>
+            <Database className="h-8 w-8 text-destructive/40" />
+            <p className="text-destructive font-black uppercase tracking-widest text-[10px]">Error de Sincronización</p>
+            <p className="text-xs text-muted-foreground max-w-sm">No pudimos obtener la lista de agentes. Verifica los índices de Firestore en la consola de Firebase.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
