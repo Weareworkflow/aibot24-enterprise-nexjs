@@ -1,9 +1,11 @@
+
 import { notFound } from 'next/navigation';
 import { callBitrixMethod } from '@/lib/bitrix-service';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Globe, ShieldCheck, Database, LayoutDashboard, Terminal } from 'lucide-react';
+import { Globe, ShieldCheck, Database, Terminal, RefreshCw } from 'lucide-react';
 import { Navbar } from '@/components/layout/Navbar';
+import Link from 'next/link';
 
 interface DevDashboardProps {
   params: Promise<{ memberId: string }>;
@@ -117,12 +119,14 @@ export default async function DevDashboardPage({ params }: DevDashboardProps) {
             <p className="text-[9px] uppercase font-black text-muted-foreground tracking-[0.1em]">
               Verifica que el memberId exista en tu base de datos y que las credenciales locales sean correctas.
             </p>
-            <button 
-              onClick={() => window.location.reload()}
-              className="w-full h-10 pill-rounded bg-secondary text-white text-[10px] font-black uppercase tracking-widest shadow-lg shadow-secondary/20"
-            >
-              Reintentar Sincronización
-            </button>
+            <Link href={`/dashboard/${memberId}`} className="block">
+              <button 
+                className="w-full h-12 pill-rounded bg-secondary text-white text-[10px] font-black uppercase tracking-widest shadow-lg shadow-secondary/20 flex items-center justify-center gap-2"
+              >
+                <RefreshCw className="h-4 w-4" />
+                Reintentar Protocolo
+              </button>
+            </Link>
           </div>
         </Card>
       </div>
