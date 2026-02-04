@@ -99,11 +99,45 @@ export default function AgentConsolePage({ params }: { params: Promise<{ id: str
 
   const isVoice = agent.type === 'voice';
 
+  const metrics = [
+    { 
+      label: isVoice ? "MINUTOS" : "MENSAJES", 
+      val: agent.metrics.totalInteractionMetric || 0, 
+      color: "text-primary", 
+      icon: isVoice ? Clock : MessageCircle 
+    },
+    { 
+      label: "TOKENS", 
+      val: agent.metrics.tokens || 0, 
+      color: "text-secondary", 
+      icon: Database 
+    },
+    { 
+      label: isVoice ? "LLAMADAS" : "CHATS", 
+      val: agent.metrics.usageCount || 0, 
+      color: "text-primary", 
+      icon: isVoice ? PhoneIncoming : MessageCircle 
+    },
+    { 
+      label: "TRANSF", 
+      val: agent.metrics.transfers || 0, 
+      color: "text-secondary", 
+      icon: isVoice ? PhoneForwarded : ArrowRightLeft 
+    },
+    { 
+      label: "ABAND", 
+      val: agent.metrics.abandoned || 0, 
+      color: "text-destructive", 
+      icon: isVoice ? PhoneOff : UserX 
+    },
+  ];
+
   return (
     <div className="flex flex-col min-h-screen bg-[#F0F3F5]">
       <Navbar />
       <main className="container mx-auto px-4 py-6">
-        <div className="flex items-center justify-between mb-6 bg-white p-4 rounded-lg border shadow-sm">
+        {/* Header Minimalista */}
+        <div className="flex items-center justify-between mb-6 bg-white p-4 rounded-3xl border shadow-sm">
           <div className="flex items-center gap-4">
             <Button 
               variant="ghost" 
@@ -120,70 +154,25 @@ export default function AgentConsolePage({ params }: { params: Promise<{ id: str
                   {isVoice ? 'MODO VOZ' : 'MODO TEXTO'}
                 </Badge>
               </div>
-              <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">ID: {agent.id} • Activo desde {new Date(agent.createdAt).toLocaleDateString()}</p>
+              <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">ID: {agent.id} • {agent.company}</p>
             </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          <div className="lg:col-span-7 space-y-6">
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="grid grid-cols-2 gap-3">
-                <div className="p-3 pill-rounded border bg-white flex items-center gap-3 shadow-sm">
-                  <div className="p-1.5 rounded-full bg-muted/50 text-primary">
-                    {isVoice ? <Clock className="h-3 w-3" /> : <MessageCircle className="h-3 w-3" />}
-                  </div>
-                  <div>
-                    <p className="text-[8px] font-black uppercase text-muted-foreground">
-                      {isVoice ? "Minutos" : "Mensajes"}
-                    </p>
-                    <p className="text-sm font-headline font-black text-primary">
-                      {isVoice ? (agent.metrics.totalInteractionMetric || "0") : (agent.metrics.totalInteractionMetric || "0")}
-                    </p>
-                  </div>
-                </div>
-                <div className="p-3 pill-rounded border bg-white flex items-center gap-3 shadow-sm">
-                  <div className="p-1.5 rounded-full bg-muted/50 text-secondary">
-                    <Database className="h-3 w-3" />
-                  </div>
-                  <div>
-                    <p className="text-[8px] font-black uppercase text-muted-foreground">Tokens</p>
-                    <p className="text-sm font-headline font-black text-secondary">{agent.metrics.tokens || "0"}</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-3 gap-2">
-                {[
-                  { 
-                    label: isVoice ? "INBOUND" : "CHATS", 
-                    val: agent.metrics.usageCount, 
-                    color: "text-primary", 
-                    icon: isVoice ? PhoneIncoming : MessageCircle 
-                  },
-                  { 
-                    label: "TRANSF", 
-                    val: agent.metrics.transfers || 0, 
-                    color: "text-secondary", 
-                    icon: isVoice ? PhoneForwarded : ArrowRightLeft 
-                  },
-                  { 
-                    label: "ABAND", 
-                    val: agent.metrics.abandoned || 0, 
-                    color: "text-destructive", 
-                    icon: isVoice ? PhoneOff : UserX 
-                  },
-                ].map((m, i) => (
-                  <div key={i} className="text-center py-2 border bg-white pill-rounded shadow-sm flex flex-col items-center justify-center">
-                    <m.icon className={cn("h-3 w-3 mb-0.5", m.color)} />
-                    <p className="text-[7px] font-black uppercase tracking-widest mb-0.5 text-muted-foreground">{m.label}</p>
-                    <p className={cn("text-sm font-headline font-black", m.color)}>{m.val}</p>
-                  </div>
-                ))}
-              </div>
+        {/* Métrica de Estilo Tarjeta */}
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-8">
+          {metrics.map((m, i) => (
+            <div key={i} className="text-center p-4 bg-white rounded-3xl border shadow-sm flex flex-col items-center justify-center transition-all hover:scale-[1.02]">
+              <m.icon className={cn("h-4 w-4 mb-2", m.color)} />
+              <p className="text-[8px] font-black uppercase tracking-widest mb-1 text-muted-foreground">{m.label}</p>
+              <p className={cn("text-lg font-headline font-black", m.color)}>{m.val}</p>
             </div>
+          ))}
+        </div>
 
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          {/* Columna Izquierda: Información y Configuración */}
+          <div className="lg:col-span-7 space-y-6">
             <Tabs defaultValue="identidad" className="w-full">
               <div className="flex mb-6 overflow-x-auto pb-2 scrollbar-hide">
                 <TabsList className="bg-white border pill-rounded h-12 p-1 gap-1 shadow-sm shrink-0">
@@ -209,32 +198,32 @@ export default function AgentConsolePage({ params }: { params: Promise<{ id: str
               </div>
 
               <TabsContent value="identidad" className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-                <Card className="shadow-sm border-none bg-white">
-                  <CardContent className="p-6 space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <Card className="shadow-sm border-none bg-white rounded-[2rem]">
+                  <CardContent className="p-8 space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                       <div className="space-y-2">
-                        <div className="flex items-center gap-2 text-[9px] font-black text-muted-foreground uppercase">
-                          <UserRound className="h-3 w-3" /> Nombre
+                        <div className="flex items-center gap-2 text-[9px] font-black text-muted-foreground uppercase tracking-widest">
+                          <UserRound className="h-3 w-3" /> Nombre de la Unidad
                         </div>
-                        <p className="text-sm font-bold border-b pb-1">{agent.name}</p>
+                        <p className="text-sm font-bold border-b pb-2">{agent.name}</p>
                       </div>
                       <div className="space-y-2">
-                        <div className="flex items-center gap-2 text-[9px] font-black text-muted-foreground uppercase">
-                          <Sparkles className="h-3 w-3" /> Rol
+                        <div className="flex items-center gap-2 text-[9px] font-black text-muted-foreground uppercase tracking-widest">
+                          <Sparkles className="h-3 w-3" /> Cargo / Función
                         </div>
-                        <p className="text-sm font-bold border-b pb-1">{agent.role}</p>
+                        <p className="text-sm font-bold border-b pb-2">{agent.role}</p>
                       </div>
                       <div className="space-y-2">
-                        <div className="flex items-center gap-2 text-[9px] font-black text-muted-foreground uppercase">
+                        <div className="flex items-center gap-2 text-[9px] font-black text-muted-foreground uppercase tracking-widest">
                           <Building2 className="h-3 w-3" /> Empresa
                         </div>
-                        <p className="text-sm font-bold border-b pb-1">{agent.company}</p>
+                        <p className="text-sm font-bold border-b pb-2">{agent.company}</p>
                       </div>
                       <div className="space-y-2">
-                        <div className="flex items-center gap-2 text-[9px] font-black text-muted-foreground uppercase">
-                          <Target className="h-3 w-3" /> Objetivo
+                        <div className="flex items-center gap-2 text-[9px] font-black text-muted-foreground uppercase tracking-widest">
+                          <Target className="h-3 w-3" /> Objetivo Crítico
                         </div>
-                        <p className="text-sm font-bold border-b pb-1">{agent.objective}</p>
+                        <p className="text-sm font-bold border-b pb-2">{agent.objective}</p>
                       </div>
                     </div>
                   </CardContent>
@@ -242,20 +231,20 @@ export default function AgentConsolePage({ params }: { params: Promise<{ id: str
               </TabsContent>
 
               <TabsContent value="instrucciones" className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-                <Card className="shadow-sm border-none bg-white">
-                  <CardContent className="p-6 space-y-6">
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2 text-[9px] font-black text-muted-foreground uppercase">
-                        Tono de Voz / Personalidad
+                <Card className="shadow-sm border-none bg-white rounded-[2rem]">
+                  <CardContent className="p-8 space-y-8">
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2 text-[9px] font-black text-muted-foreground uppercase tracking-widest">
+                        Tono de Comunicación / Personalidad
                       </div>
-                      <p className="text-xs p-3 bg-muted/40 rounded-lg border italic">{agent.tone}</p>
+                      <p className="text-xs p-4 bg-muted/40 rounded-2xl border italic leading-relaxed">{agent.tone}</p>
                     </div>
 
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2 text-[9px] font-black text-muted-foreground uppercase">
-                        Base de Conocimiento
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2 text-[9px] font-black text-muted-foreground uppercase tracking-widest">
+                        Cerebro del Agente (Base de Conocimiento)
                       </div>
-                      <div className="min-h-[150px] p-4 bg-muted/30 rounded-xl border-dashed border-2 text-[10px] leading-relaxed font-mono whitespace-pre-wrap">
+                      <div className="min-h-[200px] p-6 bg-muted/30 rounded-3xl border-dashed border-2 text-[10px] leading-relaxed font-mono whitespace-pre-wrap">
                         {agent.knowledge}
                       </div>
                     </div>
@@ -264,8 +253,8 @@ export default function AgentConsolePage({ params }: { params: Promise<{ id: str
               </TabsContent>
 
               <TabsContent value="integraciones" className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-                <Card className="shadow-sm border-none bg-white">
-                  <CardContent className="p-6">
+                <Card className="shadow-sm border-none bg-white rounded-[2rem]">
+                  <CardContent className="p-8">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {[
                         { title: "WhatsApp Business", icon: Smartphone },
@@ -278,11 +267,11 @@ export default function AgentConsolePage({ params }: { params: Promise<{ id: str
                       ].map((int, i) => (
                         <div 
                           key={i} 
-                          className="flex items-center justify-between p-4 border rounded-2xl hover:bg-muted/30 transition-colors group"
+                          className="flex items-center justify-between p-4 border rounded-3xl hover:bg-muted/30 transition-colors group"
                         >
                           <div className="flex items-center gap-3">
                             <div className={cn(
-                              "p-2 rounded-full transition-colors",
+                              "p-2.5 rounded-2xl transition-colors",
                               agent.integrations?.[int.title] ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
                             )}>
                               <int.icon className="h-4 w-4" />
@@ -304,7 +293,8 @@ export default function AgentConsolePage({ params }: { params: Promise<{ id: str
             </Tabs>
           </div>
 
-          <div className="lg:col-span-5 h-[500px]">
+          {/* Columna Derecha: Optimizador AI (Chat) */}
+          <div className="lg:col-span-5 h-[650px] sticky top-24">
             <AgentChat agent={agent} />
           </div>
         </div>
