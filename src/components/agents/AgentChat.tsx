@@ -26,7 +26,8 @@ import {
   FilePlus,
   Search,
   Cloud,
-  PhoneCall
+  PhoneCall,
+  Palette
 } from "lucide-react";
 import {
   Accordion,
@@ -145,16 +146,16 @@ export function AgentChat({ agent }: AgentChatProps) {
         <div className="p-4 border-b bg-muted/10 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-secondary/10 rounded-full text-secondary">
-              <Wand2 className="h-4 w-4" />
+              <Wand2 className="h-5 w-5" />
             </div>
             <div>
-              <h3 className="text-[10px] font-black uppercase tracking-widest text-primary">Optimizador AI</h3>
-              <p className="text-[8px] font-bold text-muted-foreground uppercase">Edición de Arquitectura en Caliente</p>
+              <h3 className="text-xs font-black uppercase tracking-widest text-primary">Optimizador AI</h3>
+              <p className="text-[10px] font-bold text-muted-foreground uppercase">Edición de Arquitectura en Caliente</p>
             </div>
           </div>
           <div className="text-right">
-            <span className="text-[8px] text-secondary font-black uppercase flex items-center justify-end gap-1">
-              <span className="h-1 w-1 bg-secondary rounded-full animate-pulse" />
+            <span className="text-[10px] text-secondary font-black uppercase flex items-center justify-end gap-1.5">
+              <span className="h-1.5 w-1.5 bg-secondary rounded-full animate-pulse" />
               Sincronización Bitrix24
             </span>
           </div>
@@ -162,56 +163,60 @@ export function AgentChat({ agent }: AgentChatProps) {
 
         <Accordion type="single" collapsible className="w-full">
           <AccordionItem value="identidad" className="border-b px-6">
-            <AccordionTrigger className="hover:no-underline py-3 data-[state=open]:text-secondary transition-colors">
-              <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest">
-                <Settings2 className="h-3.5 w-3.5" /> Identidad
+            <AccordionTrigger className="hover:no-underline py-5 data-[state=open]:text-secondary transition-colors">
+              <div className="flex items-center gap-3 text-sm font-black uppercase tracking-widest">
+                <Settings2 className="h-5 w-5" /> Identidad
               </div>
             </AccordionTrigger>
-            <AccordionContent className="pb-6 pt-2">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2 text-[8px] font-black text-muted-foreground uppercase tracking-widest">
-                    <UserRound className="h-2.5 w-2.5" /> Unidad
+            <AccordionContent className="pb-8 pt-2">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2.5 text-[10px] font-black text-muted-foreground uppercase tracking-widest">
+                    <UserRound className="h-4 w-4" /> Unidad
                   </div>
-                  <p className="text-xs font-bold">{agent.name}</p>
+                  <p className="text-sm font-bold">{agent.name}</p>
                 </div>
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2 text-[8px] font-black text-muted-foreground uppercase tracking-widest">
-                    <Sparkles className="h-2.5 w-2.5" /> Rol
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2.5 text-[10px] font-black text-muted-foreground uppercase tracking-widest">
+                    <Sparkles className="h-4 w-4" /> Rol
                   </div>
-                  <p className="text-xs font-bold">{agent.role}</p>
+                  <p className="text-sm font-bold">{agent.role}</p>
                 </div>
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2 text-[8px] font-black text-muted-foreground uppercase tracking-widest">
-                    <Building2 className="h-2.5 w-2.5" /> Empresa
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2.5 text-[10px] font-black text-muted-foreground uppercase tracking-widest">
+                    <Building2 className="h-4 w-4" /> Empresa
                   </div>
-                  <p className="text-xs font-bold">{agent.company}</p>
+                  <p className="text-sm font-bold">{agent.company}</p>
                 </div>
               </div>
             </AccordionContent>
           </AccordionItem>
 
           <AccordionItem value="instrucciones" className="border-b px-6">
-            <AccordionTrigger className="hover:no-underline py-3 data-[state=open]:text-secondary transition-colors">
-              <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest">
-                <Code2 className="h-3.5 w-3.5" /> Instrucciones
+            <AccordionTrigger className="hover:no-underline py-5 data-[state=open]:text-secondary transition-colors">
+              <div className="flex items-center gap-3 text-sm font-black uppercase tracking-widest">
+                <Code2 className="h-5 w-5" /> Instrucciones
               </div>
             </AccordionTrigger>
-            <AccordionContent className="pb-6 pt-2 space-y-4">
-              <div className="space-y-1">
-                <div className="flex items-center gap-2 text-[8px] font-black text-muted-foreground uppercase tracking-widest">
-                  <Target className="h-2.5 w-2.5" /> Objetivo Crítico
+            <AccordionContent className="pb-8 pt-2 space-y-6">
+              <div className="space-y-2">
+                <div className="flex items-center gap-2.5 text-[10px] font-black text-muted-foreground uppercase tracking-widest">
+                  <Target className="h-4 w-4" /> Objetivo Crítico
                 </div>
-                <p className="text-xs font-bold leading-relaxed">{agent.objective}</p>
+                <p className="text-sm font-bold leading-relaxed">{agent.objective}</p>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <div className="text-[8px] font-black text-muted-foreground uppercase tracking-widest">Personalidad</div>
-                  <p className="text-[10px] italic bg-white p-2 rounded-lg border">{agent.tone}</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2.5 text-[10px] font-black text-muted-foreground uppercase tracking-widest">
+                    <Palette className="h-4 w-4" /> Personalidad
+                  </div>
+                  <p className="text-xs italic bg-white p-3 rounded-xl border leading-relaxed">{agent.tone}</p>
                 </div>
-                <div className="space-y-1">
-                  <div className="text-[8px] font-black text-muted-foreground uppercase tracking-widest">Conocimiento</div>
-                  <div className="text-[9px] bg-white p-2 rounded-lg border font-mono max-h-24 overflow-y-auto">
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2.5 text-[10px] font-black text-muted-foreground uppercase tracking-widest">
+                    <LayoutGrid className="h-4 w-4" /> Conocimiento
+                  </div>
+                  <div className="text-[11px] bg-white p-3 rounded-xl border font-mono max-h-32 overflow-y-auto leading-relaxed">
                     {agent.knowledge}
                   </div>
                 </div>
@@ -220,13 +225,13 @@ export function AgentChat({ agent }: AgentChatProps) {
           </AccordionItem>
 
           <AccordionItem value="integraciones" className="border-none px-6">
-            <AccordionTrigger className="hover:no-underline py-3 data-[state=open]:text-secondary transition-colors">
-              <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest">
-                <Share2 className="h-3.5 w-3.5" /> Integraciones
+            <AccordionTrigger className="hover:no-underline py-5 data-[state=open]:text-secondary transition-colors">
+              <div className="flex items-center gap-3 text-sm font-black uppercase tracking-widest">
+                <Share2 className="h-5 w-5" /> Integraciones
               </div>
             </AccordionTrigger>
-            <AccordionContent className="pb-6 pt-2">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <AccordionContent className="pb-8 pt-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 {[
                   { title: "WhatsApp Business", icon: Smartphone },
                   { title: "Calendario Bitrix24", icon: Calendar },
@@ -238,15 +243,14 @@ export function AgentChat({ agent }: AgentChatProps) {
                 ].map((int, i) => (
                   <div 
                     key={i} 
-                    className="flex items-center justify-between p-2 border rounded-xl hover:bg-white transition-colors"
+                    className="flex items-center justify-between p-4 border rounded-2xl hover:bg-white transition-colors"
                   >
-                    <div className="flex items-center gap-2">
-                      <int.icon className={cn("h-3 w-3", agent.integrations?.[int.title] ? "text-secondary" : "text-muted-foreground")} />
-                      <span className="text-[9px] font-bold truncate max-w-[60px]">{int.title}</span>
+                    <div className="flex items-center gap-3">
+                      <int.icon className={cn("h-5 w-5", agent.integrations?.[int.title] ? "text-secondary" : "text-muted-foreground")} />
+                      <span className="text-xs font-bold truncate max-w-[120px]">{int.title}</span>
                     </div>
                     <Switch 
-                      scale-75
-                      className="scale-75"
+                      className="scale-90"
                       checked={agent.integrations?.[int.title] || false} 
                       onCheckedChange={() => toggleIntegration(int.title)}
                     />
