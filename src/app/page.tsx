@@ -33,16 +33,21 @@ export default function HomePage() {
     if (!q) return agents;
 
     return agents.filter(agent => {
-      const typeMatch = agent.type === 'voice' 
-        ? ('voz'.includes(q) || 'voice'.includes(q))
-        : ('texto'.includes(q) || 'text'.includes(q));
-
-      return (
+      // Búsqueda por iniciales o términos completos en nombre, rol, empresa
+      const matchesText = 
         agent.name.toLowerCase().includes(q) ||
         agent.role.toLowerCase().includes(q) ||
-        agent.company.toLowerCase().includes(q) ||
-        typeMatch
-      );
+        agent.company.toLowerCase().includes(q);
+
+      // Búsqueda por tipo (Modo Live o Modo Chat)
+      const isLiveTerm = 'live'.includes(q) || 'voz'.includes(q) || 'voice'.includes(q);
+      const isChatTerm = 'chat'.includes(q) || 'texto'.includes(q) || 'text'.includes(q);
+      
+      const matchesType = 
+        (agent.type === 'voice' && isLiveTerm) ||
+        (agent.type === 'text' && isChatTerm);
+
+      return matchesText || matchesType;
     });
   }, [agents, searchQuery]);
 
@@ -59,7 +64,7 @@ export default function HomePage() {
           <div className="flex flex-col items-center justify-center py-20 text-center space-y-4">
             <Database className="h-8 w-8 text-destructive/40" />
             <p className="text-destructive font-black uppercase tracking-widest text-[10px]">Error de Sincronización</p>
-            <p className="text-xs text-muted-foreground max-w-sm">No pudimos obtener la lista de agentes. Verifica los índices de Firestore en la consola de Firebase.</p>
+            <p className="text-xs text-muted-foreground max-w-sm">No pudimos obtener la lista de agentes. Verifica la conexión.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
@@ -75,7 +80,7 @@ export default function HomePage() {
                 <SearchX className="h-10 w-10 text-muted-foreground/30" />
                 <div className="space-y-1">
                   <p className="text-muted-foreground font-black uppercase tracking-widest text-[10px]">No hay coincidencias para "{searchQuery}"</p>
-                  <p className="text-[9px] text-muted-foreground/60 uppercase font-bold">Intenta buscar por nombre, rol o empresa</p>
+                  <p className="text-[9px] text-muted-foreground/60 uppercase font-bold">Busca por nombre, rol, empresa o tipo (Live/Chat)</p>
                 </div>
                 <Button 
                   variant="link" 

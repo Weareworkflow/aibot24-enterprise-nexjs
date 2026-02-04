@@ -235,12 +235,12 @@ export function AgentChat({ agent }: AgentChatProps) {
                   ))}
                   
                   <div className="space-y-1.5">
-                    <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Instrucciones Técnicas y Reglas de Negocio</Label>
+                    <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Manual de Instrucciones Técnicas</Label>
                     <Textarea 
                       value={agent.knowledge} 
                       onChange={(e) => handleManualUpdate('knowledge', e.target.value, 'Instrucciones')} 
-                      className="min-h-[250px] font-mono text-sm bg-slate-50 leading-relaxed" 
-                      placeholder="Escribe aquí las reglas específicas, manuales y comportamientos esperados..."
+                      className="min-h-[300px] font-mono text-sm bg-slate-50 leading-relaxed" 
+                      placeholder="Escribe aquí las reglas específicas, comportamientos y procesos de negocio..."
                     />
                   </div>
                 </div>
@@ -255,7 +255,7 @@ export function AgentChat({ agent }: AgentChatProps) {
               </AccordionTrigger>
               <AccordionContent className="pb-8 pt-2 space-y-8">
                 <div className="space-y-4">
-                  <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Base Documental (PDF, DOC, Excel, TXT)</Label>
+                  <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Base Documental (Archivos vinculados)</Label>
                   <div 
                     onClick={() => fileInputRef.current?.click()}
                     className="border-2 border-dashed border-slate-200 rounded-[2rem] p-8 flex flex-col items-center justify-center gap-3 bg-slate-50 hover:bg-slate-100 hover:border-secondary/40 transition-all cursor-pointer group"
@@ -272,8 +272,8 @@ export function AgentChat({ agent }: AgentChatProps) {
                       <UploadCloud className="h-6 w-6 text-secondary" />
                     </div>
                     <div className="text-center">
-                      <p className="text-xs font-bold text-slate-600">Haz clic para subir archivos</p>
-                      <p className="text-[9px] text-muted-foreground uppercase font-black tracking-widest mt-1">Soporte multi-formato Enterprise</p>
+                      <p className="text-xs font-bold text-slate-600">Subir PDF, DOC, Excel o Texto</p>
+                      <p className="text-[9px] text-muted-foreground uppercase font-black tracking-widest mt-1">Sincronización multi-formato</p>
                     </div>
                   </div>
 
