@@ -178,7 +178,6 @@ export function AgentChat({ agent }: AgentChatProps) {
   };
 
   const handleCalendarIntegration = () => {
-    // Para el MVP, simplemente activamos la integración tras el modal
     if (!db || !agent) return;
     const newInts = { ...agent.integrations, "Calendario Bitrix24": true };
     handleManualUpdate('integrations', newInts);
@@ -351,7 +350,7 @@ export function AgentChat({ agent }: AgentChatProps) {
             </AccordionItem>
           </Accordion>
 
-          {/* EDITAR CON AI: Recogido por defecto, anclado a integraciones */}
+          {/* EDITAR CON AI: Pegado a integraciones */}
           <Collapsible open={isChatOpen} onOpenChange={setIsChatOpen} className="w-full">
             <CollapsibleTrigger asChild>
               <button className={cn(
@@ -493,7 +492,7 @@ export function AgentChat({ agent }: AgentChatProps) {
             <div className="space-y-1">
               <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Sin Agendas Disponibles</p>
               <p className="text-[11px] italic text-muted-foreground px-6">
-                No se han detectado calendarios públicos vinculados a este portal de Bitrix24.
+                Se debe crear un Calendario en Bitrix24 para seleccionarlo aquí.
               </p>
             </div>
           </div>
@@ -506,13 +505,6 @@ export function AgentChat({ agent }: AgentChatProps) {
               onClick={() => setIsCalendarModalOpen(false)}
             >
               Cerrar Protocolo
-            </Button>
-            <Button 
-              type="button" 
-              className="w-full h-12 pill-rounded bg-secondary hover:bg-secondary/90 text-white font-black text-[11px] uppercase tracking-[0.2em] shadow-lg shadow-secondary/20"
-              onClick={handleCalendarIntegration}
-            >
-              Confirmar Sincronización
             </Button>
           </DialogFooter>
         </DialogContent>
