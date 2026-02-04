@@ -1,29 +1,26 @@
-
 import { db } from './firebase-server';
 import { BitrixInstallation } from './types';
 
 /**
  * Servicio para gestionar la comunicación con Bitrix24 desde el servidor.
- * Maneja el refresco automático de tokens.
+ * Maneja el refresco automático de tokens utilizando las credenciales oficiales.
  */
 export async function getBitrixClient(memberId: string) {
   const installationDoc = await db.collection('installations').doc(memberId).get();
 
   if (!installationDoc.exists) {
-    throw new Error(`Instalación no encontrada para memberId: ${memberId}`);
+    throw new Error(`Instalación no encontrada para el Member ID: ${memberId}`);
   }
 
   const data = installationDoc.data() as BitrixInstallation;
   const now = Math.floor(Date.now() / 1000);
   
-  // Calculamos si el token ha expirado (usando un margen de 5 minutos)
-  // Nota: expiresIn es la duración en segundos, necesitamos compararlo con el tiempo de creación o tener un expiresAt.
-  // Asumiremos que tenemos expiresAt en Firestore si ya lo hemos calculado antes.
+  // Calculamos la expiración (5 min de margen)
   const expiresAt = data.expiresAt || (Math.floor(new Date(data.createdAt).getTime() / 1000) + (data.expiresIn || 3600));
   const isExpired = now >= (expiresAt - 300);
 
   if (isExpired && data.refreshToken) {
-    console.log(`Token expirado para ${memberId}. Iniciando protocolo de refresco...`);
+    console.log(`Token expirado para ${memberId}. Iniciando protocolo de refresco OAuth...`);
     
     const params = new URLSearchParams({
       grant_type: 'refresh_token',
@@ -32,27 +29,31 @@ export async function getBitrixClient(memberId: string) {
       refresh_token: data.refreshToken,
     });
 
-    const response = await fetch(`https://oauth.bitrix.info/oauth/token/?${params.toString()}`);
-    const newData = await response.json();
+    try {
+      const response = await fetch(`https://oauth.bitrix.info/oauth/token/?${params.toString()}`);
+      const newData = await response.json();
 
-    if (newData.error) {
-      throw new Error(`Error al refrescar token: ${newData.error_description || newData.error}`);
+      if (newData.error) {
+        throw new Error(`Bitrix OAuth Error: ${newData.error_description || newData.error}`);
+      }
+
+      const updatedData: Partial<BitrixInstallation> = {
+        accessToken: newData.access_token,
+        refreshToken: newData.refresh_token,
+        expiresIn: parseInt(newData.expires_in),
+        expiresAt: Math.floor(Date.now() / 1000) + parseInt(newData.expires_in),
+      };
+
+      await db.collection('installations').doc(memberId).update(updatedData);
+      
+      return {
+        accessToken: newData.access_token,
+        domain: data.domain,
+      };
+    } catch (error: any) {
+      console.error("Error crítico refrescando token:", error.message);
+      throw error;
     }
-
-    // Actualizamos Firestore con los nuevos tokens
-    const updatedData: Partial<BitrixInstallation> = {
-      accessToken: newData.access_token,
-      refreshToken: newData.refresh_token,
-      expiresIn: parseInt(newData.expires_in),
-      expiresAt: Math.floor(Date.now() / 1000) + parseInt(newData.expires_in),
-    };
-
-    await db.collection('installations').doc(memberId).update(updatedData);
-    
-    return {
-      accessToken: newData.access_token,
-      domain: data.domain,
-    };
   }
 
   return {
@@ -62,7 +63,7 @@ export async function getBitrixClient(memberId: string) {
 }
 
 /**
- * Realiza una llamada REST a Bitrix24 desde el servidor.
+ * Realiza una llamada REST a Bitrix24 directamente desde el servidor (Node.js).
  */
 export async function callBitrixMethod(memberId: string, method: string, params: any = {}) {
   const client = await getBitrixClient(memberId);

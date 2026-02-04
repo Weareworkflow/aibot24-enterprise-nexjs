@@ -1,4 +1,3 @@
-
 import type {Metadata} from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
@@ -30,7 +29,7 @@ export default function RootLayout({
                 if (!window.BX24) {
                   window.BX24 = {
                     init: (callback) => {
-                      console.log("[DEV MOCK] BX24.init simulado");
+                      console.log("[DEV MOCK] BX24.init simulado para localhost");
                       if (callback) callback();
                     },
                     installFinish: () => {
@@ -41,8 +40,9 @@ export default function RootLayout({
                       return null;
                     },
                     callMethod: (method, params, callback) => {
-                      console.log("[DEV MOCK] BX24.callMethod:", method, params);
-                      // Aquí podrías disparar un fetch a tu API de desarrollo
+                      console.log("[DEV MOCK] BX24.callMethod simulado:", method, params);
+                      // En desarrollo, esto evita errores de referencia
+                      if (callback) callback({ error: "SDK simulado en modo desarrollo" });
                     }
                   };
                 }
