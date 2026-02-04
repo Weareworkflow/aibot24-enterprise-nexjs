@@ -1,10 +1,12 @@
+
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { AIAgent, ChatMessage } from "@/lib/types";
+import { AIAgent } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Switch } from "@/components/ui/switch";
 import { 
   Send, 
   Loader2, 
@@ -12,8 +14,26 @@ import {
   Sparkles,
   UserCog,
   CheckCircle2,
-  AlertCircle
+  Settings2,
+  Code2,
+  Share2,
+  UserRound,
+  Building2,
+  Target,
+  Smartphone,
+  Calendar,
+  LayoutGrid,
+  FilePlus,
+  Search,
+  Cloud,
+  PhoneCall
 } from "lucide-react";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { cn } from "@/lib/utils";
 import { refineAgentConfig } from "@/ai/flows/refine-agent-config";
 import { useFirestore } from "@/firebase";
@@ -51,11 +71,9 @@ export function AgentChat({ agent }: AgentChatProps) {
     setFeedbackInput("");
     setIsRefining(true);
     
-    // Añadir feedback del usuario al historial
     setHistory(prev => [...prev, { role: 'user', content: userFeedback }]);
     
     try {
-      // 1. Obtener refinamiento de la IA
       const suggestion = await refineAgentConfig({
         currentConfig: {
           name: agent.name,
@@ -68,7 +86,6 @@ export function AgentChat({ agent }: AgentChatProps) {
         feedback: userFeedback
       });
 
-      // 2. Aplicar cambios inmediatamente en Firestore
       const agentRef = doc(db, "agents", agent.id);
       await updateDoc(agentRef, {
         role: suggestion.role,
@@ -77,7 +94,6 @@ export function AgentChat({ agent }: AgentChatProps) {
         knowledge: suggestion.knowledge
       });
 
-      // 3. Añadir confirmación al historial
       setHistory(prev => [...prev, { 
         role: 'assistant', 
         content: `He actualizado la arquitectura de ${agent.name} siguiendo tus instrucciones.`,
@@ -104,26 +120,142 @@ export function AgentChat({ agent }: AgentChatProps) {
     }
   };
 
+  const toggleIntegration = (title: string) => {
+    if (!db || !agent) return;
+    const agentRef = doc(db, "agents", agent.id);
+    const newIntegrations = {
+      ...(agent.integrations || {}),
+      [title]: !agent.integrations?.[title]
+    };
+
+    updateDoc(agentRef, { integrations: newIntegrations })
+      .catch(async (error) => {
+        errorEmitter.emit('permission-error', new FirestorePermissionError({
+          path: agentRef.path,
+          operation: 'update',
+          requestResourceData: { integrations: newIntegrations }
+        }));
+      });
+  };
+
   return (
     <div className="flex flex-col h-full border rounded-[2rem] bg-white shadow-xl overflow-hidden">
-      {/* Cabecera de la Consola */}
-      <div className="p-4 border-b bg-muted/30 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="p-2 bg-secondary/10 rounded-full text-secondary">
-            <Wand2 className="h-4 w-4" />
+      {/* Cabecera de la Consola con Acordeones Integrados */}
+      <div className="border-b bg-muted/20">
+        <div className="p-4 border-b bg-muted/10 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-secondary/10 rounded-full text-secondary">
+              <Wand2 className="h-4 w-4" />
+            </div>
+            <div>
+              <h3 className="text-[10px] font-black uppercase tracking-widest text-primary">Optimizador AI</h3>
+              <p className="text-[8px] font-bold text-muted-foreground uppercase">Edición de Arquitectura en Caliente</p>
+            </div>
           </div>
-          <div>
-            <h3 className="text-[10px] font-black uppercase tracking-widest text-primary">Optimizador AI</h3>
-            <p className="text-[8px] font-bold text-muted-foreground uppercase">Edición de Arquitectura en Caliente</p>
+          <div className="text-right">
+            <span className="text-[8px] text-secondary font-black uppercase flex items-center justify-end gap-1">
+              <span className="h-1 w-1 bg-secondary rounded-full animate-pulse" />
+              Sincronización Bitrix24
+            </span>
           </div>
         </div>
-        
-        <div className="text-right">
-          <span className="text-[8px] text-green-600 font-black uppercase flex items-center justify-end gap-1">
-            <span className="h-1 w-1 bg-green-600 rounded-full animate-pulse" />
-            Sincronización Activa
-          </span>
-        </div>
+
+        <Accordion type="single" collapsible className="w-full">
+          <AccordionItem value="identidad" className="border-b px-6">
+            <AccordionTrigger className="hover:no-underline py-3 data-[state=open]:text-secondary transition-colors">
+              <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest">
+                <Settings2 className="h-3.5 w-3.5" /> Identidad
+              </div>
+            </AccordionTrigger>
+            <AccordionContent className="pb-6 pt-2">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2 text-[8px] font-black text-muted-foreground uppercase tracking-widest">
+                    <UserRound className="h-2.5 w-2.5" /> Unidad
+                  </div>
+                  <p className="text-xs font-bold">{agent.name}</p>
+                </div>
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2 text-[8px] font-black text-muted-foreground uppercase tracking-widest">
+                    <Sparkles className="h-2.5 w-2.5" /> Rol
+                  </div>
+                  <p className="text-xs font-bold">{agent.role}</p>
+                </div>
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2 text-[8px] font-black text-muted-foreground uppercase tracking-widest">
+                    <Building2 className="h-2.5 w-2.5" /> Empresa
+                  </div>
+                  <p className="text-xs font-bold">{agent.company}</p>
+                </div>
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+
+          <AccordionItem value="instrucciones" className="border-b px-6">
+            <AccordionTrigger className="hover:no-underline py-3 data-[state=open]:text-secondary transition-colors">
+              <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest">
+                <Code2 className="h-3.5 w-3.5" /> Instrucciones
+              </div>
+            </AccordionTrigger>
+            <AccordionContent className="pb-6 pt-2 space-y-4">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2 text-[8px] font-black text-muted-foreground uppercase tracking-widest">
+                  <Target className="h-2.5 w-2.5" /> Objetivo Crítico
+                </div>
+                <p className="text-xs font-bold leading-relaxed">{agent.objective}</p>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <div className="text-[8px] font-black text-muted-foreground uppercase tracking-widest">Personalidad</div>
+                  <p className="text-[10px] italic bg-white p-2 rounded-lg border">{agent.tone}</p>
+                </div>
+                <div className="space-y-1">
+                  <div className="text-[8px] font-black text-muted-foreground uppercase tracking-widest">Conocimiento</div>
+                  <div className="text-[9px] bg-white p-2 rounded-lg border font-mono max-h-24 overflow-y-auto">
+                    {agent.knowledge}
+                  </div>
+                </div>
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+
+          <AccordionItem value="integraciones" className="border-none px-6">
+            <AccordionTrigger className="hover:no-underline py-3 data-[state=open]:text-secondary transition-colors">
+              <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest">
+                <Share2 className="h-3.5 w-3.5" /> Integraciones
+              </div>
+            </AccordionTrigger>
+            <AccordionContent className="pb-6 pt-2">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                {[
+                  { title: "WhatsApp Business", icon: Smartphone },
+                  { title: "Calendario Bitrix24", icon: Calendar },
+                  { title: "Catálogo Bitrix24", icon: LayoutGrid },
+                  { title: "Documentos Bitrix24", icon: FilePlus },
+                  { title: "Analizador Documento", icon: Search },
+                  { title: "Drive Bitrix24", icon: Cloud },
+                  { title: "Calls API", icon: PhoneCall },
+                ].map((int, i) => (
+                  <div 
+                    key={i} 
+                    className="flex items-center justify-between p-2 border rounded-xl hover:bg-white transition-colors"
+                  >
+                    <div className="flex items-center gap-2">
+                      <int.icon className={cn("h-3 w-3", agent.integrations?.[int.title] ? "text-secondary" : "text-muted-foreground")} />
+                      <span className="text-[9px] font-bold truncate max-w-[60px]">{int.title}</span>
+                    </div>
+                    <Switch 
+                      scale-75
+                      className="scale-75"
+                      checked={agent.integrations?.[int.title] || false} 
+                      onCheckedChange={() => toggleIntegration(int.title)}
+                    />
+                  </div>
+                ))}
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
       </div>
 
       {/* Área de Historial de Cambios */}
@@ -131,14 +263,14 @@ export function AgentChat({ agent }: AgentChatProps) {
         <ScrollArea className="h-full p-6" ref={scrollRef}>
           <div className="space-y-6 pb-4">
             {history.length === 0 && !isRefining && (
-              <div className="text-center py-20 space-y-4 opacity-50">
+              <div className="text-center py-16 space-y-4 opacity-50">
                 <div className="h-16 w-16 bg-secondary/10 rounded-full flex items-center justify-center mx-auto text-secondary">
                   <UserCog className="h-8 w-8" />
                 </div>
                 <div className="space-y-1">
                   <h4 className="text-[10px] font-black uppercase tracking-widest">Protocolo de Ajuste</h4>
                   <p className="text-[10px] uppercase font-bold px-12 leading-relaxed">
-                    Indica qué quieres cambiar o mejorar del agente. El Arquitecto Virtual aplicará los cambios al instante.
+                    Escribe tus instrucciones para que el Arquitecto Virtual optimice la unidad al instante.
                   </p>
                 </div>
               </div>
@@ -155,15 +287,15 @@ export function AgentChat({ agent }: AgentChatProps) {
                 <div className={cn(
                   "px-4 py-3 rounded-2xl text-[11px] leading-relaxed shadow-sm border",
                   item.role === 'user' 
-                    ? "bg-primary text-white border-primary rounded-tr-none" 
-                    : "bg-white text-foreground border-secondary/20 rounded-tl-none"
+                    ? "bg-secondary text-white border-secondary rounded-tr-none shadow-secondary/10" 
+                    : "bg-white text-foreground border-slate-100 rounded-tl-none"
                 )}>
                   {item.content}
                   
                   {item.explanation && (
-                    <div className="mt-3 pt-3 border-t border-secondary/10">
+                    <div className="mt-3 pt-3 border-t border-slate-50">
                       <p className="text-[9px] font-black text-secondary flex items-center gap-1.5 uppercase mb-1">
-                        <CheckCircle2 className="h-3 w-3" /> Cambios Realizados
+                        <CheckCircle2 className="h-3 w-3" /> Rediseño Aplicado
                       </p>
                       <p className="text-[10px] italic text-muted-foreground leading-relaxed">{item.explanation}</p>
                     </div>
@@ -177,12 +309,12 @@ export function AgentChat({ agent }: AgentChatProps) {
 
             {isRefining && (
               <div className="flex items-start gap-2 max-w-[85%] animate-pulse">
-                <div className="bg-white px-4 py-3 rounded-2xl rounded-tl-none border border-secondary/20 flex flex-col gap-2">
+                <div className="bg-white px-4 py-3 rounded-2xl rounded-tl-none border border-slate-100 flex flex-col gap-2">
                   <div className="flex items-center gap-2">
                     <Loader2 className="h-3 w-3 animate-spin text-secondary" />
-                    <span className="text-[10px] font-black uppercase tracking-widest text-secondary">Rediseñando...</span>
+                    <span className="text-[10px] font-black uppercase tracking-widest text-secondary">Rediseñando Arquitectura...</span>
                   </div>
-                  <div className="h-2 w-32 bg-slate-100 rounded animate-pulse" />
+                  <div className="h-2 w-32 bg-slate-50 rounded animate-pulse" />
                 </div>
               </div>
             )}
@@ -190,7 +322,7 @@ export function AgentChat({ agent }: AgentChatProps) {
         </ScrollArea>
       </div>
 
-      {/* Footer de Entrada Unificado */}
+      {/* Footer de Entrada */}
       <div className="p-4 bg-white border-t mt-auto">
         <div className="flex items-center gap-2 bg-[#F8FAFC] p-2 rounded-2xl border focus-within:border-secondary transition-colors">
           <div className="p-2 text-secondary">
@@ -198,7 +330,7 @@ export function AgentChat({ agent }: AgentChatProps) {
           </div>
           
           <Input 
-            placeholder="Ej: 'Haz que el tono sea más persuasivo' o 'Actualiza los precios del catálogo'..." 
+            placeholder="Ej: 'Cambia el tono a uno más agresivo en ventas' o 'Actualiza las FAQs'..." 
             className="flex-1 border-none bg-transparent focus-visible:ring-0 text-[11px] h-9 px-1"
             value={feedbackInput}
             onChange={(e) => setFeedbackInput(e.target.value)}
@@ -220,7 +352,7 @@ export function AgentChat({ agent }: AgentChatProps) {
           </Button>
         </div>
         <p className="text-[7px] text-center mt-2 font-black text-muted-foreground uppercase tracking-[0.2em]">
-          Tus instrucciones modifican la base de conocimiento en tiempo real
+          Las actualizaciones se sincronizan con Firestore en tiempo real
         </p>
       </div>
     </div>
