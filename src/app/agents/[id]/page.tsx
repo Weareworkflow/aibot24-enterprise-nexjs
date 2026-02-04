@@ -171,12 +171,6 @@ export default function AgentConsolePage({ params }: { params: Promise<{ id: str
                         </div>
                         <p className="text-sm font-bold border-b pb-2">{agent.company}</p>
                       </div>
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-2 text-[9px] font-black text-muted-foreground uppercase tracking-widest">
-                          <Target className="h-3 w-3" /> Objetivo Crítico
-                        </div>
-                        <p className="text-sm font-bold border-b pb-2">{agent.objective}</p>
-                      </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -185,6 +179,13 @@ export default function AgentConsolePage({ params }: { params: Promise<{ id: str
               <TabsContent value="instrucciones" className="animate-in fade-in slide-in-from-bottom-2 duration-300">
                 <Card className="shadow-sm border-none bg-white rounded-[2rem]">
                   <CardContent className="p-8 space-y-8">
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2 text-[9px] font-black text-muted-foreground uppercase tracking-widest">
+                        <Target className="h-3 w-3" /> Objetivo Crítico
+                      </div>
+                      <p className="text-sm font-bold border-b pb-2">{agent.objective}</p>
+                    </div>
+
                     <div className="space-y-3">
                       <div className="flex items-center gap-2 text-[9px] font-black text-muted-foreground uppercase tracking-widest">
                         Tono de Comunicación / Personalidad
