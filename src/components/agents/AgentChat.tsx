@@ -213,7 +213,7 @@ export function AgentChat({ agent }: AgentChatProps) {
               </AccordionContent>
             </AccordionItem>
 
-            {/* 2. INSTRUCCIONES */}
+            {/* 2. INSTRUCCIONES (Agrupado Objetivo, Tono y Manual) */}
             <AccordionItem value="instrucciones" className="border-b px-6 border-slate-100">
               <AccordionTrigger className="hover:no-underline py-6">
                 <div className="flex items-center gap-4 text-[14px] font-black uppercase tracking-widest text-slate-700">
@@ -239,19 +239,19 @@ export function AgentChat({ agent }: AgentChatProps) {
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Manual de Instrucciones</Label>
+                    <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Manual de Instrucciones Técnicas</Label>
                     <Textarea 
                       value={agent.knowledge} 
                       onChange={(e) => handleManualUpdate('knowledge', e.target.value, 'Instrucciones')} 
                       className="min-h-[300px] font-mono text-sm bg-slate-50 leading-relaxed" 
-                      placeholder="Escribe aquí las reglas específicas, comportamientos y procesos de negocio..."
+                      placeholder="Define aquí el comportamiento detallado del agente..."
                     />
                   </div>
                 </div>
               </AccordionContent>
             </AccordionItem>
 
-            {/* 3. CONOCIMIENTO (Debajo de Instrucciones) */}
+            {/* 3. CONOCIMIENTO (Debajo de Instrucciones, Multi-archivo) */}
             <AccordionItem value="conocimiento" className="border-b px-6 border-slate-100">
               <AccordionTrigger className="hover:no-underline py-6">
                 <div className="flex items-center gap-4 text-[14px] font-black uppercase tracking-widest text-slate-700">
@@ -260,7 +260,7 @@ export function AgentChat({ agent }: AgentChatProps) {
               </AccordionTrigger>
               <AccordionContent className="pb-8 pt-2 space-y-8">
                 <div className="space-y-4">
-                  <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Base Documental (Multi-archivo)</Label>
+                  <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Base Documental (Archivos)</Label>
                   <div 
                     onClick={() => fileInputRef.current?.click()}
                     className="border-2 border-dashed border-slate-200 rounded-[2rem] p-8 flex flex-col items-center justify-center gap-3 bg-slate-50 hover:bg-slate-100 hover:border-secondary/40 transition-all cursor-pointer group"
