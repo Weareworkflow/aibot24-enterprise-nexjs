@@ -33,7 +33,8 @@ import {
   SmartphoneNfc,
   AlertCircle,
   CalendarDays,
-  ShoppingBag
+  ShoppingBag,
+  FileText
 } from "lucide-react";
 import {
   Accordion,
@@ -83,6 +84,7 @@ export function AgentChat({ agent }: AgentChatProps) {
   const [isWhatsAppModalOpen, setIsWhatsAppModalOpen] = useState(false);
   const [isCalendarModalOpen, setIsCalendarModalOpen] = useState(false);
   const [isCatalogModalOpen, setIsCatalogModalOpen] = useState(false);
+  const [isDocumentsModalOpen, setIsDocumentsModalOpen] = useState(false);
   const [waCredentials, setWaCredentials] = useState({ phoneId: "", token: "" });
   
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -200,13 +202,22 @@ export function AgentChat({ agent }: AgentChatProps) {
     });
   };
 
+  const handleDocumentsIntegration = () => {
+    if (!db || !agent) return;
+    const newInts = { ...agent.integrations, "Documentos Bitrix24": true };
+    handleManualUpdate('integrations', newInts);
+    setIsDocumentsModalOpen(false);
+    toast({
+      title: "Plantillas Vinculadas",
+      description: "Las plantillas de documentos han sido sincronizadas.",
+    });
+  };
+
   return (
     <div className="flex flex-col h-full border rounded-[2rem] bg-white shadow-xl overflow-hidden border-slate-200">
       <ScrollArea className="flex-1" ref={scrollRef}>
         <div className="flex flex-col min-h-full">
-          {/* Accordion principal: todas las secciones cerradas por defecto */}
           <Accordion type="single" collapsible className="w-full">
-            {/* IDENTIDAD */}
             <AccordionItem value="identidad" className="border-b px-6 border-slate-100">
               <AccordionTrigger className="hover:no-underline py-6 text-slate-700 data-[state=open]:text-secondary transition-colors outline-none">
                 <div className="flex items-center gap-4 text-[14px] font-black uppercase tracking-widest">
@@ -270,7 +281,6 @@ export function AgentChat({ agent }: AgentChatProps) {
               </AccordionContent>
             </AccordionItem>
 
-            {/* INSTRUCCIONES */}
             <AccordionItem value="instrucciones" className="border-b px-6 border-slate-100">
               <AccordionTrigger className="hover:no-underline py-6 text-slate-700 data-[state=open]:text-secondary transition-colors outline-none">
                 <div className="flex items-center gap-4 text-[14px] font-black uppercase tracking-widest">
@@ -313,7 +323,6 @@ export function AgentChat({ agent }: AgentChatProps) {
               </AccordionContent>
             </AccordionItem>
 
-            {/* INTEGRACIONES */}
             <AccordionItem value="integraciones" className="border-b px-6 border-slate-100">
               <AccordionTrigger className="hover:no-underline py-6 text-slate-700 data-[state=open]:text-secondary transition-colors outline-none">
                 <div className="flex items-center gap-4 text-[14px] font-black uppercase tracking-widest">
@@ -348,6 +357,8 @@ export function AgentChat({ agent }: AgentChatProps) {
                                 setIsCalendarModalOpen(true);
                               } else if (int.title === "Catálogo Bitrix24" && checked) {
                                 setIsCatalogModalOpen(true);
+                              } else if (int.title === "Documentos Bitrix24" && checked) {
+                                setIsDocumentsModalOpen(true);
                               } else {
                                 const newInts = { ...agent.integrations, [int.title]: checked };
                                 handleManualUpdate('integrations', newInts);
@@ -363,7 +374,6 @@ export function AgentChat({ agent }: AgentChatProps) {
             </AccordionItem>
           </Accordion>
 
-          {/* EDITAR CON AI: Pegado a integraciones */}
           <Collapsible open={isChatOpen} onOpenChange={setIsChatOpen} className="w-full">
             <CollapsibleTrigger asChild>
               <button className={cn(
@@ -552,6 +562,42 @@ export function AgentChat({ agent }: AgentChatProps) {
               variant="outline"
               className="w-full h-12 pill-rounded border-slate-200 text-muted-foreground font-black text-[11px] uppercase tracking-[0.2em]"
               onClick={() => setIsCatalogModalOpen(false)}
+            >
+              Cerrar Protocolo
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Documents Configuration Modal */}
+      <Dialog open={isDocumentsModalOpen} onOpenChange={setIsDocumentsModalOpen}>
+        <DialogContent className="sm:max-w-[425px] rounded-[2rem] border-none shadow-2xl">
+          <DialogHeader>
+            <div className="h-16 w-16 bg-secondary/10 rounded-full flex items-center justify-center mb-4 mx-auto">
+              <FileText className="h-8 w-8 text-secondary" />
+            </div>
+            <DialogTitle className="text-center font-headline font-bold text-xl">Documentos Bitrix24</DialogTitle>
+            <DialogDescription className="text-center text-xs text-muted-foreground uppercase font-black tracking-widest pt-2">
+              Gestión de Plantillas Operativas
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="py-8 flex flex-col items-center justify-center text-center gap-4 bg-slate-50 rounded-3xl border border-dashed border-slate-200 mx-2">
+            <AlertCircle className="h-10 w-10 text-muted-foreground/30" />
+            <div className="space-y-1">
+              <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Sin Plantillas Disponibles</p>
+              <p className="text-[11px] italic text-muted-foreground px-6">
+                Se debe crear una Plantilla de Documento en Bitrix24 para seleccionarla aquí.
+              </p>
+            </div>
+          </div>
+
+          <DialogFooter className="sm:justify-center">
+            <Button 
+              type="button" 
+              variant="outline"
+              className="w-full h-12 pill-rounded border-slate-200 text-muted-foreground font-black text-[11px] uppercase tracking-[0.2em]"
+              onClick={() => setIsDocumentsModalOpen(false)}
             >
               Cerrar Protocolo
             </Button>
