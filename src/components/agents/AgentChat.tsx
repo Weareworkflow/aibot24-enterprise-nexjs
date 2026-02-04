@@ -181,7 +181,7 @@ export function AgentChat({ agent }: AgentChatProps) {
             <AccordionItem value="conocimiento" className="border-b px-6 border-slate-100">
               <AccordionTrigger className="hover:no-underline py-6">
                 <div className="flex items-center gap-4 text-[14px] font-black uppercase tracking-widest text-slate-700">
-                  <BookOpen className="h-5 w-5" /> Base de Conocimiento
+                  <BookOpen className="h-5 w-5" /> Conocimiento
                 </div>
               </AccordionTrigger>
               <AccordionContent className="pb-8 pt-2 space-y-6">
