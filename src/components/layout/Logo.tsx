@@ -59,7 +59,7 @@ export function Logo({ className, showText = true }: LogoProps) {
       </div>
       {showText && (
         <span className="font-headline text-xl font-bold text-primary tracking-tighter">
-          AI<span className="text-secondary italic">Bot</span>24
+          AI<span className="text-secondary italic">Bot</span>24 <span className="text-secondary font-black uppercase text-[10px] tracking-[0.2em] ml-2 border-l pl-2 border-slate-200">Enterprises</span>
         </span>
       )}
     </div>
