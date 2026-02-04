@@ -150,21 +150,21 @@ export function AgentChat({ agent }: AgentChatProps) {
   };
 
   return (
-    <div className="flex flex-col h-full border rounded-[2rem] bg-white shadow-xl overflow-hidden">
+    <div className="flex flex-col h-full border rounded-[2rem] bg-white shadow-xl overflow-hidden border-slate-200">
       <Collapsible 
         open={isChatOpen} 
         onOpenChange={setIsChatOpen}
         className="flex flex-col h-full overflow-hidden"
       >
-        {/* SECCIÓN DE CONFIGURACIÓN: Ocupa el espacio dinámicamente */}
+        {/* SECCIÓN DE CONFIGURACIÓN MANUAL */}
         <div className={cn(
-          "flex flex-col min-h-0 bg-muted/5 transition-all duration-300 ease-in-out",
+          "flex flex-col min-h-0 bg-white transition-all duration-300 ease-in-out overflow-hidden",
           isChatOpen ? "h-[45%] border-b" : "flex-1"
         )}>
           <ScrollArea className="flex-1">
-            <Accordion type="single" collapsible defaultValue="identidad" className="w-full">
-              <AccordionItem value="identidad" className="border-b px-6">
-                <AccordionTrigger className="hover:no-underline py-5 data-[state=open]:text-secondary transition-colors">
+            <Accordion type="single" collapsible className="w-full">
+              <AccordionItem value="identidad" className="border-b px-6 border-slate-100">
+                <AccordionTrigger className="hover:no-underline py-5 text-slate-700 data-[state=open]:text-secondary transition-colors">
                   <div className="flex items-center gap-4 text-sm font-black uppercase tracking-widest">
                     <Settings2 className="h-5 w-5" /> Identidad
                   </div>
@@ -178,7 +178,7 @@ export function AgentChat({ agent }: AgentChatProps) {
                       <Input 
                         value={agent.name} 
                         onChange={(e) => handleManualUpdate('name', e.target.value)}
-                        className="h-10 text-sm font-bold bg-white"
+                        className="h-10 text-sm font-bold bg-slate-50 border-slate-200 focus-visible:ring-secondary/30"
                       />
                     </div>
                     <div className="space-y-2">
@@ -188,7 +188,7 @@ export function AgentChat({ agent }: AgentChatProps) {
                       <Input 
                         value={agent.role} 
                         onChange={(e) => handleManualUpdate('role', e.target.value)}
-                        className="h-10 text-sm font-bold bg-white"
+                        className="h-10 text-sm font-bold bg-slate-50 border-slate-200 focus-visible:ring-secondary/30"
                       />
                     </div>
                     <div className="space-y-2">
@@ -198,12 +198,12 @@ export function AgentChat({ agent }: AgentChatProps) {
                       <Input 
                         value={agent.company} 
                         onChange={(e) => handleManualUpdate('company', e.target.value)}
-                        className="h-10 text-sm font-bold bg-white"
+                        className="h-10 text-sm font-bold bg-slate-50 border-slate-200 focus-visible:ring-secondary/30"
                       />
                     </div>
                   </div>
 
-                  <div className="mt-8 pt-6 border-t">
+                  <div className="mt-8 pt-6 border-t border-slate-100">
                     <div className="flex items-center gap-2 text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-4">
                       <Palette className="h-4 w-4" /> Identidad Visual
                     </div>
@@ -213,7 +213,7 @@ export function AgentChat({ agent }: AgentChatProps) {
                           key={c}
                           onClick={() => handleManualUpdate('color', c)}
                           className={cn(
-                            "h-8 w-8 rounded-full transition-all hover:scale-110 flex items-center justify-center relative shadow-sm border",
+                            "h-8 w-8 rounded-full transition-all hover:scale-110 flex items-center justify-center relative shadow-sm border border-slate-200",
                             agent.color === c && "ring-2 ring-offset-2 ring-secondary"
                           )}
                           style={{ backgroundColor: c }}
@@ -226,8 +226,8 @@ export function AgentChat({ agent }: AgentChatProps) {
                 </AccordionContent>
               </AccordionItem>
 
-              <AccordionItem value="instrucciones" className="border-b px-6">
-                <AccordionTrigger className="hover:no-underline py-5 data-[state=open]:text-secondary transition-colors">
+              <AccordionItem value="instrucciones" className="border-b px-6 border-slate-100">
+                <AccordionTrigger className="hover:no-underline py-5 text-slate-700 data-[state=open]:text-secondary transition-colors">
                   <div className="flex items-center gap-4 text-sm font-black uppercase tracking-widest">
                     <Code2 className="h-5 w-5" /> Instrucciones
                   </div>
@@ -240,7 +240,7 @@ export function AgentChat({ agent }: AgentChatProps) {
                     <Textarea 
                       value={agent.objective} 
                       onChange={(e) => handleManualUpdate('objective', e.target.value)}
-                      className="min-h-[80px] text-sm bg-white resize-none"
+                      className="min-h-[80px] text-sm bg-slate-50 border-slate-200 resize-none focus-visible:ring-secondary/30"
                     />
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -251,7 +251,7 @@ export function AgentChat({ agent }: AgentChatProps) {
                       <Textarea 
                         value={agent.tone} 
                         onChange={(e) => handleManualUpdate('tone', e.target.value)}
-                        className="min-h-[120px] text-sm italic bg-white resize-none"
+                        className="min-h-[120px] text-sm italic bg-slate-50 border-slate-200 resize-none focus-visible:ring-secondary/30"
                       />
                     </div>
                     <div className="space-y-2">
@@ -261,7 +261,7 @@ export function AgentChat({ agent }: AgentChatProps) {
                       <Textarea 
                         value={agent.knowledge} 
                         onChange={(e) => handleManualUpdate('knowledge', e.target.value)}
-                        className="min-h-[120px] text-[12px] font-mono bg-white resize-none"
+                        className="min-h-[120px] text-[12px] font-mono bg-slate-50 border-slate-200 resize-none focus-visible:ring-secondary/30"
                       />
                     </div>
                   </div>
@@ -269,7 +269,7 @@ export function AgentChat({ agent }: AgentChatProps) {
               </AccordionItem>
 
               <AccordionItem value="integraciones" className="border-0 px-6">
-                <AccordionTrigger className="hover:no-underline py-5 data-[state=open]:text-secondary transition-colors">
+                <AccordionTrigger className="hover:no-underline py-5 text-slate-700 data-[state=open]:text-secondary transition-colors">
                   <div className="flex items-center gap-4 text-sm font-black uppercase tracking-widest">
                     <Share2 className="h-5 w-5" /> Integraciones
                   </div>
@@ -287,7 +287,7 @@ export function AgentChat({ agent }: AgentChatProps) {
                     ].map((int, i) => (
                       <div 
                         key={i} 
-                        className="flex items-center justify-between p-4 border rounded-2xl bg-white hover:bg-slate-50 transition-colors shadow-sm"
+                        className="flex items-center justify-between p-4 border border-slate-100 rounded-2xl bg-white hover:bg-slate-50 transition-colors shadow-sm"
                       >
                         <div className="flex items-center gap-3">
                           <int.icon className={cn("h-5 w-5", agent.integrations?.[int.title] ? "text-secondary" : "text-muted-foreground")} />
@@ -307,23 +307,21 @@ export function AgentChat({ agent }: AgentChatProps) {
               </AccordionItem>
             </Accordion>
           </ScrollArea>
-
-          {/* DISPARADOR: Pegado a la última sección cuando está cerrado */}
-          <CollapsibleTrigger asChild>
-            <button className={cn(
-              "flex items-center justify-between px-6 py-4 bg-secondary/10 hover:bg-secondary/15 transition-colors border-t border-secondary/20 shrink-0",
-              isChatOpen ? "bg-secondary/15" : ""
-            )}>
-              <div className="flex items-center gap-3">
-                <Wand2 className="h-5 w-5 text-secondary" />
-                <div className="text-left">
-                  <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-secondary">Editar Ajuste con AI</h3>
-                </div>
-              </div>
-              {isChatOpen ? <ChevronDown className="h-4 w-4 text-secondary" /> : <ChevronUp className="h-4 w-4 text-secondary" />}
-            </button>
-          </CollapsibleTrigger>
         </div>
+
+        {/* DISPARADOR: Pegado a la última sección activa */}
+        <CollapsibleTrigger asChild>
+          <button className={cn(
+            "flex items-center justify-between px-6 py-4 transition-colors shrink-0 outline-none",
+            isChatOpen ? "bg-secondary/10 border-t border-secondary/20" : "bg-secondary/5 hover:bg-secondary/10 border-t border-slate-100"
+          )}>
+            <div className="flex items-center gap-3">
+              <Wand2 className="h-5 w-5 text-secondary" />
+              <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-secondary">Editar Ajuste con AI</h3>
+            </div>
+            {isChatOpen ? <ChevronDown className="h-4 w-4 text-secondary" /> : <ChevronUp className="h-4 w-4 text-secondary" />}
+          </button>
+        </CollapsibleTrigger>
 
         {/* CONTENIDO DEL OPTIMIZADOR AI */}
         <CollapsibleContent className="flex-1 flex flex-col min-h-0 bg-white overflow-hidden">
@@ -333,7 +331,7 @@ export function AgentChat({ agent }: AgentChatProps) {
                 <div className="text-center py-10 space-y-3 opacity-30">
                   <UserCog className="h-10 w-10 mx-auto text-secondary" />
                   <p className="text-[9px] font-black uppercase tracking-widest max-w-[180px] mx-auto leading-relaxed">
-                    Escribe tu instrucción y la IA rediseñará el agente.
+                    Escribe tu instrucción y la IA rediseñará el agente de inmediato.
                   </p>
                 </div>
               )}
@@ -365,7 +363,7 @@ export function AgentChat({ agent }: AgentChatProps) {
 
               {isRefining && (
                 <div className="flex items-start gap-2 animate-pulse">
-                  <div className="bg-white px-4 py-3 rounded-2xl rounded-tl-none border flex flex-col gap-2 shadow-sm">
+                  <div className="bg-white px-4 py-3 rounded-2xl rounded-tl-none border border-slate-100 flex flex-col gap-2 shadow-sm">
                     <div className="flex items-center gap-2">
                       <Loader2 className="h-3.5 w-3.5 animate-spin text-secondary" />
                       <span className="text-[10px] font-black uppercase text-secondary">Procesando Arquitectura...</span>
@@ -376,8 +374,8 @@ export function AgentChat({ agent }: AgentChatProps) {
             </div>
           </ScrollArea>
 
-          <div className="p-4 bg-white border-t">
-            <div className="flex items-center gap-3 bg-slate-50 p-2 rounded-2xl border focus-within:border-secondary transition-colors">
+          <div className="p-4 bg-white border-t border-slate-100">
+            <div className="flex items-center gap-3 bg-slate-50 p-2 rounded-2xl border border-slate-200 focus-within:border-secondary transition-colors">
               <Sparkles className="h-4 w-4 text-secondary ml-2" />
               <Input 
                 placeholder="Ej: 'Cambia el tono a uno más ejecutivo'..." 
