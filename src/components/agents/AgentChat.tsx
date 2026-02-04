@@ -213,7 +213,7 @@ export function AgentChat({ agent }: AgentChatProps) {
               </AccordionContent>
             </AccordionItem>
 
-            {/* 2. INSTRUCCIONES (Estilo, Tono y Manual Técnico) */}
+            {/* 2. INSTRUCCIONES */}
             <AccordionItem value="instrucciones" className="border-b px-6 border-slate-100">
               <AccordionTrigger className="hover:no-underline py-6">
                 <div className="flex items-center gap-4 text-[14px] font-black uppercase tracking-widest text-slate-700">
@@ -239,7 +239,7 @@ export function AgentChat({ agent }: AgentChatProps) {
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Manual de Instrucciones Técnicas</Label>
+                    <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Manual de Instrucciones</Label>
                     <Textarea 
                       value={agent.knowledge} 
                       onChange={(e) => handleManualUpdate('knowledge', e.target.value, 'Instrucciones')} 
@@ -251,7 +251,7 @@ export function AgentChat({ agent }: AgentChatProps) {
               </AccordionContent>
             </AccordionItem>
 
-            {/* 3. CONOCIMIENTO (Base Documental Multi-archivo) */}
+            {/* 3. CONOCIMIENTO (Debajo de Instrucciones) */}
             <AccordionItem value="conocimiento" className="border-b px-6 border-slate-100">
               <AccordionTrigger className="hover:no-underline py-6">
                 <div className="flex items-center gap-4 text-[14px] font-black uppercase tracking-widest text-slate-700">
@@ -260,7 +260,7 @@ export function AgentChat({ agent }: AgentChatProps) {
               </AccordionTrigger>
               <AccordionContent className="pb-8 pt-2 space-y-8">
                 <div className="space-y-4">
-                  <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Base Documental (Archivos vinculados)</Label>
+                  <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Base Documental (Multi-archivo)</Label>
                   <div 
                     onClick={() => fileInputRef.current?.click()}
                     className="border-2 border-dashed border-slate-200 rounded-[2rem] p-8 flex flex-col items-center justify-center gap-3 bg-slate-50 hover:bg-slate-100 hover:border-secondary/40 transition-all cursor-pointer group"
@@ -278,14 +278,14 @@ export function AgentChat({ agent }: AgentChatProps) {
                     </div>
                     <div className="text-center">
                       <p className="text-xs font-bold text-slate-600">Subir PDF, DOC, Excel o Texto</p>
-                      <p className="text-[9px] text-muted-foreground uppercase font-black tracking-widest mt-1">Sincronización multi-formato</p>
+                      <p className="text-[9px] text-muted-foreground uppercase font-black tracking-widest mt-1">Sincronización documental activa</p>
                     </div>
                   </div>
 
                   {agent.knowledgeFiles && agent.knowledgeFiles.length > 0 && (
                     <div className="grid gap-2">
                       {agent.knowledgeFiles.map((file, idx) => (
-                        <div key={idx} className="flex items-center justify-between p-3 border rounded-2xl bg-white shadow-sm animate-in fade-in slide-in-from-top-1">
+                        <div key={idx} className="flex items-center justify-between p-3 border rounded-2xl bg-white shadow-sm">
                           <div className="flex items-center gap-3 overflow-hidden">
                             {getFileIcon(file.type)}
                             <div className="flex flex-col truncate">
@@ -296,7 +296,7 @@ export function AgentChat({ agent }: AgentChatProps) {
                           <Button 
                             variant="ghost" 
                             size="icon" 
-                            className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/5"
+                            className="h-8 w-8 text-muted-foreground hover:text-destructive"
                             onClick={() => removeFile(idx)}
                           >
                             <Trash2 className="h-4 w-4" />
@@ -361,7 +361,7 @@ export function AgentChat({ agent }: AgentChatProps) {
                 </ScrollArea>
                 <div className="p-4 border-t bg-slate-50">
                   <div className="flex items-center gap-2 bg-white p-1 rounded-2xl border">
-                    <Input placeholder="Ej: Haz que el conocimiento incluya los precios actuales" className="border-none bg-transparent h-10 text-[13px]" value={feedbackInput} onChange={(e) => setFeedbackInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleRefine()} />
+                    <Input placeholder="Ej: Haz que el tono sea más ejecutivo..." className="border-none bg-transparent h-10 text-[13px]" value={feedbackInput} onChange={(e) => setFeedbackInput(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleRefine()} />
                     <Button size="icon" className="rounded-xl h-10 w-10 bg-secondary" onClick={handleRefine} disabled={!feedbackInput.trim() || isRefining}><Send className="h-5 w-5" /></Button>
                   </div>
                 </div>
