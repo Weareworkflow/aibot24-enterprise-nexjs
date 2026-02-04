@@ -10,6 +10,7 @@ export interface AIAgent {
   objective: string;
   tone: string;
   knowledge: string;
+  color?: string;
   createdAt: string;
   isActive?: boolean;
   integrations?: Record<string, boolean>;

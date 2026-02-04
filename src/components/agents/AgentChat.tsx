@@ -27,7 +27,8 @@ import {
   Search,
   Cloud,
   PhoneCall,
-  Palette
+  Palette,
+  Check
 } from "lucide-react";
 import {
   Accordion,
@@ -46,6 +47,12 @@ import { FirestorePermissionError } from '@/firebase/errors';
 interface AgentChatProps {
   agent: AIAgent;
 }
+
+const ASSISTANT_COLORS = [
+  "#ef4444", "#22c55e", "#10b981", "#3b82f6", "#1e3a8a", 
+  "#a855f7", "#06b6d4", "#ec4899", "#84cc16", "#78350f", 
+  "#2563eb", "#fef08a", "#f97316", "#475569", "#94a3b8", "#1e293b"
+];
 
 export function AgentChat({ agent }: AgentChatProps) {
   const [feedbackInput, setFeedbackInput] = useState("");
@@ -139,6 +146,19 @@ export function AgentChat({ agent }: AgentChatProps) {
       });
   };
 
+  const updateAgentColor = (color: string) => {
+    if (!db || !agent) return;
+    const agentRef = doc(db, "agents", agent.id);
+    updateDoc(agentRef, { color })
+      .catch(async (error) => {
+        errorEmitter.emit('permission-error', new FirestorePermissionError({
+          path: agentRef.path,
+          operation: 'update',
+          requestResourceData: { color }
+        }));
+      });
+  };
+
   return (
     <div className="flex flex-col h-full border rounded-[2rem] bg-white shadow-xl overflow-hidden">
       {/* Cabecera de la Consola con Acordeones Integrados */}
@@ -169,7 +189,7 @@ export function AgentChat({ agent }: AgentChatProps) {
               </div>
             </AccordionTrigger>
             <AccordionContent className="pb-8 pt-2">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
                 <div className="space-y-2">
                   <div className="flex items-center gap-2.5 text-[10px] font-black text-muted-foreground uppercase tracking-widest">
                     <UserRound className="h-4 w-4" /> Unidad
@@ -188,6 +208,30 @@ export function AgentChat({ agent }: AgentChatProps) {
                   </div>
                   <p className="text-sm font-bold">{agent.company}</p>
                 </div>
+              </div>
+
+              <div className="space-y-4 pt-6 border-t border-slate-100">
+                <div className="flex items-center gap-2.5 text-[10px] font-black text-muted-foreground uppercase tracking-widest">
+                  <Palette className="h-4 w-4" /> Color
+                </div>
+                <div className="flex flex-wrap gap-2.5">
+                  {ASSISTANT_COLORS.map((c) => (
+                    <button
+                      key={c}
+                      onClick={() => updateAgentColor(c)}
+                      className={cn(
+                        "h-8 w-8 rounded-full transition-all hover:scale-110 flex items-center justify-center relative shadow-sm",
+                        agent.color === c && "ring-2 ring-offset-2 ring-secondary"
+                      )}
+                      style={{ backgroundColor: c }}
+                    >
+                      {agent.color === c && <Check className="h-4 w-4 text-white drop-shadow-sm" />}
+                    </button>
+                  ))}
+                </div>
+                <p className="text-[10px] font-black text-muted-foreground/50 uppercase tracking-[0.15em] mt-2">
+                  Identidad Visual del Asistente
+                </p>
               </div>
             </AccordionContent>
           </AccordionItem>
