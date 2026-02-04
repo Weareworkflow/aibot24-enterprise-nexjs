@@ -151,15 +151,13 @@ export function AgentChat({ agent }: AgentChatProps) {
 
   return (
     <div className="flex flex-col h-full border rounded-[2rem] bg-white shadow-xl overflow-hidden border-slate-200">
-      <div className={cn(
-        "flex flex-col transition-all duration-300 ease-in-out overflow-hidden",
-        isChatOpen ? "h-[45%]" : "flex-1"
-      )}>
-        <ScrollArea className="h-full">
+      <ScrollArea className="flex-1" ref={scrollRef}>
+        <div className="flex flex-col min-h-full">
           <Accordion type="single" collapsible className="w-full">
+            {/* IDENTIDAD */}
             <AccordionItem value="identidad" className="border-b px-6 border-slate-100">
-              <AccordionTrigger className="hover:no-underline py-5 text-slate-700 data-[state=open]:text-secondary transition-colors">
-                <div className="flex items-center gap-4 text-sm font-black uppercase tracking-widest">
+              <AccordionTrigger className="hover:no-underline py-6 text-slate-700 data-[state=open]:text-secondary transition-colors outline-none">
+                <div className="flex items-center gap-4 text-[14px] font-black uppercase tracking-widest">
                   <Settings2 className="h-5 w-5" /> Identidad
                 </div>
               </AccordionTrigger>
@@ -220,9 +218,10 @@ export function AgentChat({ agent }: AgentChatProps) {
               </AccordionContent>
             </AccordionItem>
 
+            {/* INSTRUCCIONES */}
             <AccordionItem value="instrucciones" className="border-b px-6 border-slate-100">
-              <AccordionTrigger className="hover:no-underline py-5 text-slate-700 data-[state=open]:text-secondary transition-colors">
-                <div className="flex items-center gap-4 text-sm font-black uppercase tracking-widest">
+              <AccordionTrigger className="hover:no-underline py-6 text-slate-700 data-[state=open]:text-secondary transition-colors outline-none">
+                <div className="flex items-center gap-4 text-[14px] font-black uppercase tracking-widest">
                   <Code2 className="h-5 w-5" /> Instrucciones
                 </div>
               </AccordionTrigger>
@@ -234,7 +233,7 @@ export function AgentChat({ agent }: AgentChatProps) {
                   <Textarea 
                     value={agent.objective} 
                     onChange={(e) => handleManualUpdate('objective', e.target.value)}
-                    className="min-h-[80px] text-sm bg-slate-50 border-slate-200 resize-none focus-visible:ring-secondary/30"
+                    className="min-h-[100px] text-sm bg-slate-50 border-slate-200 resize-none focus-visible:ring-secondary/30"
                   />
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -245,7 +244,7 @@ export function AgentChat({ agent }: AgentChatProps) {
                     <Textarea 
                       value={agent.tone} 
                       onChange={(e) => handleManualUpdate('tone', e.target.value)}
-                      className="min-h-[120px] text-sm italic bg-slate-50 border-slate-200 resize-none focus-visible:ring-secondary/30"
+                      className="min-h-[150px] text-sm italic bg-slate-50 border-slate-200 resize-none focus-visible:ring-secondary/30"
                     />
                   </div>
                   <div className="space-y-2">
@@ -255,16 +254,17 @@ export function AgentChat({ agent }: AgentChatProps) {
                     <Textarea 
                       value={agent.knowledge} 
                       onChange={(e) => handleManualUpdate('knowledge', e.target.value)}
-                      className="min-h-[120px] text-[12px] font-mono bg-slate-50 border-slate-200 resize-none focus-visible:ring-secondary/30"
+                      className="min-h-[150px] text-[12px] font-mono bg-slate-50 border-slate-200 resize-none focus-visible:ring-secondary/30"
                     />
                   </div>
                 </div>
               </AccordionContent>
             </AccordionItem>
 
+            {/* INTEGRACIONES */}
             <AccordionItem value="integraciones" className="border-0 px-6">
-              <AccordionTrigger className="hover:no-underline py-5 text-slate-700 data-[state=open]:text-secondary transition-colors">
-                <div className="flex items-center gap-4 text-sm font-black uppercase tracking-widest">
+              <AccordionTrigger className="hover:no-underline py-6 text-slate-700 data-[state=open]:text-secondary transition-colors outline-none">
+                <div className="flex items-center gap-4 text-[14px] font-black uppercase tracking-widest">
                   <Share2 className="h-5 w-5" /> Integraciones
                 </div>
               </AccordionTrigger>
@@ -300,77 +300,78 @@ export function AgentChat({ agent }: AgentChatProps) {
               </AccordionContent>
             </AccordionItem>
           </Accordion>
-        </ScrollArea>
-      </div>
 
-      <Collapsible open={isChatOpen} onOpenChange={setIsChatOpen} className="shrink-0 flex flex-col bg-white border-t border-slate-100">
-        <CollapsibleTrigger asChild>
-          <button className={cn(
-            "flex items-center justify-between px-6 py-4 transition-colors outline-none",
-            isChatOpen ? "bg-secondary/10" : "hover:bg-slate-50"
-          )}>
-            <div className="flex items-center gap-3">
-              <Wand2 className="h-5 w-5 text-secondary" />
-              <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-secondary">Editar Ajuste con AI</h3>
-            </div>
-            {isChatOpen ? <ChevronDown className="h-4 w-4 text-secondary" /> : <ChevronUp className="h-4 w-4 text-secondary" />}
-          </button>
-        </CollapsibleTrigger>
-        
-        <CollapsibleContent className="flex flex-col h-[400px]">
-          <ScrollArea className="flex-1 p-6" ref={scrollRef}>
-            <div className="space-y-5 pb-4">
-              {history.length === 0 && !isRefining && (
-                <div className="text-center py-10 space-y-3 opacity-30">
-                  <UserCog className="h-10 w-10 mx-auto text-secondary" />
-                  <p className="text-[9px] font-black uppercase tracking-widest max-w-[180px] mx-auto leading-relaxed">
-                    Instruye a la IA para rediseñar el agente de inmediato.
-                  </p>
+          {/* EDITAR CON AI - Pegado a Integraciones */}
+          <Collapsible open={isChatOpen} onOpenChange={setIsChatOpen} className="w-full">
+            <CollapsibleTrigger asChild>
+              <button className={cn(
+                "flex items-center justify-between px-6 py-6 w-full border-t border-slate-100 transition-colors outline-none",
+                isChatOpen ? "bg-secondary/5" : "hover:bg-slate-50"
+              )}>
+                <div className="flex items-center gap-4 text-[14px] font-black uppercase tracking-widest text-secondary">
+                  <Wand2 className="h-5 w-5" /> Editar Ajuste con AI
                 </div>
-              )}
-              {history.map((item, idx) => (
-                <div key={idx} className={cn("flex flex-col max-w-[85%] space-y-1 animate-in fade-in slide-in-from-bottom-1", item.role === 'user' ? "ml-auto items-end" : "items-start")}>
-                  <div className={cn("px-4 py-3 rounded-2xl text-[12px] leading-relaxed shadow-sm border", item.role === 'user' ? "bg-secondary text-white border-secondary rounded-tr-none" : "bg-white text-foreground border-slate-100 rounded-tl-none")}>
-                    {item.content}
-                    {item.explanation && (
-                      <div className="mt-3 pt-3 border-t border-slate-50">
-                        <p className="text-[8px] font-black text-secondary uppercase mb-1 tracking-widest">Log de Cambios:</p>
-                        <p className="text-[11px] italic text-muted-foreground">{item.explanation}</p>
+                {isChatOpen ? <ChevronDown className="h-4 w-4 text-secondary" /> : <ChevronUp className="h-4 w-4 text-secondary" />}
+              </button>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="bg-white border-t border-slate-100">
+              <div className="flex flex-col h-[400px]">
+                <ScrollArea className="flex-1 p-6">
+                  <div className="space-y-5 pb-4">
+                    {history.length === 0 && !isRefining && (
+                      <div className="text-center py-10 space-y-3 opacity-30">
+                        <UserCog className="h-10 w-10 mx-auto text-secondary" />
+                        <p className="text-[9px] font-black uppercase tracking-widest max-w-[180px] mx-auto leading-relaxed">
+                          Instruye a la IA para rediseñar el agente de inmediato.
+                        </p>
+                      </div>
+                    )}
+                    {history.map((item, idx) => (
+                      <div key={idx} className={cn("flex flex-col max-w-[85%] space-y-1 animate-in fade-in slide-in-from-bottom-1", item.role === 'user' ? "ml-auto items-end" : "items-start")}>
+                        <div className={cn("px-4 py-3 rounded-2xl text-[12px] leading-relaxed shadow-sm border", item.role === 'user' ? "bg-secondary text-white border-secondary rounded-tr-none" : "bg-white text-foreground border-slate-100 rounded-tl-none")}>
+                          {item.content}
+                          {item.explanation && (
+                            <div className="mt-3 pt-3 border-t border-slate-50">
+                              <p className="text-[8px] font-black text-secondary uppercase mb-1 tracking-widest">Log de Cambios:</p>
+                              <p className="text-[11px] italic text-muted-foreground">{item.explanation}</p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                    {isRefining && (
+                      <div className="flex items-start gap-2 animate-pulse">
+                        <div className="bg-white px-4 py-3 rounded-2xl rounded-tl-none border border-slate-100 flex flex-col gap-2 shadow-sm">
+                          <div className="flex items-center gap-2">
+                            <Loader2 className="h-3.5 w-3.5 animate-spin text-secondary" />
+                            <span className="text-[10px] font-black uppercase text-secondary">Procesando Arquitectura...</span>
+                          </div>
+                        </div>
                       </div>
                     )}
                   </div>
-                </div>
-              ))}
-              {isRefining && (
-                <div className="flex items-start gap-2 animate-pulse">
-                  <div className="bg-white px-4 py-3 rounded-2xl rounded-tl-none border border-slate-100 flex flex-col gap-2 shadow-sm">
-                    <div className="flex items-center gap-2">
-                      <Loader2 className="h-3.5 w-3.5 animate-spin text-secondary" />
-                      <span className="text-[10px] font-black uppercase text-secondary">Procesando Arquitectura...</span>
-                    </div>
+                </ScrollArea>
+                <div className="p-4 bg-white border-t border-slate-100">
+                  <div className="flex items-center gap-3 bg-slate-50 p-2 rounded-2xl border border-slate-200 focus-within:border-secondary transition-colors">
+                    <Sparkles className="h-4 w-4 text-secondary ml-2" />
+                    <Input 
+                      placeholder="Ej: 'Cambia el tono a uno más ejecutivo'..." 
+                      className="flex-1 border-none bg-transparent focus-visible:ring-0 text-[12px] h-9"
+                      value={feedbackInput}
+                      onChange={(e) => setFeedbackInput(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && !isRefining && handleRefine()}
+                      disabled={isRefining}
+                    />
+                    <Button size="icon" className="rounded-xl h-9 w-9 bg-secondary hover:bg-secondary/90" onClick={handleRefine} disabled={!feedbackInput.trim() || isRefining}>
+                      {isRefining ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                    </Button>
                   </div>
                 </div>
-              )}
-            </div>
-          </ScrollArea>
-          <div className="p-4 bg-white border-t border-slate-100">
-            <div className="flex items-center gap-3 bg-slate-50 p-2 rounded-2xl border border-slate-200 focus-within:border-secondary transition-colors">
-              <Sparkles className="h-4 w-4 text-secondary ml-2" />
-              <Input 
-                placeholder="Ej: 'Cambia el tono a uno más ejecutivo'..." 
-                className="flex-1 border-none bg-transparent focus-visible:ring-0 text-[12px] h-9"
-                value={feedbackInput}
-                onChange={(e) => setFeedbackInput(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && !isRefining && handleRefine()}
-                disabled={isRefining}
-              />
-              <Button size="icon" className="rounded-xl h-9 w-9 bg-secondary hover:bg-secondary/90" onClick={handleRefine} disabled={!feedbackInput.trim() || isRefining}>
-                {isRefining ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-              </Button>
-            </div>
-          </div>
-        </CollapsibleContent>
-      </Collapsible>
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
+        </div>
+      </ScrollArea>
     </div>
   );
 }
