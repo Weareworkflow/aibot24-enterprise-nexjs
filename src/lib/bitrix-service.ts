@@ -89,7 +89,8 @@ export async function callBitrixMethod(memberId: string, method: string, params:
  * Registra un Bot de tipo 'O' (Open Lines) en Bitrix24.
  */
 export async function registerBitrixBot(memberId: string, agentData: { name: string, role: string, color: string, agentId: string }) {
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`;
+  // Fallback para URL de aplicación si no está en env
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || `https://${process.env.NEXT_PUBLIC_VERCEL_URL || 'aibot24-voice.web.app'}`;
   
   const params = {
     CODE: `bot_${agentData.agentId}`,

@@ -36,6 +36,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
+import { registerOpenLinesBot } from "@/app/actions/bitrix-actions";
 
 const DEPARTMENTS = [
   "Departamento de Ventas",
@@ -73,23 +74,39 @@ export function IntegrationModals({ agent, activeModal, onClose, onSave, onApiUp
   };
 
   const handleOpenLines = async () => {
+    if (!agent.tenantId) {
+      toast({
+        variant: "destructive",
+        title: "Error de Contexto",
+        description: "No se ha detectado el member_id del portal.",
+      });
+      return;
+    }
+
     setIsRegisteringBot(true);
     try {
-      // Simulación de llamada a registro de bot tipo O
-      // En un entorno real esto llamaría a una Server Action que use registerBitrixBot
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      onSave('integrations', { ...agent.integrations, "Open Lines (Chat Bitrix24)": true }, "Open Lines (Chat Bitrix24)");
-      toast({
-        title: "Bot Registrado",
-        description: `El bot tipo O "${agent.name}" ha sido vinculado a Open Lines.`,
+      const result = await registerOpenLinesBot(agent.tenantId, {
+        name: agent.name,
+        role: agent.role,
+        color: agent.color || 'BLUE',
+        agentId: agent.id
       });
-      onClose();
-    } catch (error) {
+      
+      if (result.success) {
+        onSave('integrations', { ...agent.integrations, "Open Lines (Chat Bitrix24)": true }, "Open Lines (Chat Bitrix24)");
+        toast({
+          title: "Bot Registrado",
+          description: `El bot tipo O "${agent.name}" ha sido vinculado a Open Lines.`,
+        });
+        onClose();
+      } else {
+        throw new Error(result.error);
+      }
+    } catch (error: any) {
       toast({
         variant: "destructive",
         title: "Error de Registro",
-        description: "No se pudo registrar el bot en Bitrix24.",
+        description: error.message || "No se pudo registrar el bot en Bitrix24.",
       });
     } finally {
       setIsRegisteringBot(false);
