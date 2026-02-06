@@ -1,5 +1,5 @@
 
-export type AgentType = 'voice' | 'text';
+export type AgentType = 'text';
 
 export interface APIEndpoint {
   name: string;
@@ -35,7 +35,7 @@ export interface AIAgent {
   metrics: {
     usageCount: number;
     performanceRating: number;
-    totalInteractionMetric: number; // minutos para voz, mensajes para texto
+    totalInteractionMetric: number; // mensajes para texto
     latency?: string;
     tokens?: string;
     transfers?: number;

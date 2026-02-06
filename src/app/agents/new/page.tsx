@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, useRef } from "react";
@@ -6,11 +7,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { Sparkles, Loader2, Phone, MessageSquareText, Send, Bot, Rocket } from "lucide-react";
+import { Sparkles, Loader2, Send, Bot, Rocket, MessageSquareText } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { AgentType, ChatMessage, AIAgent } from "@/lib/types";
+import { ChatMessage, AIAgent } from "@/lib/types";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useFirestore } from "@/firebase";
 import { collection, doc, setDoc, query, where, getDocs } from "firebase/firestore";
@@ -19,7 +20,7 @@ import { FirestorePermissionError } from '@/firebase/errors';
 import { useUIStore } from "@/lib/store";
 
 const CONFIG_STEPS = [
-  { key: 'name', question: "¡Hola! Soy tu Arquitecto Virtual. Vamos a diseñar tu agente de élite. Primero, ¿qué nombre llevará esta unidad?", label: "Nombre" },
+  { key: 'name', question: "¡Hola! Soy tu Arquitecto Virtual. Vamos a diseñar tu agente de chat de élite. Primero, ¿qué nombre llevará esta unidad?", label: "Nombre" },
   { key: 'role', question: "Entendido. ¿Cuál será su función o cargo específico dentro de la organización?", label: "Rol" },
   { key: 'company', question: "¿Para qué empresa o marca estará operando?", label: "Empresa" },
   { key: 'objective', question: "Crucial. ¿Cuál es el objetivo principal que debe cumplir en cada interacción?", label: "Objetivo" },
@@ -28,8 +29,6 @@ const CONFIG_STEPS = [
 ];
 
 export default function NewAgentPage() {
-  const [step, setStep] = useState(1); 
-  const [agentType, setAgentType] = useState<AgentType | null>(null);
   const [currentConfigIndex, setCurrentConfigIndex] = useState(0);
   const [isFinished, setIsFinished] = useState(false);
   const [config, setConfig] = useState({
@@ -51,7 +50,7 @@ export default function NewAgentPage() {
   const { tenantId } = useUIStore();
 
   useEffect(() => {
-    if (step === 2 && messages.length === 0) {
+    if (messages.length === 0) {
       setMessages([{
         id: "start",
         role: "assistant",
@@ -59,7 +58,7 @@ export default function NewAgentPage() {
         timestamp: new Date().toISOString()
       }]);
     }
-  }, [step, messages.length]);
+  }, [messages.length]);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -102,7 +101,7 @@ export default function NewAgentPage() {
         setMessages(prev => [...prev, {
           id: (Date.now() + 1).toString(),
           role: "assistant",
-          content: "¡Excelente! He procesado toda la información. Aquí tienes la ficha técnica final de tu agente. Revisa los detalles y confirma el despliegue.",
+          content: "¡Excelente! He procesado toda la información. Aquí tienes la ficha técnica final de tu agente de chat. Revisa los detalles y confirma el despliegue.",
           timestamp: new Date().toISOString()
         }]);
       }, 800);
@@ -122,7 +121,6 @@ export default function NewAgentPage() {
     setIsSaving(true);
 
     try {
-      // 1. Validar nombre duplicado para el mismo tenant usando consulta simple
       const agentsRef = collection(db, "agents");
       const q = query(agentsRef, where("tenantId", "==", tenantId));
       const querySnapshot = await getDocs(q);
@@ -141,13 +139,12 @@ export default function NewAgentPage() {
         return;
       }
 
-      // 2. Proceder con el guardado si no hay duplicados
       const agentId = Date.now().toString();
       const newAgent: AIAgent = {
         id: agentId,
         tenantId: tenantId,
         name: config.name,
-        type: agentType || 'text',
+        type: 'text',
         role: config.role,
         company: config.company,
         objective: config.objective,
@@ -156,6 +153,7 @@ export default function NewAgentPage() {
         isActive: true,
         createdAt: new Date().toISOString(),
         integrations: {
+          "Open Lines (Chat Bitrix24)": false,
           "WhatsApp Business": false,
           "CRM Bitrix24": false,
           "Calendario Bitrix24": false,
@@ -186,7 +184,6 @@ export default function NewAgentPage() {
 
     } catch (error: any) {
       setIsSaving(false);
-      console.error("Error al guardar agente:", error);
       errorEmitter.emit('permission-error', new FirestorePermissionError({
         path: "agents",
         operation: 'create'
@@ -201,11 +198,11 @@ export default function NewAgentPage() {
         <div className="mb-6 space-y-1">
           <h1 className="text-2xl font-headline font-bold text-foreground flex items-center gap-3">
             <Bot className="h-6 w-6 text-secondary" />
-            Arquitecto de Agentes IA
+            Arquitecto de Agentes Chat
           </h1>
           <div className="flex items-center gap-4">
             <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">
-              {step === 1 ? "Iniciando Protocolo" : isFinished ? "Revisión de Arquitectura" : `Fase: ${CONFIG_STEPS[currentConfigIndex].label}`}
+              {isFinished ? "Revisión de Arquitectura" : `Fase: ${CONFIG_STEPS[currentConfigIndex].label}`}
             </p>
             {tenantId && (
               <p className="text-[9px] bg-secondary/10 text-secondary px-2 py-0.5 rounded-full font-black uppercase tracking-widest">
@@ -216,183 +213,146 @@ export default function NewAgentPage() {
         </div>
 
         <div className="grid gap-6">
-          {step === 1 && (
-            <Card className="border-none shadow-sm animate-in fade-in zoom-in-95 duration-500 card-rounded p-8">
-              <div className="text-center mb-8 space-y-2">
-                <h2 className="text-lg font-bold">Bienvenido, Operador</h2>
-                <p className="text-xs text-muted-foreground">Selecciona el canal de comunicación principal para tu nueva IA.</p>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <button 
-                  onClick={() => { setAgentType('voice'); setStep(2); }}
-                  className="flex flex-col items-center gap-6 p-10 rounded-[3rem] border-2 border-dashed border-muted hover:border-secondary hover:bg-secondary/5 transition-all group"
-                >
-                  <div className="h-20 w-20 rounded-full bg-secondary/10 flex items-center justify-center group-hover:bg-secondary group-hover:text-white transition-all">
-                    <Phone className="h-10 w-10 text-secondary group-hover:text-white" />
+          <div className="space-y-6">
+            <Card className="border-none shadow-lg animate-in slide-in-from-bottom-4 duration-500 overflow-hidden card-rounded bg-white">
+              <CardHeader className="bg-white border-b py-4 px-6">
+                <div className="flex items-center gap-4">
+                  <div className="h-12 w-12 rounded-full bg-primary flex items-center justify-center text-white shadow-inner">
+                    <Bot className="h-7 w-7" />
                   </div>
-                  <div className="text-center">
-                    <h3 className="font-black text-sm uppercase tracking-wider">Modo Live</h3>
-                    <p className="text-[10px] text-muted-foreground mt-2 font-bold uppercase">Llamadas y Telefonía</p>
-                  </div>
-                </button>
-                <button 
-                  onClick={() => { setAgentType('text'); setStep(2); }}
-                  className="flex flex-col items-center gap-6 p-10 rounded-[3rem] border-2 border-dashed border-muted hover:border-accent hover:bg-accent/5 transition-all group"
-                >
-                  <div className="h-20 w-20 rounded-full bg-accent/10 flex items-center justify-center group-hover:bg-accent group-hover:text-white transition-all">
-                    <MessageSquareText className="h-10 w-10 text-accent group-hover:text-white" />
-                  </div>
-                  <div className="text-center">
-                    <h3 className="font-black text-sm uppercase tracking-wider">Modo Chat</h3>
-                    <p className="text-[10px] text-muted-foreground mt-2 font-bold uppercase">Mensajería y WhatsApp</p>
-                  </div>
-                </button>
-              </div>
-            </Card>
-          )}
-
-          {step === 2 && (
-            <div className="space-y-6">
-              <Card className="border-none shadow-lg animate-in slide-in-from-bottom-4 duration-500 overflow-hidden card-rounded bg-white">
-                <CardHeader className="bg-white border-b py-4 px-6">
-                  <div className="flex items-center gap-4">
-                    <div className="h-12 w-12 rounded-full bg-primary flex items-center justify-center text-white shadow-inner">
-                      <Bot className="h-7 w-7" />
-                    </div>
-                    <div>
-                      <CardTitle className="text-sm font-black uppercase tracking-widest">Arquitecto Virtual</CardTitle>
-                      <div className="flex items-center gap-1.5 text-[9px] font-black uppercase text-secondary">
-                        <span className="h-2 w-2 bg-secondary rounded-full animate-pulse" />
-                        Sesión de Diseño Activa
-                      </div>
+                  <div>
+                    <CardTitle className="text-sm font-black uppercase tracking-widest">Arquitecto Virtual</CardTitle>
+                    <div className="flex items-center gap-1.5 text-[9px] font-black uppercase text-secondary">
+                      <span className="h-2 w-2 bg-secondary rounded-full animate-pulse" />
+                      Protocolo de Chat Activo
                     </div>
                   </div>
-                </CardHeader>
-                
-                <CardContent className="p-0">
-                  <ScrollArea className="h-[450px] p-6" ref={scrollRef}>
-                    <div className="space-y-6 pb-4">
-                      {messages.map((msg) => (
+                </div>
+              </CardHeader>
+              
+              <CardContent className="p-0">
+                <ScrollArea className="h-[450px] p-6" ref={scrollRef}>
+                  <div className="space-y-6 pb-4">
+                    {messages.map((msg) => (
+                      <div
+                        key={msg.id}
+                        className={cn(
+                          "flex flex-col max-w-[90%] space-y-1 animate-in fade-in slide-in-from-bottom-2",
+                          msg.role === 'user' ? "ml-auto items-end" : "items-start"
+                        )}
+                      >
                         <div
-                          key={msg.id}
                           className={cn(
-                            "flex flex-col max-w-[90%] space-y-1 animate-in fade-in slide-in-from-bottom-2",
-                            msg.role === 'user' ? "ml-auto items-end" : "items-start"
+                            "px-5 py-3 rounded-2xl text-xs shadow-sm leading-relaxed",
+                            msg.role === 'user' 
+                              ? "bg-secondary text-white rounded-tr-none" 
+                              : "bg-muted/50 text-foreground rounded-tl-none border"
                           )}
                         >
-                          <div
-                            className={cn(
-                              "px-5 py-3 rounded-2xl text-xs shadow-sm leading-relaxed",
-                              msg.role === 'user' 
-                                ? "bg-secondary text-white rounded-tr-none" 
-                                : "bg-muted/50 text-foreground rounded-tl-none border"
-                            )}
-                          >
-                            {msg.content}
+                          {msg.content}
+                        </div>
+                        <span className="text-[8px] font-black text-muted-foreground uppercase px-2 tracking-widest">
+                          {msg.role === 'user' ? 'Respuesta Operador' : 'Arquitecto'}
+                        </span>
+                      </div>
+                    ))}
+
+                    {isFinished && (
+                      <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 delay-300">
+                        <Card className="bg-[#F8FAFC] border-2 border-dashed border-secondary/30 rounded-[2rem] overflow-hidden">
+                          <div className="bg-secondary p-4 flex items-center justify-between text-white">
+                            <h4 className="text-[10px] font-black uppercase tracking-[0.2em]">Ficha Técnica de Despliegue (Chat)</h4>
+                            <Sparkles className="h-4 w-4" />
                           </div>
-                          <span className="text-[8px] font-black text-muted-foreground uppercase px-2 tracking-widest">
-                            {msg.role === 'user' ? 'Respuesta Operador' : 'Arquitecto'}
-                          </span>
-                        </div>
-                      ))}
-
-                      {isFinished && (
-                        <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 delay-300">
-                          <Card className="bg-[#F8FAFC] border-2 border-dashed border-secondary/30 rounded-[2rem] overflow-hidden">
-                            <div className="bg-secondary p-4 flex items-center justify-between text-white">
-                              <h4 className="text-[10px] font-black uppercase tracking-[0.2em]">Ficha Técnica de Despliegue</h4>
-                              <Sparkles className="h-4 w-4" />
+                          <CardContent className="p-6 space-y-5">
+                            <div className="grid grid-cols-2 gap-4">
+                              <div className="space-y-1">
+                                <p className="text-[8px] font-black text-muted-foreground uppercase">Nombre</p>
+                                <p className="text-xs font-bold">{config.name}</p>
+                              </div>
+                              <div className="space-y-1">
+                                <p className="text-[8px] font-black text-muted-foreground uppercase">Rol</p>
+                                <p className="text-xs font-bold">{config.role}</p>
+                              </div>
+                              <div className="space-y-1">
+                                <p className="text-[8px] font-black text-muted-foreground uppercase">Empresa</p>
+                                <p className="text-xs font-bold">{config.company}</p>
+                              </div>
+                              <div className="space-y-1">
+                                <p className="text-[8px] font-black text-muted-foreground uppercase">Objetivo</p>
+                                <p className="text-xs font-bold">{config.objective}</p>
+                              </div>
                             </div>
-                            <CardContent className="p-6 space-y-5">
-                              <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-1">
-                                  <p className="text-[8px] font-black text-muted-foreground uppercase">Nombre</p>
-                                  <p className="text-xs font-bold">{config.name}</p>
-                                </div>
-                                <div className="space-y-1">
-                                  <p className="text-[8px] font-black text-muted-foreground uppercase">Rol</p>
-                                  <p className="text-xs font-bold">{config.role}</p>
-                                </div>
-                                <div className="space-y-1">
-                                  <p className="text-[8px] font-black text-muted-foreground uppercase">Empresa</p>
-                                  <p className="text-xs font-bold">{config.company}</p>
-                                </div>
-                                <div className="space-y-1">
-                                  <p className="text-[8px] font-black text-muted-foreground uppercase">Objetivo</p>
-                                  <p className="text-xs font-bold">{config.objective}</p>
-                                </div>
+                            <div className="space-y-1">
+                              <p className="text-[8px] font-black text-muted-foreground uppercase">Tono</p>
+                              <p className="text-[11px] p-2 bg-white rounded-lg border italic">{config.tone}</p>
+                            </div>
+                            <div className="space-y-1">
+                              <p className="text-[8px] font-black text-muted-foreground uppercase">Instrucciones de Comportamiento</p>
+                              <div className="max-h-32 overflow-y-auto text-[10px] p-3 bg-white rounded-xl border border-dashed font-mono leading-relaxed">
+                                {config.knowledge}
                               </div>
-                              <div className="space-y-1">
-                                <p className="text-[8px] font-black text-muted-foreground uppercase">Tono</p>
-                                <p className="text-[11px] p-2 bg-white rounded-lg border italic">{config.tone}</p>
-                              </div>
-                              <div className="space-y-1">
-                                <p className="text-[8px] font-black text-muted-foreground uppercase">Instrucciones de Comportamiento</p>
-                                <div className="max-h-32 overflow-y-auto text-[10px] p-3 bg-white rounded-xl border border-dashed font-mono leading-relaxed">
-                                  {config.knowledge}
-                                </div>
-                              </div>
-                            </CardContent>
-                            <CardFooter className="bg-white p-4 border-t flex justify-center">
-                              <Button 
-                                onClick={handleSave} 
-                                disabled={isSaving}
-                                className="w-full h-12 pill-rounded bg-secondary hover:bg-secondary/90 text-white font-black text-[10px] uppercase tracking-widest gap-2 shadow-lg shadow-secondary/20"
-                              >
-                                {isSaving ? (
-                                  <>
-                                    <Loader2 className="h-4 w-4 animate-spin" />
-                                    Verificando Protocolos...
-                                  </>
-                                ) : (
-                                  <>
-                                    <Rocket className="h-4 w-4" />
-                                    Confirmar y Desplegar Agente
-                                  </>
-                                )}
-                              </Button>
-                            </CardFooter>
-                          </Card>
-                        </div>
-                      )}
-                    </div>
-                  </ScrollArea>
-                </CardContent>
+                            </div>
+                          </CardContent>
+                          <CardFooter className="bg-white p-4 border-t flex justify-center">
+                            <Button 
+                              onClick={handleSave} 
+                              disabled={isSaving}
+                              className="w-full h-12 pill-rounded bg-secondary hover:bg-secondary/90 text-white font-black text-[10px] uppercase tracking-widest gap-2 shadow-lg shadow-secondary/20"
+                            >
+                              {isSaving ? (
+                                <>
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                  Verificando Protocolos...
+                                </>
+                              ) : (
+                                <>
+                                  <Rocket className="h-4 w-4" />
+                                  Confirmar y Desplegar Bot de Chat
+                                </>
+                              )}
+                            </Button>
+                          </CardFooter>
+                        </Card>
+                      </div>
+                    )}
+                  </div>
+                </ScrollArea>
+              </CardContent>
 
-                {!isFinished && (
-                  <CardFooter className="p-4 bg-white border-t">
-                    <div className="flex items-center gap-3 w-full bg-muted/30 p-2 rounded-2xl">
-                      {CONFIG_STEPS[currentConfigIndex].key === 'knowledge' ? (
-                        <Textarea 
-                          placeholder="Define aquí el manual de comportamiento, reglas de negocio o FAQs..."
-                          className="flex-1 bg-transparent border-none focus-visible:ring-0 min-h-[60px] text-xs resize-none"
-                          value={inputValue}
-                          onChange={(e) => setInputValue(e.target.value)}
-                          onKeyDown={(e) => e.key === 'Enter' && e.ctrlKey && handleSendMessage()}
-                        />
-                      ) : (
-                        <Input 
-                          placeholder="Escribe tu respuesta..." 
-                          className="flex-1 bg-transparent border-none focus-visible:ring-0 h-10 text-xs px-4"
-                          value={inputValue}
-                          onChange={(e) => setInputValue(e.target.value)}
-                          onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
-                        />
-                      )}
-                      <Button 
-                        size="icon" 
-                        className="rounded-xl h-10 w-10 bg-secondary hover:bg-secondary/90 flex-shrink-0 shadow-md"
-                        onClick={handleSendMessage}
-                        disabled={!inputValue.trim()}
-                      >
-                        <Send className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </CardFooter>
-                )}
-              </Card>
-            </div>
-          )}
+              {!isFinished && (
+                <CardFooter className="p-4 bg-white border-t">
+                  <div className="flex items-center gap-3 w-full bg-muted/30 p-2 rounded-2xl">
+                    {CONFIG_STEPS[currentConfigIndex].key === 'knowledge' ? (
+                      <Textarea 
+                        placeholder="Define aquí el manual de comportamiento, reglas de negocio o FAQs..."
+                        className="flex-1 bg-transparent border-none focus-visible:ring-0 min-h-[60px] text-xs resize-none"
+                        value={inputValue}
+                        onChange={(e) => setInputValue(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && e.ctrlKey && handleSendMessage()}
+                      />
+                    ) : (
+                      <Input 
+                        placeholder="Escribe tu respuesta..." 
+                        className="flex-1 bg-transparent border-none focus-visible:ring-0 h-10 text-xs px-4"
+                        value={inputValue}
+                        onChange={(e) => setInputValue(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
+                      />
+                    )}
+                    <Button 
+                      size="icon" 
+                      className="rounded-xl h-10 w-10 bg-secondary hover:bg-secondary/90 flex-shrink-0 shadow-md"
+                      onClick={handleSendMessage}
+                      disabled={!inputValue.trim()}
+                    >
+                      <Send className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </CardFooter>
+              )}
+            </Card>
+          </div>
         </div>
       </main>
     </div>

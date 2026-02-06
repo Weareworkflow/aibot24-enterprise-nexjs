@@ -1,3 +1,4 @@
+
 "use client";
 
 import { AIAgent } from "@/lib/types";
@@ -7,11 +8,9 @@ import {
   Power, 
   Trash2, 
   Database, 
-  Phone, 
   MessageSquareText, 
   MessageCircle, 
   Building2,
-  Clock,
   Briefcase,
   Zap,
   ArrowRight
@@ -43,7 +42,6 @@ export function AgentCard({ agent }: AgentCardProps) {
   const router = useRouter();
   const db = useFirestore();
   const { toast } = useToast();
-  const isVoice = agent.type === 'voice';
   const isActive = agent.isActive !== false;
 
   const handleCardClick = () => {
@@ -108,16 +106,16 @@ export function AgentCard({ agent }: AgentCardProps) {
               <div className={cn(
                 "flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border transition-colors",
                 isActive 
-                  ? (isVoice ? "bg-secondary/5 text-secondary border-secondary/20" : "bg-accent/5 text-accent border-accent/20")
+                  ? "bg-accent/5 text-accent border-accent/20"
                   : "bg-slate-100 text-slate-400 border-slate-200"
               )}>
-                {isVoice ? <Phone className="h-3 w-3" /> : <MessageSquareText className="h-3 w-3" />}
-                {isVoice ? "Live Voice" : "AI Chat"}
+                <MessageSquareText className="h-3 w-3" />
+                AI Chat Bot
               </div>
               {isActive && (
                 <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-900 text-white text-[8px] font-bold uppercase animate-pulse shadow-sm">
                   <Zap className="h-2.5 w-2.5 text-yellow-400 fill-yellow-400" />
-                  Live
+                  Activo
                 </div>
               )}
             </div>
@@ -186,10 +184,10 @@ export function AgentCard({ agent }: AgentCardProps) {
         <div className="grid grid-cols-2 gap-3 mb-6">
           <div className="bg-slate-50 p-4 rounded-[2rem] border border-slate-100 flex items-center gap-4 transition-all hover:bg-white hover:shadow-md hover:border-slate-200">
             <div className={cn("p-2.5 rounded-2xl shadow-sm", isActive ? "bg-primary text-white" : "bg-slate-200 text-slate-400")}>
-              {isVoice ? <Clock className="h-4.5 w-4.5" /> : <MessageCircle className="h-4.5 w-4.5" />}
+              <MessageCircle className="h-4.5 w-4.5" />
             </div>
             <div>
-              <p className="text-[8px] font-black uppercase tracking-widest text-muted-foreground">{isVoice ? "Minutos" : "Msgs"}</p>
+              <p className="text-[8px] font-black uppercase tracking-widest text-muted-foreground">Mensajes</p>
               <p className="text-xl font-headline font-bold text-slate-800">{agent.metrics.totalInteractionMetric || 0}</p>
             </div>
           </div>

@@ -50,13 +50,10 @@ export default function AgentConsolePage({ params }: { params: Promise<{ id: str
     </div>
   );
 
-  const isVoice = agent.type === 'voice';
-
   return (
     <div className="flex flex-col min-h-screen bg-[#F0F3F5]">
       <Navbar />
       <main className="container mx-auto px-4 py-6 max-w-5xl">
-        {/* Header Minimalista */}
         <div className="flex items-center justify-between mb-6 bg-white p-4 rounded-3xl border shadow-sm">
           <div className="flex items-center gap-4">
             <Button 
@@ -70,8 +67,8 @@ export default function AgentConsolePage({ params }: { params: Promise<{ id: str
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="text-xl font-headline font-bold">{agent.name}</h1>
-                <Badge className={cn("border-none text-[9px] font-black h-4 uppercase", isVoice ? "bg-secondary/10 text-secondary" : "bg-accent/10 text-accent")}>
-                  {isVoice ? 'MODO LIVE' : 'MODO CHAT'}
+                <Badge className="border-none text-[9px] font-black h-4 uppercase bg-accent/10 text-accent">
+                  MODO CHAT
                 </Badge>
               </div>
               <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">ID: {agent.id} • {agent.company}</p>

@@ -3,13 +3,13 @@
   "entities": {
     "AIAgent": {
       "title": "AI Agent",
-      "description": "Configuración técnica, métricas operativas y propiedad de un agente de IA.",
+      "description": "Configuración técnica, métricas operativas y propiedad de un agente de IA de chat.",
       "type": "object",
       "properties": {
         "id": { "type": "string" },
         "tenantId": { "type": "string", "description": "ID del propietario o empresa creadora (member_id de Bitrix)." },
         "name": { "type": "string" },
-        "type": { "type": "string", "enum": ["voice", "text"] },
+        "type": { "type": "string", "enum": ["text"] },
         "role": { "type": "string" },
         "company": { "type": "string" },
         "objective": { "type": "string" },
@@ -27,7 +27,7 @@
           "properties": {
             "usageCount": { "type": "number" },
             "performanceRating": { "type": "number" },
-            "totalInteractionMetric": { "type": "number" },
+            "totalInteractionMetric": { "type": "number", "description": "Total de mensajes procesados." },
             "latency": { "type": "string" },
             "tokens": { "type": "string" },
             "transfers": { "type": "number" },
@@ -59,7 +59,7 @@
   "firestore": {
     "/agents/{agentId}": {
       "schema": { "$ref": "#/entities/AIAgent" },
-      "description": "Repositorio central de agentes inteligentes."
+      "description": "Repositorio central de agentes de chat inteligentes."
     },
     "/installations/{memberId}": {
       "schema": { "$ref": "#/entities/BitrixInstallation" },

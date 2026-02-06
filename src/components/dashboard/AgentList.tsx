@@ -35,14 +35,7 @@ export function AgentList({ agents, loading, error, tenantId }: AgentListProps) 
         agent.role.toLowerCase().includes(q) ||
         agent.company.toLowerCase().includes(q);
 
-      const isLiveTerm = 'live'.includes(q) || 'voz'.includes(q) || 'voice'.includes(q);
-      const isChatTerm = 'chat'.includes(q) || 'texto'.includes(q) || 'text'.includes(q);
-      
-      const matchesType = 
-        (agent.type === 'voice' && isLiveTerm) ||
-        (agent.type === 'text' && isChatTerm);
-
-      return matchesText || matchesType;
+      return matchesText;
     });
   }, [agents, searchQuery]);
 
@@ -77,13 +70,13 @@ export function AgentList({ agents, loading, error, tenantId }: AgentListProps) 
         <div className="space-y-2 max-w-md">
           <h2 className="text-xl font-headline font-bold">Sin Unidades Desplegadas</h2>
           <p className="text-[11px] text-muted-foreground uppercase font-black tracking-widest leading-relaxed">
-            Tu portal Bitrix24 aún no cuenta con agentes de IA configurados. Inicia el protocolo para automatizar tu atención.
+            Tu portal Bitrix24 aún no cuenta con agentes de chat configurados. Inicia el protocolo para automatizar tu atención.
           </p>
         </div>
         <Link href="/agents/new">
           <Button className="h-12 px-8 pill-rounded bg-secondary hover:bg-secondary/90 text-white font-black text-[10px] uppercase tracking-widest gap-2 shadow-lg shadow-secondary/20">
             <Plus className="h-4 w-4" />
-            Diseñar Mi Primer Agente
+            Diseñar Mi Primer Bot
           </Button>
         </Link>
       </div>
