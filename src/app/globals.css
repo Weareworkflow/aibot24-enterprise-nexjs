@@ -39,12 +39,23 @@
   }
 }
 
-.glass-card {
-  @apply bg-white/70 backdrop-blur-xl border border-white/20 shadow-xl;
+/* Elite Volumetric Styles */
+.premium-shadow {
+  box-shadow: 
+    0 1px 2px rgba(0,0,0,0.05),
+    0 10px 15px -3px rgba(0,0,0,0.05),
+    0 4px 6px -4px rgba(0,0,0,0.05);
 }
 
-.premium-shadow {
-  box-shadow: 0 20px 50px -12px rgba(0, 0, 0, 0.08);
+.high-volume {
+  box-shadow: 
+    0 0 0 1px rgba(0,0,0,0.02),
+    0 20px 25px -5px rgba(0,0,0,0.1),
+    0 8px 10px -6px rgba(0,0,0,0.1);
+}
+
+.glass-card {
+  @apply bg-white border border-slate-200/60 shadow-xl;
 }
 
 .card-rounded {
@@ -53,11 +64,6 @@
 
 .pill-rounded {
   border-radius: 9999px;
-}
-
-.alive-bg {
-  background: radial-gradient(circle at top right, rgba(195, 92, 45, 0.03), transparent),
-              radial-gradient(circle at bottom left, rgba(65, 224, 240, 0.02), transparent);
 }
 
 .modern-scroll::-webkit-scrollbar {
@@ -78,4 +84,8 @@
 
 .animate-float {
   animation: float 6s ease-in-out infinite;
+}
+
+.input-volumetric {
+  @apply bg-slate-50/50 border-slate-200/60 shadow-inner focus:bg-white transition-all duration-300;
 }

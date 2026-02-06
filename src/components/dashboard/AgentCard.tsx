@@ -97,22 +97,16 @@ export function AgentCard({ agent }: AgentCardProps) {
     <Card 
       onClick={handleCardClick}
       className={cn(
-        "group relative border-none bg-white/80 backdrop-blur-lg rounded-[2.5rem] p-8 transition-all duration-500 hover:shadow-2xl hover:-translate-y-2 cursor-pointer overflow-hidden premium-shadow",
-        !isActive && "opacity-75 grayscale-[0.3]"
+        "group relative border border-slate-200/80 bg-white rounded-[2.5rem] p-8 transition-all duration-500 hover:shadow-[0_25px_50px_-12px_rgba(0,0,0,0.12)] hover:-translate-y-2 cursor-pointer overflow-hidden high-volume",
+        !isActive && "opacity-80 grayscale-[0.2]"
       )}
     >
-      {/* Decorative Gradient Overlay */}
-      <div className={cn(
-        "absolute -top-24 -right-24 w-48 h-48 rounded-full blur-[80px] transition-all duration-1000 group-hover:scale-150",
-        isActive ? (isVoice ? "bg-secondary/10" : "bg-accent/10") : "bg-slate-200/20"
-      )} />
-
       <div className="relative z-10 h-full flex flex-col">
         <div className="flex justify-between items-start mb-6">
           <div className="space-y-3 flex-1">
             <div className="flex items-center gap-2">
               <div className={cn(
-                "flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border",
+                "flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border transition-colors",
                 isActive 
                   ? (isVoice ? "bg-secondary/5 text-secondary border-secondary/20" : "bg-accent/5 text-accent border-accent/20")
                   : "bg-slate-100 text-slate-400 border-slate-200"
@@ -121,7 +115,7 @@ export function AgentCard({ agent }: AgentCardProps) {
                 {isVoice ? "Live Voice" : "AI Chat"}
               </div>
               {isActive && (
-                <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-900 text-white text-[8px] font-bold uppercase animate-pulse">
+                <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-900 text-white text-[8px] font-bold uppercase animate-pulse shadow-sm">
                   <Zap className="h-2.5 w-2.5 text-yellow-400 fill-yellow-400" />
                   Live
                 </div>
@@ -132,7 +126,7 @@ export function AgentCard({ agent }: AgentCardProps) {
               {agent.name}
             </h3>
             
-            <div className="space-y-1">
+            <div className="space-y-1.5">
               <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
                 <Briefcase className="h-3.5 w-3.5 text-slate-400" />
                 {agent.role}
@@ -149,8 +143,8 @@ export function AgentCard({ agent }: AgentCardProps) {
               variant="ghost" 
               size="icon" 
               className={cn(
-                "h-10 w-10 rounded-2xl shadow-sm transition-all",
-                isActive ? "bg-slate-50 hover:bg-slate-900 hover:text-white" : "bg-slate-100 text-slate-400"
+                "h-10 w-10 rounded-2xl shadow-sm transition-all border border-transparent",
+                isActive ? "bg-slate-50 border-slate-100 hover:bg-slate-900 hover:text-white" : "bg-slate-100 text-slate-400"
               )}
               onClick={handleToggleActive}
             >
@@ -162,24 +156,24 @@ export function AgentCard({ agent }: AgentCardProps) {
                 <Button 
                   variant="ghost" 
                   size="icon" 
-                  className="h-10 w-10 rounded-2xl bg-slate-50 hover:bg-destructive hover:text-white transition-all shadow-sm"
+                  className="h-10 w-10 rounded-2xl bg-slate-50 border border-slate-100 hover:bg-destructive hover:text-white transition-all shadow-sm"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <Trash2 className="h-4.5 w-4.5" />
                 </Button>
               </AlertDialogTrigger>
-              <AlertDialogContent className="rounded-[2.5rem] border-none p-10 shadow-2xl">
+              <AlertDialogContent className="rounded-[3rem] border-none p-10 shadow-2xl bg-white">
                 <AlertDialogHeader>
                   <AlertDialogTitle className="font-headline font-bold text-2xl text-center">Protocolo de Eliminación</AlertDialogTitle>
                   <AlertDialogDescription className="text-center text-slate-500 py-4 uppercase font-bold tracking-widest text-[10px]">
-                    ¿Confirmas la desconexión total de <span className="text-slate-900">{agent.name}</span>? Esta acción es irreversible.
+                    ¿Confirmas la desconexión total de <span className="text-slate-900 font-black">{agent.name}</span>? Esta acción es irreversible.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter className="mt-8 flex gap-4 sm:justify-center">
                   <AlertDialogCancel className="rounded-full text-[10px] font-black uppercase h-14 flex-1 border-slate-200">Cancelar</AlertDialogCancel>
                   <AlertDialogAction 
                     onClick={handleDelete}
-                    className="bg-destructive hover:bg-destructive/90 rounded-full text-[10px] font-black uppercase h-14 flex-1"
+                    className="bg-destructive hover:bg-destructive/90 rounded-full text-[10px] font-black uppercase h-14 flex-1 shadow-lg shadow-destructive/20"
                   >
                     Eliminar
                   </AlertDialogAction>
@@ -190,8 +184,8 @@ export function AgentCard({ agent }: AgentCardProps) {
         </div>
 
         <div className="grid grid-cols-2 gap-3 mb-6">
-          <div className="bg-slate-50/80 p-4 rounded-3xl border border-slate-100 flex items-center gap-4 transition-all hover:bg-white hover:shadow-md">
-            <div className={cn("p-2.5 rounded-2xl", isActive ? "bg-primary text-white" : "bg-slate-200 text-slate-400")}>
+          <div className="bg-slate-50 p-4 rounded-[2rem] border border-slate-100 flex items-center gap-4 transition-all hover:bg-white hover:shadow-md hover:border-slate-200">
+            <div className={cn("p-2.5 rounded-2xl shadow-sm", isActive ? "bg-primary text-white" : "bg-slate-200 text-slate-400")}>
               {isVoice ? <Clock className="h-4.5 w-4.5" /> : <MessageCircle className="h-4.5 w-4.5" />}
             </div>
             <div>
@@ -199,8 +193,8 @@ export function AgentCard({ agent }: AgentCardProps) {
               <p className="text-xl font-headline font-bold text-slate-800">{agent.metrics.totalInteractionMetric || 0}</p>
             </div>
           </div>
-          <div className="bg-slate-50/80 p-4 rounded-3xl border border-slate-100 flex items-center gap-4 transition-all hover:bg-white hover:shadow-md">
-            <div className={cn("p-2.5 rounded-2xl", isActive ? "bg-secondary text-white" : "bg-slate-200 text-slate-400")}>
+          <div className="bg-slate-50 p-4 rounded-[2rem] border border-slate-100 flex items-center gap-4 transition-all hover:bg-white hover:shadow-md hover:border-slate-200">
+            <div className={cn("p-2.5 rounded-2xl shadow-sm", isActive ? "bg-secondary text-white" : "bg-slate-200 text-slate-400")}>
               <Database className="h-4.5 w-4.5" />
             </div>
             <div>
@@ -222,7 +216,7 @@ export function AgentCard({ agent }: AgentCardProps) {
             </div>
           </div>
           <div className="flex items-center gap-1.5 text-[9px] font-black uppercase text-secondary group-hover:translate-x-1 transition-transform">
-            Ver Consola <ArrowRight className="h-3 w-3" />
+            Abrir Consola <ArrowRight className="h-3 w-3" />
           </div>
         </div>
       </div>
