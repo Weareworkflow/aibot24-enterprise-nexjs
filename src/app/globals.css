@@ -11,7 +11,7 @@
     --card-foreground: 222 47% 11%;
     --popover: 0 0% 100%;
     --popover-foreground: 222 47% 11%;
-    --primary: 222 47% 11%; /* Dark Navy / Black */
+    --primary: 222 47% 11%; 
     --primary-foreground: 210 40% 98%;
     --secondary: 195 92% 45%; /* Bitrix Blue */
     --secondary-foreground: 0 0% 100%;
@@ -33,7 +33,7 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground font-body;
+    @apply bg-background text-foreground font-body antialiased;
   }
   h1, h2, h3, h4, h5, h6 {
     @apply font-headline tracking-tight;

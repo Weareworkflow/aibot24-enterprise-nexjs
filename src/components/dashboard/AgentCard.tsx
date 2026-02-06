@@ -18,7 +18,8 @@ import {
   UserX, 
   Building2,
   Clock,
-  Briefcase
+  Briefcase,
+  Zap
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -64,8 +65,8 @@ export function AgentCard({ agent }: AgentCardProps) {
     updateDoc(agentRef, { isActive: nextState })
       .then(() => {
         toast({
-          title: nextState ? "Agente activado" : "Agente desactivado",
-          description: `El agente ${agent.name} ha sido ${nextState ? 'encendido' : 'apagado'}.`,
+          title: nextState ? "Agente Activado" : "Agente Suspendido",
+          description: `La unidad ${agent.name} ha cambiado su estado operativo.`,
         });
       })
       .catch(async (error) => {
@@ -85,8 +86,8 @@ export function AgentCard({ agent }: AgentCardProps) {
     deleteDoc(agentRef)
       .then(() => {
         toast({
-          title: "Agente eliminado",
-          description: `El agente ${agent.name} ha sido removido correctamente.`,
+          title: "Protocolo de Eliminación",
+          description: `El agente ${agent.name} ha sido removido de la flota.`,
         });
       })
       .catch(async (error) => {
@@ -101,62 +102,47 @@ export function AgentCard({ agent }: AgentCardProps) {
     <Card 
       onClick={handleCardClick}
       className={cn(
-        "card-rounded relative hover:scale-[1.02] transition-all duration-500 border border-slate-100 pill-shadow overflow-hidden p-8 flex flex-col gap-6 group cursor-pointer bg-white",
-        !isActive && "grayscale-[0.8] opacity-80 bg-slate-50/50"
+        "card-rounded relative hover:scale-[1.02] active:scale-[0.98] transition-all duration-500 border-none pill-shadow overflow-hidden p-8 flex flex-col gap-6 group cursor-pointer bg-white",
+        !isActive && "grayscale-[0.5] opacity-85 bg-slate-50/50"
       )}
     >
+      {/* Background Decor */}
+      <div className="absolute top-0 right-0 w-32 h-32 bg-secondary/5 rounded-full blur-3xl -mr-10 -mt-10 group-hover:bg-secondary/10 transition-colors" />
+
       <div className="flex justify-between items-start w-full relative z-10">
         <div className="space-y-4 flex-1 min-w-0">
-          {/* Header Status & Type */}
           <div className="flex flex-wrap items-center gap-2">
             <div className={cn(
-              "flex items-center gap-2 text-[10px] font-black uppercase tracking-widest",
-              isActive ? "text-muted-foreground" : "text-slate-500"
+              "flex items-center gap-2 text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full border shadow-sm",
+              isActive 
+                ? (isVoice ? "bg-secondary/10 text-secondary border-secondary/20" : "bg-accent/10 text-accent border-accent/20")
+                : "bg-slate-200 text-slate-500 border-slate-300"
             )}>
-              <div className={cn(
-                "p-1.5 rounded-lg flex items-center justify-center premium-relief", 
-                isActive 
-                  ? (isVoice ? "bg-secondary text-white" : "bg-accent text-white")
-                  : "bg-slate-300 text-slate-600 shadow-none"
-              )}>
-                {isVoice ? <Phone className="h-3 w-3" /> : <MessageSquareText className="h-3 w-3" />}
-              </div>
-              <span className="truncate max-w-[80px]">{isVoice ? "LIVE" : "CHAT"}</span>
+              {isVoice ? <Phone className="h-3 w-3" /> : <MessageSquareText className="h-3 w-3" />}
+              <span>{isVoice ? "Live Mode" : "Chat Mode"}</span>
             </div>
 
             {isActive && (
-              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-accent/10 border border-accent/20 animate-in fade-in zoom-in duration-700">
-                <span className="relative flex h-1.5 w-1.5">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-accent"></span>
-                </span>
-                <span className="text-[7px] font-black uppercase tracking-[0.2em] text-accent">ON</span>
+              <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-900 text-white text-[8px] font-black uppercase tracking-widest shadow-lg">
+                <Zap className="h-2.5 w-2.5 text-yellow-400 fill-yellow-400" />
+                Active
               </div>
             )}
           </div>
 
-          <div className="space-y-1.5">
+          <div className="space-y-1">
             <h3 className={cn(
-              "text-2xl font-headline font-black leading-tight transition-colors truncate",
-              isActive ? "text-primary group-hover:text-secondary" : "text-slate-700"
+              "text-2xl font-headline font-bold leading-tight transition-colors truncate",
+              isActive ? "text-primary group-hover:text-secondary" : "text-slate-600"
             )}>
               {agent.name}
             </h3>
             
-            <div className={cn(
-              "inline-flex items-center gap-1.5 text-[9px] font-black uppercase tracking-[0.15em] py-1.5 px-3 rounded-full border shadow-sm transition-all",
-              isActive 
-                ? "bg-accent/10 text-accent border-accent/20" 
-                : "bg-slate-100 text-slate-500 border-slate-200"
-            )}>
+            <div className="flex items-center gap-2 text-[9px] font-black uppercase tracking-widest text-muted-foreground opacity-70">
               <Briefcase className="h-3 w-3" />
-              <span className="truncate">{agent.role}</span>
+              {agent.role}
             </div>
-
-            <div className={cn(
-              "flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest opacity-60 mt-1",
-              isActive ? "text-muted-foreground" : "text-slate-500"
-            )}>
+            <div className="flex items-center gap-2 text-[9px] font-black uppercase tracking-widest text-muted-foreground opacity-70">
               <Building2 className="h-3 w-3" />
               {agent.company}
             </div>
@@ -165,13 +151,13 @@ export function AgentCard({ agent }: AgentCardProps) {
         
         <div className="flex gap-2 flex-shrink-0 ml-4" onClick={(e) => e.stopPropagation()}>
           <Button 
-            variant="outline" 
+            variant="ghost" 
             size="icon" 
             className={cn(
-              "h-10 w-10 pill-rounded border-slate-200 transition-all premium-relief",
+              "h-10 w-10 pill-rounded transition-all",
               isActive 
-                ? "bg-white hover:bg-primary hover:text-white" 
-                : "bg-slate-200 text-slate-500 hover:bg-slate-300 shadow-none"
+                ? "bg-slate-100 hover:bg-slate-900 hover:text-white" 
+                : "bg-slate-200 text-slate-500 hover:bg-slate-300"
             )}
             onClick={handleToggleActive}
           >
@@ -181,14 +167,9 @@ export function AgentCard({ agent }: AgentCardProps) {
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button 
-                variant="outline" 
+                variant="ghost" 
                 size="icon" 
-                className={cn(
-                  "h-10 w-10 pill-rounded border-slate-200 transition-all premium-relief",
-                  isActive 
-                    ? "bg-white hover:bg-destructive hover:text-white" 
-                    : "bg-slate-200 text-slate-500 hover:bg-destructive shadow-none"
-                )}
+                className="h-10 w-10 pill-rounded bg-slate-100 hover:bg-destructive hover:text-white transition-all"
                 onClick={(e) => e.stopPropagation()}
               >
                 <Trash2 className="h-4 w-4" />
@@ -196,9 +177,9 @@ export function AgentCard({ agent }: AgentCardProps) {
             </AlertDialogTrigger>
             <AlertDialogContent className="rounded-[2.5rem] border-none p-10 shadow-2xl">
               <AlertDialogHeader>
-                <AlertDialogTitle className="font-headline font-bold text-xl text-center">¿Eliminar Agente?</AlertDialogTitle>
-                <AlertDialogDescription className="text-xs leading-relaxed text-center py-2">
-                  Esta acción no se puede deshacer. Se eliminarán permanentemente las configuraciones de <strong>{agent.name}</strong>.
+                <AlertDialogTitle className="font-headline font-bold text-xl text-center">Eliminar Agente</AlertDialogTitle>
+                <AlertDialogDescription className="text-xs leading-relaxed text-center py-2 uppercase font-bold tracking-widest opacity-60">
+                  ¿Confirmas la desconexión total de <strong>{agent.name}</strong>? Esta acción es irreversible.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter className="mt-8 flex gap-3 sm:justify-center">
@@ -218,66 +199,43 @@ export function AgentCard({ agent }: AgentCardProps) {
       </div>
 
       <div className="grid grid-cols-2 gap-4 relative z-10">
-        <div className={cn(
-          "p-5 rounded-[2rem] border transition-all duration-500 flex items-center gap-4 premium-relief",
-          isActive ? "bg-white border-slate-100" : "bg-slate-200/50 border-slate-300 shadow-none"
-        )}>
-          <div className={cn("p-2.5 rounded-xl premium-relief", isActive ? "bg-primary text-white" : "bg-slate-300 text-slate-500 shadow-none")}>
+        <div className="p-4 rounded-[1.5rem] bg-slate-50 border border-slate-100 flex items-center gap-4 premium-relief">
+          <div className={cn("p-2 rounded-xl", isActive ? "bg-primary text-white" : "bg-slate-300")}>
             {isVoice ? <Clock className="h-4 w-4" /> : <MessageCircle className="h-4 w-4" />}
           </div>
           <div>
-            <p className={cn("text-[8px] font-black uppercase tracking-widest", isActive ? "text-muted-foreground" : "text-slate-600")}>
-              {isVoice ? "Minutos" : "Mensajes"}
+            <p className="text-[8px] font-black uppercase tracking-widest text-muted-foreground opacity-60">
+              {isVoice ? "Minutes" : "Messages"}
             </p>
-            <p className={cn("text-xl font-headline font-black", isActive ? "text-primary" : "text-slate-800")}>
+            <p className="text-lg font-headline font-bold text-primary">
               {agent.metrics.totalInteractionMetric || "0"}
             </p>
           </div>
         </div>
-        <div className={cn(
-          "p-5 rounded-[2rem] border transition-all duration-500 flex items-center gap-4 premium-relief",
-          isActive ? "bg-white border-slate-100" : "bg-slate-200/50 border-slate-300 shadow-none"
-        )}>
-          <div className={cn("p-2.5 rounded-xl premium-relief", isActive ? "bg-secondary text-white" : "bg-slate-300 text-slate-500 shadow-none")}>
+        <div className="p-4 rounded-[1.5rem] bg-slate-50 border border-slate-100 flex items-center gap-4 premium-relief">
+          <div className={cn("p-2 rounded-xl", isActive ? "bg-secondary text-white" : "bg-slate-300")}>
             <Database className="h-4 w-4" />
           </div>
           <div>
-            <p className={cn("text-[8px] font-black uppercase tracking-widest", isActive ? "text-muted-foreground" : "text-slate-600")}>Tokens</p>
-            <p className={cn("text-xl font-headline font-black", isActive ? "text-secondary" : "text-slate-800")}>{agent.metrics.tokens || "0"}</p>
+            <p className="text-[8px] font-black uppercase tracking-widest text-muted-foreground opacity-60">Tokens</p>
+            <p className="text-lg font-headline font-bold text-secondary">{agent.metrics.tokens || "0"}</p>
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-3 relative z-10">
-        {[
-          { 
-            label: isVoice ? "LIVE CALLS" : "CHAT MSG", 
-            val: agent.metrics.usageCount, 
-            color: isActive ? "text-primary" : "text-slate-700", 
-            icon: isVoice ? PhoneIncoming : MessageCircle 
-          },
-          { 
-            label: "TRANSF", 
-            val: agent.metrics.transfers || 0, 
-            color: isActive ? "text-secondary" : "text-slate-700", 
-            icon: isVoice ? PhoneForwarded : ArrowRightLeft 
-          },
-          { 
-            label: "ABAND", 
-            val: agent.metrics.abandoned || 0, 
-            color: isActive ? "text-destructive" : "text-slate-700", 
-            icon: isVoice ? PhoneOff : UserX 
-          },
-        ].map((m, i) => (
-          <div key={i} className={cn(
-            "text-center py-3.5 border rounded-2xl flex flex-col items-center justify-center transition-all duration-500 premium-relief bg-white",
-            isActive ? "border-slate-100" : "border-slate-300 shadow-none bg-slate-100"
-          )}>
-            <m.icon className={cn("h-3.5 w-3.5 mb-1.5", m.color)} />
-            <p className={cn("text-[7px] font-black uppercase tracking-[0.2em] mb-1 opacity-70", isActive ? "text-muted-foreground" : "text-slate-500")}>{m.label}</p>
-            <p className={cn("text-sm font-headline font-black", m.color)}>{m.val}</p>
-          </div>
-        ))}
+      <div className="flex items-center justify-between pt-2 border-t border-slate-100 opacity-60">
+        <div className="flex flex-col items-center">
+          <span className="text-[7px] font-black uppercase tracking-widest mb-1">Success</span>
+          <span className="text-xs font-bold text-primary">{agent.metrics.performanceRating}%</span>
+        </div>
+        <div className="flex flex-col items-center">
+          <span className="text-[7px] font-black uppercase tracking-widest mb-1">Transfers</span>
+          <span className="text-xs font-bold text-secondary">{agent.metrics.transfers || 0}</span>
+        </div>
+        <div className="flex flex-col items-center">
+          <span className="text-[7px] font-black uppercase tracking-widest mb-1">Abandoned</span>
+          <span className="text-xs font-bold text-destructive">{agent.metrics.abandoned || 0}</span>
+        </div>
       </div>
     </Card>
   );
