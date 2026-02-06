@@ -1,7 +1,6 @@
-
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { AIAgent } from "@/lib/types";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { 
@@ -11,7 +10,8 @@ import {
   BookOpen,
   Wand2,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  Activity
 } from "lucide-react";
 import {
   Accordion,
@@ -53,7 +53,7 @@ export function AgentChat({ agent }: AgentChatProps) {
     updateDoc(agentRef, { [field]: value })
       .then(() => {
         if (title) {
-          toast({ title: "Cambio guardado", description: `Campo ${title} actualizado.` });
+          toast({ title: "Sincronizado", description: `${title} actualizado con éxito.` });
         }
       })
       .catch(async (error) => {
@@ -66,55 +66,84 @@ export function AgentChat({ agent }: AgentChatProps) {
   };
 
   return (
-    <div className="flex flex-col h-full border rounded-[2rem] bg-white shadow-xl overflow-hidden border-slate-200">
-      <ScrollArea className="flex-1" ref={scrollRef}>
+    <div className="flex flex-col h-full glass-card rounded-[3rem] overflow-hidden transition-all duration-700 animate-in fade-in slide-in-from-bottom-8">
+      <ScrollArea className="flex-1 modern-scroll" ref={scrollRef}>
         <div className="flex flex-col min-h-full">
+          {/* Dashboard de Estado Sutil */}
+          <div className="bg-slate-50/50 p-6 flex items-center justify-between border-b">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-2xl bg-white shadow-sm flex items-center justify-center">
+                <Activity className="h-5 w-5 text-secondary animate-pulse" />
+              </div>
+              <div>
+                <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Protocolo de Configuración</p>
+                <h2 className="text-sm font-bold">Consola Operativa v2.5</h2>
+              </div>
+            </div>
+            <div className="flex gap-2">
+               <div className="h-2 w-2 rounded-full bg-accent animate-ping" />
+               <span className="text-[8px] font-black uppercase tracking-widest text-accent">En Línea</span>
+            </div>
+          </div>
+
           <Accordion type="single" collapsible defaultValue="identidad" className="w-full">
             
             {/* 1. IDENTIDAD */}
-            <AccordionItem value="identidad" className="border-b px-6 border-slate-100">
-              <AccordionTrigger className="hover:no-underline py-6">
-                <div className="flex items-center gap-4 text-[14px] font-black uppercase tracking-widest text-slate-700">
-                  <Settings2 className="h-5 w-5" /> Identidad
+            <AccordionItem value="identidad" className="border-b-0 px-8">
+              <AccordionTrigger className="hover:no-underline py-8 group">
+                <div className="flex items-center gap-4 text-[13px] font-black uppercase tracking-[0.2em] text-slate-600 group-hover:text-secondary transition-colors">
+                  <div className="h-8 w-8 rounded-xl bg-slate-100 flex items-center justify-center group-data-[state=open]:bg-secondary group-data-[state=open]:text-white transition-all">
+                    <Settings2 className="h-4 w-4" />
+                  </div>
+                  Identidad
                 </div>
               </AccordionTrigger>
-              <AccordionContent className="pb-8 pt-2">
+              <AccordionContent className="pb-10 pt-2 animate-in fade-in slide-in-from-top-2">
                 <IdentitySection agent={agent} onUpdate={handleManualUpdate} />
               </AccordionContent>
             </AccordionItem>
 
             {/* 2. INSTRUCCIONES */}
-            <AccordionItem value="instrucciones" className="border-b px-6 border-slate-100">
-              <AccordionTrigger className="hover:no-underline py-6">
-                <div className="flex items-center gap-4 text-[14px] font-black uppercase tracking-widest text-slate-700">
-                  <Code2 className="h-5 w-5" /> Instrucciones
+            <AccordionItem value="instrucciones" className="border-b-0 px-8">
+              <AccordionTrigger className="hover:no-underline py-8 group">
+                <div className="flex items-center gap-4 text-[13px] font-black uppercase tracking-[0.2em] text-slate-600 group-hover:text-secondary transition-colors">
+                  <div className="h-8 w-8 rounded-xl bg-slate-100 flex items-center justify-center group-data-[state=open]:bg-secondary group-data-[state=open]:text-white transition-all">
+                    <Code2 className="h-4 w-4" />
+                  </div>
+                  Instrucciones
                 </div>
               </AccordionTrigger>
-              <AccordionContent className="pb-8 pt-2">
+              <AccordionContent className="pb-10 pt-2 animate-in fade-in slide-in-from-top-2">
                 <InstructionsSection agent={agent} onUpdate={handleManualUpdate} />
               </AccordionContent>
             </AccordionItem>
 
-            {/* 3. CONOCIMIENTO (Ubicado justo debajo) */}
-            <AccordionItem value="conocimiento" className="border-b px-6 border-slate-100">
-              <AccordionTrigger className="hover:no-underline py-6">
-                <div className="flex items-center gap-4 text-[14px] font-black uppercase tracking-widest text-slate-700">
-                  <BookOpen className="h-5 w-5" /> Conocimiento
+            {/* 3. CONOCIMIENTO */}
+            <AccordionItem value="conocimiento" className="border-b-0 px-8">
+              <AccordionTrigger className="hover:no-underline py-8 group">
+                <div className="flex items-center gap-4 text-[13px] font-black uppercase tracking-[0.2em] text-slate-600 group-hover:text-secondary transition-colors">
+                  <div className="h-8 w-8 rounded-xl bg-slate-100 flex items-center justify-center group-data-[state=open]:bg-secondary group-data-[state=open]:text-white transition-all">
+                    <BookOpen className="h-4 w-4" />
+                  </div>
+                  Conocimiento
                 </div>
               </AccordionTrigger>
-              <AccordionContent className="pb-8 pt-2">
+              <AccordionContent className="pb-10 pt-2 animate-in fade-in slide-in-from-top-2">
                 <KnowledgeSection agent={agent} onUpdate={handleManualUpdate} />
               </AccordionContent>
             </AccordionItem>
 
             {/* 4. INTEGRACIONES */}
-            <AccordionItem value="integraciones" className="border-b px-6 border-slate-100">
-              <AccordionTrigger className="hover:no-underline py-6">
-                <div className="flex items-center gap-4 text-[14px] font-black uppercase tracking-widest text-slate-700">
-                  <Share2 className="h-5 w-5" /> Integraciones
+            <AccordionItem value="integraciones" className="border-b-0 px-8">
+              <AccordionTrigger className="hover:no-underline py-8 group">
+                <div className="flex items-center gap-4 text-[13px] font-black uppercase tracking-[0.2em] text-slate-600 group-hover:text-secondary transition-colors">
+                  <div className="h-8 w-8 rounded-xl bg-slate-100 flex items-center justify-center group-data-[state=open]:bg-secondary group-data-[state=open]:text-white transition-all">
+                    <Share2 className="h-4 w-4" />
+                  </div>
+                  Integraciones
                 </div>
               </AccordionTrigger>
-              <AccordionContent className="pb-8 pt-2">
+              <AccordionContent className="pb-10 pt-2 animate-in fade-in slide-in-from-top-2">
                 <IntegrationsSection 
                   agent={agent} 
                   onUpdate={handleManualUpdate} 
@@ -124,19 +153,25 @@ export function AgentChat({ agent }: AgentChatProps) {
             </AccordionItem>
           </Accordion>
 
-          <Collapsible open={isChatOpen} onOpenChange={setIsChatOpen} className="w-full">
-            <CollapsibleTrigger asChild>
-              <button className="flex items-center justify-between px-6 py-6 w-full border-t bg-white">
-                <div className="flex items-center gap-4 text-[14px] font-black uppercase tracking-widest text-secondary">
-                  <Wand2 className="h-6 w-6" /> Refinar con IA
-                </div>
-                {isChatOpen ? <ChevronDown className="h-5 w-5" /> : <ChevronUp className="h-5 w-5" />}
-              </button>
-            </CollapsibleTrigger>
-            <CollapsibleContent className="bg-white border-t">
-              <AiRefiner agent={agent} db={db} />
-            </CollapsibleContent>
-          </Collapsible>
+          {/* Refinador de IA Estilo Float */}
+          <div className="mt-8 px-8 pb-10">
+            <Collapsible open={isChatOpen} onOpenChange={setIsChatOpen} className="w-full">
+              <CollapsibleTrigger asChild>
+                <button className="flex items-center justify-between p-6 w-full rounded-[2rem] bg-slate-900 text-white shadow-2xl hover:bg-slate-800 transition-all group">
+                  <div className="flex items-center gap-4 text-[13px] font-black uppercase tracking-[0.2em]">
+                    <div className="h-10 w-10 rounded-2xl bg-secondary/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+                      <Wand2 className="h-5 w-5 text-secondary" />
+                    </div>
+                    Arquitecto de Refinamiento
+                  </div>
+                  {isChatOpen ? <ChevronDown className="h-5 w-5 opacity-50" /> : <ChevronUp className="h-5 w-5 opacity-50" />}
+                </button>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="bg-slate-900 border-t border-white/5 rounded-b-[2rem] -mt-6 pt-10">
+                <AiRefiner agent={agent} db={db} />
+              </CollapsibleContent>
+            </Collapsible>
+          </div>
         </div>
       </ScrollArea>
 

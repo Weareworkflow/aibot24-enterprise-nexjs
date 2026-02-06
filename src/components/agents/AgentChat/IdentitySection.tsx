@@ -1,11 +1,10 @@
-
 "use client";
 
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { AIAgent } from "@/lib/types";
 import { cn } from "@/lib/utils";
-import { Check, User, Briefcase, Building2, Palette } from "lucide-react";
+import { Check, User, Briefcase, Building2, Palette, Sparkles } from "lucide-react";
 
 interface IdentitySectionProps {
   agent: AIAgent;
@@ -20,60 +19,71 @@ const ASSISTANT_COLORS = [
 
 export function IdentitySection({ agent, onUpdate }: IdentitySectionProps) {
   return (
-    <div className="space-y-6 animate-in fade-in duration-500">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <User className="h-4 w-4 text-secondary" />
-            <Label className="text-[10px] font-black uppercase text-slate-800 tracking-[0.2em]">Nombre de la Unidad</Label>
+    <div className="space-y-10">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="space-y-3">
+          <div className="flex items-center gap-2.5">
+            <div className="h-8 w-8 rounded-xl bg-slate-100 flex items-center justify-center">
+              <User className="h-4 w-4 text-slate-500" />
+            </div>
+            <Label className="text-[10px] font-black uppercase text-slate-600 tracking-[0.2em]">Nombre Operativo</Label>
           </div>
           <Input 
             value={agent.name} 
             onChange={(e) => onUpdate('name', e.target.value)} 
-            className="h-12 text-sm font-bold bg-slate-50 border-none rounded-2xl focus-visible:ring-1 focus-visible:ring-secondary/30 px-4" 
+            className="h-14 text-sm font-bold bg-slate-50/50 border-slate-100 rounded-[1.5rem] focus-visible:ring-1 focus-visible:ring-secondary/20 px-6 transition-all hover:bg-white" 
           />
         </div>
-        <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <Briefcase className="h-4 w-4 text-secondary" />
-            <Label className="text-[10px] font-black uppercase text-slate-800 tracking-[0.2em]">Rol / Cargo</Label>
+        <div className="space-y-3">
+          <div className="flex items-center gap-2.5">
+            <div className="h-8 w-8 rounded-xl bg-slate-100 flex items-center justify-center">
+              <Briefcase className="h-4 w-4 text-slate-500" />
+            </div>
+            <Label className="text-[10px] font-black uppercase text-slate-600 tracking-[0.2em]">Rol / Especialidad</Label>
           </div>
           <Input 
             value={agent.role} 
             onChange={(e) => onUpdate('role', e.target.value)} 
-            className="h-12 text-sm font-bold bg-slate-50 border-none rounded-2xl focus-visible:ring-1 focus-visible:ring-secondary/30 px-4" 
+            className="h-14 text-sm font-bold bg-slate-50/50 border-slate-100 rounded-[1.5rem] focus-visible:ring-1 focus-visible:ring-secondary/20 px-6 transition-all hover:bg-white" 
           />
         </div>
-        <div className="space-y-2 md:col-span-2">
-          <div className="flex items-center gap-2">
-            <Building2 className="h-4 w-4 text-secondary" />
-            <Label className="text-[10px] font-black uppercase text-slate-800 tracking-[0.2em]">Empresa / Marca</Label>
+        <div className="space-y-3 md:col-span-2">
+          <div className="flex items-center gap-2.5">
+            <div className="h-8 w-8 rounded-xl bg-slate-100 flex items-center justify-center">
+              <Building2 className="h-4 w-4 text-slate-500" />
+            </div>
+            <Label className="text-[10px] font-black uppercase text-slate-600 tracking-[0.2em]">Organización Representada</Label>
           </div>
           <Input 
             value={agent.company} 
             onChange={(e) => onUpdate('company', e.target.value)} 
-            className="h-12 text-sm font-bold bg-slate-50 border-none rounded-2xl focus-visible:ring-1 focus-visible:ring-secondary/30 px-4" 
+            className="h-14 text-sm font-bold bg-slate-50/50 border-slate-100 rounded-[1.5rem] focus-visible:ring-1 focus-visible:ring-secondary/20 px-6 transition-all hover:bg-white" 
           />
         </div>
       </div>
 
-      <div className="pt-4 border-t border-slate-100">
-        <div className="flex items-center gap-2 mb-4">
-          <Palette className="h-4 w-4 text-secondary" />
-          <Label className="text-[10px] font-black uppercase text-slate-800 tracking-[0.2em]">Identidad Visual (Bitrix Skin)</Label>
+      <div className="pt-8 border-t border-slate-100">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <div className="h-9 w-9 rounded-2xl bg-secondary/10 flex items-center justify-center">
+              <Palette className="h-5 w-5 text-secondary" />
+            </div>
+            <Label className="text-[11px] font-black uppercase text-slate-700 tracking-[0.15em]">ADN Visual (Bitrix Skin)</Label>
+          </div>
+          <Sparkles className="h-4 w-4 text-secondary/40 animate-pulse" />
         </div>
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-wrap gap-4">
           {ASSISTANT_COLORS.map(c => (
             <button 
               key={c} 
               onClick={() => onUpdate('color', c)} 
               className={cn(
-                "h-8 w-8 rounded-full border shadow-sm transition-all hover:scale-110 flex items-center justify-center relative", 
-                agent.color === c && "ring-2 ring-secondary ring-offset-2 scale-110"
+                "h-10 w-10 rounded-[1rem] border-2 shadow-sm transition-all hover:scale-125 flex items-center justify-center relative", 
+                agent.color === c ? "border-secondary scale-125 ring-4 ring-secondary/10" : "border-white"
               )} 
               style={{ backgroundColor: c }}
             >
-              {agent.color === c && <Check className="h-4 w-4 text-white drop-shadow-md" />}
+              {agent.color === c && <Check className="h-5 w-5 text-white drop-shadow-lg" />}
             </button>
           ))}
         </div>
