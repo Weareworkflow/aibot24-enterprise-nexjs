@@ -58,7 +58,7 @@ export function AgentChat({ agent }: AgentChatProps) {
         }
       })
       .catch(async (error) => {
-        // Si falla Firestore, revertimos o emitimos error
+        // Revertimos o emitimos error si falla Firestore
         errorEmitter.emit('permission-error', new FirestorePermissionError({
           path: agentRef.path,
           operation: 'update',
@@ -72,13 +72,14 @@ export function AgentChat({ agent }: AgentChatProps) {
       <ScrollArea className="flex-1 modern-scroll" ref={scrollRef}>
         <div className="flex flex-col min-h-full">
           <Accordion type="single" collapsible defaultValue="identidad" className="w-full">
+            {/* SECCIÓN 1: IDENTIDAD */}
             <AccordionItem value="identidad" className="border-b-0 px-8">
               <AccordionTrigger className="hover:no-underline py-8 group">
                 <div className="flex items-center gap-4 text-[12px] font-black uppercase tracking-[0.2em] text-slate-600 group-hover:text-secondary transition-colors">
                   <div className="h-8 w-8 rounded-xl bg-slate-100 flex items-center justify-center group-data-[state=open]:bg-secondary group-data-[state=open]:text-white transition-all">
                     <Settings2 className="h-4 w-4" />
                   </div>
-                  Identidad y Estrategia
+                  Identidad
                 </div>
               </AccordionTrigger>
               <AccordionContent className="pb-10 pt-2 animate-in fade-in slide-in-from-top-2">
@@ -86,13 +87,14 @@ export function AgentChat({ agent }: AgentChatProps) {
               </AccordionContent>
             </AccordionItem>
 
+            {/* SECCIÓN 2: INTEGRACIONES */}
             <AccordionItem value="integraciones" className="border-b-0 px-8">
               <AccordionTrigger className="hover:no-underline py-8 group">
                 <div className="flex items-center gap-4 text-[12px] font-black uppercase tracking-[0.2em] text-slate-600 group-hover:text-secondary transition-colors">
                   <div className="h-8 w-8 rounded-xl bg-slate-100 flex items-center justify-center group-data-[state=open]:bg-secondary group-data-[state=open]:text-white transition-all">
                     <Share2 className="h-4 w-4" />
                   </div>
-                  Canales y Servicios
+                  Integraciones
                 </div>
               </AccordionTrigger>
               <AccordionContent className="pb-10 pt-2 animate-in fade-in slide-in-from-top-2">
@@ -105,6 +107,7 @@ export function AgentChat({ agent }: AgentChatProps) {
             </AccordionItem>
           </Accordion>
 
+          {/* REFINADOR AI */}
           <div className="mt-8 px-8 pb-10">
             <Collapsible open={isChatOpen} onOpenChange={setIsChatOpen} className="w-full">
               <CollapsibleTrigger asChild>
