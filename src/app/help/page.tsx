@@ -90,10 +90,6 @@ export default function HelpPage() {
                 <p className="text-[13px] text-slate-600 font-medium leading-relaxed">
                   Explora nuestra biblioteca completa de documentación para dominar todas las capacidades de AIBot24.
                 </p>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="p-3 bg-slate-50 rounded-2xl border text-[10px] font-bold uppercase tracking-tight text-slate-500 text-center">API REST</div>
-                  <div className="p-3 bg-slate-50 rounded-2xl border text-[10px] font-bold uppercase tracking-tight text-slate-500 text-center">Webhooks</div>
-                </div>
               </div>
               <Button variant="outline" className="w-full h-14 rounded-full border-2 border-slate-200 bg-transparent hover:bg-slate-50 text-slate-900 font-black text-[11px] uppercase tracking-[0.2em] transition-all">
                 EXPLORAR GUÍAS
