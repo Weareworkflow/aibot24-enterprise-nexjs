@@ -17,7 +17,9 @@ import {
   CloudCog,
   Sun,
   Moon,
-  ShieldCheck
+  ShieldCheck,
+  Languages,
+  Check
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useUIStore } from "@/lib/store";
@@ -45,7 +47,8 @@ export default function SettingsPage() {
   const [formData, setFormData] = useState({
     clientId: "",
     clientSecret: "",
-    serviceWebhook: ""
+    serviceWebhook: "",
+    language: "es"
   });
 
   const [isSaving, setIsSaving] = useState(false);
@@ -55,7 +58,8 @@ export default function SettingsPage() {
       setFormData({
         clientId: installation.clientId || "",
         clientSecret: installation.clientSecret || "",
-        serviceWebhook: installation.serviceWebhook || ""
+        serviceWebhook: installation.serviceWebhook || "",
+        language: installation.language || "es"
       });
     }
   }, [installation]);
@@ -69,7 +73,7 @@ export default function SettingsPage() {
       });
       toast({
         title: "Protocolo Guardado",
-        description: "Los parámetros de integración han sido actualizados."
+        description: "Los parámetros de configuración han sido actualizados."
       });
     } catch (error: any) {
       toast({
@@ -205,6 +209,7 @@ export default function SettingsPage() {
               </TabsContent>
 
               <TabsContent value="apariencia" className="space-y-10 focus-visible:outline-none">
+                {/* TEMA VISUAL */}
                 <div className="space-y-6">
                   <div className="flex flex-col gap-2.5 px-1 text-foreground">
                     <div className="flex items-center gap-3">
@@ -248,40 +253,46 @@ export default function SettingsPage() {
                   </div>
                 </div>
 
+                {/* IDIOMA */}
                 <div className="space-y-6 pt-4 border-t border-border/40">
                   <div className="flex flex-col gap-2.5 px-1 text-foreground">
                     <div className="flex items-center gap-3">
-                      <Palette className="h-4 w-4 text-secondary" />
-                      <h4 className="text-[11px] font-black uppercase tracking-widest opacity-80">Identidad Visual del Portal</h4>
+                      <Languages className="h-4 w-4 text-secondary" />
+                      <h4 className="text-[11px] font-black uppercase tracking-widest opacity-80">Idioma del Portal</h4>
                     </div>
                     <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider leading-relaxed px-1">
-                      Personaliza los colores de marca para este portal específico.
+                      Define el lenguaje predeterminado para la interfaz y los agentes.
                     </p>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div className="space-y-4">
-                      <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Color de Marca (Primario)</Label>
-                      <div className="flex gap-3">
-                        {["#1B75BB", "#41E0F0", "#2FC6F6", "#22c55e", "#000000"].map(color => (
-                          <button 
-                            key={color}
-                            className={cn(
-                              "h-10 w-10 rounded-xl border-2 border-background shadow-sm transition-transform hover:scale-110",
-                              color === "#1B75BB" && "ring-2 ring-secondary/20"
-                            )}
-                            style={{ backgroundColor: color }}
-                          />
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="space-y-4">
-                      <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Logotipo del Portal</Label>
-                      <div className="h-14 w-full border-2 border-dashed border-border rounded-2xl flex items-center justify-center bg-muted/30 hover:bg-background transition-colors cursor-pointer">
-                        <span className="text-[10px] font-black uppercase text-muted-foreground">Subir Imagen (PNG/SVG)</span>
-                      </div>
-                    </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {[
+                      { id: 'es', label: 'Español' },
+                      { id: 'en', label: 'English' },
+                    ].map((lang) => (
+                      <button
+                        key={lang.id}
+                        onClick={() => setFormData({...formData, language: lang.id})}
+                        className={cn(
+                          "flex items-center justify-between p-6 rounded-2xl border-2 transition-all group",
+                          formData.language === lang.id 
+                            ? "border-secondary bg-secondary/5" 
+                            : "border-border bg-muted/30 hover:border-muted-foreground/30"
+                        )}
+                      >
+                        <span className={cn(
+                          "text-[11px] font-black uppercase tracking-widest",
+                          formData.language === lang.id ? "text-secondary" : "text-muted-foreground"
+                        )}>
+                          {lang.label}
+                        </span>
+                        {formData.language === lang.id && (
+                          <div className="h-6 w-6 rounded-full bg-secondary flex items-center justify-center">
+                            <Check className="h-3 w-3 text-white" />
+                          </div>
+                        )}
+                      </button>
+                    ))}
                   </div>
                 </div>
               </TabsContent>
