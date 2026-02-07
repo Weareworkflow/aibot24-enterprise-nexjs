@@ -12,7 +12,7 @@
     --popover-foreground: 224 71% 4%;
     --primary: 224 71% 4%;
     --primary-foreground: 210 40% 98%;
-    --secondary: 199 89% 48%; /* Blue Bitrix Elite */
+    --secondary: 195 91% 58%; /* Vivid Blue (Cyan) matching Logo #2FC6F6 */
     --secondary-foreground: 0 0% 100%;
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
@@ -22,7 +22,7 @@
     --destructive-foreground: 210 40% 98%;
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 199 89% 48%;
+    --ring: 195 91% 58%;
     --radius: 1.5rem;
   }
 
@@ -35,7 +35,7 @@
     --popover-foreground: 210 40% 98%;
     --primary: 210 40% 98%;
     --primary-foreground: 224 71% 4%;
-    --secondary: 199 89% 48%;
+    --secondary: 195 91% 58%;
     --secondary-foreground: 0 0% 100%;
     --muted: 224 71% 15%;
     --muted-foreground: 215 20.2% 65.1%;
@@ -45,7 +45,7 @@
     --destructive-foreground: 210 40% 98%;
     --border: 224 71% 18%;
     --input: 224 71% 18%;
-    --ring: 199 89% 48%;
+    --ring: 195 91% 58%;
   }
 }
 
