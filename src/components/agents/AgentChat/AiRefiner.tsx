@@ -44,6 +44,11 @@ export function AiRefiner({ agent, db }: AiRefinerProps) {
     }]);
     
     try {
+      // Obtenemos lista de integraciones activas para dar contexto a la IA
+      const activeIntegrations = Object.entries(agent.integrations || {})
+        .filter(([_, active]) => active)
+        .map(([name]) => name);
+
       const suggestion = await refineAgentConfig({
         currentConfig: {
           name: agent.name,
@@ -51,27 +56,30 @@ export function AiRefiner({ agent, db }: AiRefinerProps) {
           company: agent.company,
           objective: agent.objective,
           tone: agent.tone,
-          knowledge: agent.knowledge
+          knowledge: agent.knowledge || "",
+          activeIntegrations
         },
         feedback: userFeedback
       });
 
       const agentRef = doc(db, "agents", agent.id);
       await updateDoc(agentRef, {
-        role: suggestion.role,
-        objective: suggestion.objective,
-        tone: suggestion.tone,
         knowledge: suggestion.knowledge
       });
 
       setHistory(prev => [...prev, { 
         id: (Date.now() + 1).toString(),
         role: 'assistant', 
-        content: `Arquitectura de ${agent.name} optimizada con éxito. ${suggestion.explanation}`
+        content: `Protocolo de comportamiento actualizado. ${suggestion.explanation}`
       }]);
 
     } catch (error: any) {
       errorEmitter.emit('permission-error', error);
+      setHistory(prev => [...prev, { 
+        id: Date.now().toString(),
+        role: 'assistant', 
+        content: "Error al actualizar el protocolo. Por favor, verifica tu conexión."
+      }]);
     } finally {
       setIsRefining(false);
     }
@@ -87,7 +95,8 @@ export function AiRefiner({ agent, db }: AiRefinerProps) {
                 <Sparkles className="h-3.5 w-3.5" />
                 <span className="text-[10px] font-black uppercase tracking-widest">Protocolo de Asistencia</span>
               </div>
-              Hola, soy el Arquitecto de IA. Pídeme cualquier ajuste técnico: "Cambia el tono a formal", "Haz que sea más directo", etc.
+              Hola, soy el Arquitecto de IA. Ajustaré el comportamiento de <strong>{agent.name}</strong> según tus necesidades. 
+              Pídeme reglas específicas: "No des precios sin capturar el email", "Sé más breve", etc.
             </div>
           )}
 
@@ -115,7 +124,7 @@ export function AiRefiner({ agent, db }: AiRefinerProps) {
           {isRefining && (
             <div className="flex items-center gap-2 p-3 bg-slate-50 rounded-2xl border border-slate-100 w-fit animate-pulse">
               <Loader2 className="h-4 w-4 animate-spin text-secondary" />
-              <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Analizando arquitectura...</span>
+              <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Refinando comportamiento...</span>
             </div>
           )}
         </div>
@@ -124,7 +133,7 @@ export function AiRefiner({ agent, db }: AiRefinerProps) {
       <div className="p-4 border-t bg-slate-50/50">
         <div className="flex items-center gap-2 bg-white p-1.5 rounded-2xl border border-slate-200 shadow-inner group">
           <Input 
-            placeholder="Escribe un ajuste..." 
+            placeholder="Instrucciones de comportamiento..." 
             className="flex-1 border-none bg-transparent focus-visible:ring-0 h-10 text-[13px] px-3 font-medium" 
             value={feedbackInput} 
             onChange={(e) => setFeedbackInput(e.target.value)} 

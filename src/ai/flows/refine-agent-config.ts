@@ -1,9 +1,9 @@
 'use server';
 
 /**
- * @fileOverview Flujo de IA para refinar la configuración de un agente basado en feedback.
+ * @fileOverview Flujo de IA para refinar el protocolo de comportamiento de un agente.
  * 
- * - refineAgentConfig - Analiza feedback y sugiere mejoras técnicas al agente.
+ * - refineAgentConfig - Analiza feedback y optimiza la capa de comportamiento técnico.
  */
 
 import { ai } from '@/ai/genkit';
@@ -16,17 +16,15 @@ const RefineAgentConfigInputSchema = z.object({
     company: z.string(),
     objective: z.string(),
     tone: z.string(),
-    knowledge: z.string(),
+    knowledge: z.string().describe('El manual de comportamiento actual.'),
+    activeIntegrations: z.array(z.string()).describe('Lista de integraciones activas.'),
   }),
-  feedback: z.string().describe('El feedback del usuario sobre lo que debe mejorar el agente.'),
+  feedback: z.string().describe('El feedback del usuario sobre el comportamiento.'),
 });
 
 const RefineAgentConfigOutputSchema = z.object({
-  role: z.string().describe('Sugerencia de rol refinado.'),
-  objective: z.string().describe('Sugerencia de objetivo refinado.'),
-  tone: z.string().describe('Sugerencia de tono refinado.'),
-  knowledge: z.string().describe('Base de conocimiento actualizada e instrucciones mejoradas.'),
-  explanation: z.string().describe('Breve explicación de por qué se sugieren estos cambios.'),
+  knowledge: z.string().describe('Manual de comportamiento actualizado y optimizado.'),
+  explanation: z.string().describe('Breve explicación técnica del ajuste realizado.'),
 });
 
 export type RefineAgentConfigInput = z.infer<typeof RefineAgentConfigInputSchema>;
@@ -40,23 +38,36 @@ const prompt = ai.definePrompt({
   name: 'refineAgentConfigPrompt',
   input: { schema: RefineAgentConfigInputSchema },
   output: { schema: RefineAgentConfigOutputSchema },
-  prompt: `Actúa como un Arquitecto de IA Senior. Tu misión es corregir y optimizar la configuración de un agente basado en el feedback del usuario.
+  prompt: `Actúa como un Arquitecto de IA Senior especializado en Prompt Engineering.
+Tu misión es optimizar exclusivamente el PROTOCOLO DE COMPORTAMIENTO (knowledge) de un agente.
 
-CONFIGURACIÓN ACTUAL:
+CONTEXTO DE IDENTIDAD (No editable por ti, solo para referencia):
+- Nombre: {{{currentConfig.name}}}
 - Rol: {{{currentConfig.role}}}
+- Empresa: {{{currentConfig.company}}}
 - Objetivo: {{{currentConfig.objective}}}
 - Tono: {{{currentConfig.tone}}}
-- Conocimiento: {{{currentConfig.knowledge}}}
+
+CAPACIDADES TÉCNICAS (Integraciones activas):
+{{#each currentConfig.activeIntegrations}}
+- {{{this}}}
+{{/each}}
+
+PROTOCOLO ACTUAL:
+"""
+{{{currentConfig.knowledge}}}
+"""
 
 FEEDBACK DEL USUARIO:
 "{{{feedback}}}"
 
 TAREA:
-1. Analiza qué parte de la configuración técnica está causando que el usuario no esté satisfecho.
-2. Redacta una versión mejorada de los campos 'role', 'objective', 'tone' y especialmente 'knowledge' (instrucciones).
-3. Asegúrate de que las nuevas instrucciones en 'knowledge' sean claras, profesionales y resuelvan directamente el feedback.
+1. Basado en el feedback, redacta un protocolo de comportamiento técnico robusto.
+2. No repitas la identidad (nombre, rol, etc) ya que se anexa automáticamente.
+3. Enfócate en reglas de decisión, manejo de objeciones y flujo de conversación.
+4. Asegúrate de que el protocolo sea compatible con las integraciones activas.
 
-Responde solo con el objeto JSON de la configuración refinada.`,
+Responde solo con el objeto JSON solicitado.`,
 });
 
 const refineAgentConfigFlow = ai.defineFlow(
@@ -67,7 +78,7 @@ const refineAgentConfigFlow = ai.defineFlow(
   },
   async (input) => {
     const { output } = await prompt(input);
-    if (!output) throw new Error("Error generando el refinamiento");
+    if (!output) throw new Error("Error generando el refinamiento de comportamiento");
     return output;
   }
 );
