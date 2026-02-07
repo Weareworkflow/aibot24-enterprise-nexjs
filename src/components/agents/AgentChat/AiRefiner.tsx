@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect, useRef } from "react";
@@ -82,14 +81,13 @@ export function AiRefiner({ agent, db }: AiRefinerProps) {
     <div className="flex flex-col h-full bg-white">
       <ScrollArea className="flex-1 p-6" ref={scrollRef}>
         <div className="space-y-4">
-          <div className="flex flex-col items-center justify-center py-6 text-center space-y-2 opacity-50">
-            <Sparkles className="h-5 w-5 text-secondary" />
-            <p className="text-[9px] font-black uppercase tracking-widest text-slate-400">Canal de Configuración Directo</p>
-          </div>
-
           {history.length === 0 && (
-            <div className="bg-slate-50 border border-slate-100 p-4 rounded-2xl text-[12px] text-slate-600 font-medium leading-relaxed">
-              Hola, soy el Arquitecto de IA. Pídeme cualquier ajuste técnico: "Cambia el tono a formal", "Agrega soporte para devoluciones", etc.
+            <div className="bg-slate-50 border border-slate-100 p-4 rounded-2xl text-[12px] text-slate-600 font-medium leading-relaxed mb-4">
+              <div className="flex items-center gap-2 mb-2 text-secondary">
+                <Sparkles className="h-3.5 w-3.5" />
+                <span className="text-[10px] font-black uppercase tracking-widest">Protocolo de Asistencia</span>
+              </div>
+              Hola, soy el Arquitecto de IA. Pídeme cualquier ajuste técnico: "Cambia el tono a formal", "Haz que sea más directo", etc.
             </div>
           )}
 
