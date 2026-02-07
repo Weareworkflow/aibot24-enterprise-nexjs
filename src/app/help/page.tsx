@@ -47,37 +47,32 @@ export default function HelpPage() {
       <Navbar />
       <main className="container mx-auto px-4 py-12 max-w-6xl space-y-8">
         
-        {/* Header con Botón de Regreso */}
-        <div className="flex items-center gap-6 mb-4">
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="h-12 w-12 flex items-center justify-center bg-white rounded-2xl hover:bg-slate-900 hover:text-white transition-all shadow-md border border-slate-100 flex-shrink-0"
-            onClick={() => router.back()}
-          >
-            <ArrowLeft className="h-6 w-6" />
-          </Button>
-          <div>
-            <h1 className="text-3xl font-headline font-bold text-slate-900">Centro de Operaciones y Ayuda</h1>
-            <p className="text-[10px] font-black uppercase text-muted-foreground tracking-[0.3em] mt-2 flex items-center gap-2">
-              <ShieldCheck className="h-3 w-3 text-secondary" />
-              Protocolo de Soporte Elite Activo
-            </p>
-          </div>
-        </div>
-
-        {/* 1. FAQ - Ahora en primera posición */}
+        {/* 1. FAQ - Ahora contiene el Header para ahorrar espacio */}
         <Card className="border-none shadow-2xl rounded-[3rem] bg-white overflow-hidden high-volume">
-          <CardHeader className="p-10 border-b border-slate-50 bg-slate-50/30 flex flex-row items-center gap-5">
-            <div className="h-12 w-12 rounded-2xl bg-white flex items-center justify-center text-secondary shadow-md border border-slate-100">
-              <HelpCircle className="h-6 w-6" />
-            </div>
+          <CardHeader className="p-10 border-b border-slate-50 bg-slate-50/30 flex flex-row items-center gap-6">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="h-12 w-12 flex items-center justify-center bg-white rounded-2xl hover:bg-slate-900 hover:text-white transition-all shadow-md border border-slate-100 flex-shrink-0"
+              onClick={() => router.back()}
+            >
+              <ArrowLeft className="h-6 w-6" />
+            </Button>
             <div>
-              <CardTitle className="text-2xl font-headline font-bold text-slate-900">FAQ</CardTitle>
-              <p className="text-[11px] font-black uppercase text-muted-foreground tracking-widest mt-1">Preguntas Frecuentes de la Flota</p>
+              <CardTitle className="text-2xl font-headline font-bold text-slate-900">Centro de Operaciones y Ayuda</CardTitle>
+              <p className="text-[10px] font-black uppercase text-muted-foreground tracking-[0.2em] mt-2 flex items-center gap-2">
+                <ShieldCheck className="h-3 w-3 text-secondary" />
+                Protocolo de Soporte Elite Activo
+              </p>
             </div>
           </CardHeader>
           <CardContent className="p-8 md:p-12">
+            <div className="mb-8 flex items-center gap-3">
+              <div className="h-8 w-8 rounded-xl bg-secondary/10 flex items-center justify-center text-secondary">
+                <HelpCircle className="h-4 w-4" />
+              </div>
+              <h3 className="text-[11px] font-black uppercase text-muted-foreground tracking-[0.2em]">Preguntas Frecuentes de la Flota (FAQ)</h3>
+            </div>
             <Accordion type="single" collapsible className="w-full space-y-4">
               {FAQS.map((faq, idx) => (
                 <AccordionItem 
@@ -119,7 +114,7 @@ export default function HelpPage() {
             <CardContent className="p-10 space-y-8">
               <div className="space-y-4">
                 <p className="text-[13px] text-slate-600 font-medium leading-relaxed">
-                  Optimiza tus flujos para maximizar el rendimiento<br className="hidden lg:block" /> de tu flota operativa mediante soporte experto.
+                  Optimiza tus flujos para maximizar el rendimiento<br className="hidden lg:block" /> mediante soporte experto para tu flota operativa.
                 </p>
               </div>
               <Button className="w-full h-14 rounded-full bg-secondary hover:bg-secondary/90 text-white font-black text-[11px] uppercase tracking-[0.2em] shadow-xl shadow-secondary/20 transition-all hover:scale-[1.02]">
@@ -141,7 +136,7 @@ export default function HelpPage() {
             <CardContent className="p-10 space-y-8">
               <div className="space-y-4">
                 <p className="text-[13px] text-slate-600 font-medium leading-relaxed">
-                  Explora nuestra biblioteca de documentación para dominar<br className="hidden lg:block" /> las capacidades de AIBot24 y escalar tu operación.
+                  Explora nuestra biblioteca completa de documentación para<br className="hidden lg:block" /> dominar todas las capacidades de AIBot24.
                 </p>
               </div>
               <Button variant="outline" className="w-full h-14 rounded-full border-2 border-slate-200 bg-transparent hover:bg-slate-50 hover:text-secondary text-slate-900 font-black text-[11px] uppercase tracking-[0.2em] transition-all">
