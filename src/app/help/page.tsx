@@ -1,4 +1,3 @@
-
 "use client";
 
 import { Navbar } from "@/components/layout/Navbar";
@@ -13,7 +12,6 @@ import {
 import { 
   BookOpen, 
   HelpCircle, 
-  Globe, 
   ShieldCheck,
   Zap,
   Mail
@@ -59,16 +57,14 @@ export default function HelpPage() {
                 <Mail className="h-6 w-6" />
               </div>
               <div>
-                <CardTitle className="text-xl font-headline font-bold">Contact</CardTitle>
+                <CardTitle className="text-xl font-headline font-bold">Contacto</CardTitle>
                 <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest mt-1">Soporte Técnico Directo</p>
               </div>
             </CardHeader>
             <CardContent className="p-10 space-y-8">
               <div className="space-y-4">
                 <p className="text-[13px] text-slate-600 font-medium leading-relaxed">
-                  ¿Necesitas asistencia técnica personalizada o una implementación a medida para tu empresa? 
-                  Nuestro equipo de arquitectos está listo para optimizar tus flujos con IA avanzada, 
-                  garantizando soluciones eficientes para maximizar el rendimiento de tu flota inteligente.
+                  ¿Necesitas asistencia técnica personalizada o una implementación a medida? Nuestro equipo de arquitectos optimizará tus flujos con IA avanzada para maximizar el rendimiento de tu flota inteligente.
                 </p>
               </div>
               <Button className="w-full h-14 rounded-full bg-secondary hover:bg-secondary/90 text-white font-black text-[11px] uppercase tracking-[0.2em] shadow-xl shadow-secondary/20 transition-all hover:scale-[1.02]">
@@ -83,16 +79,14 @@ export default function HelpPage() {
                 <BookOpen className="h-6 w-6" />
               </div>
               <div>
-                <CardTitle className="text-xl font-headline font-bold text-slate-900">Docs</CardTitle>
+                <CardTitle className="text-xl font-headline font-bold text-slate-900">Documentación</CardTitle>
                 <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest mt-1">Manuales y Guías Técnicas</p>
               </div>
             </CardHeader>
             <CardContent className="p-10 space-y-8">
               <div className="space-y-4">
                 <p className="text-[13px] text-slate-600 font-medium leading-relaxed">
-                  Explora nuestra biblioteca completa de documentación para dominar todas las capacidades de AIBot24. 
-                  Aprende a configurar integraciones avanzadas y gestionar métricas operativas de alto nivel 
-                  para escalar tu operación comercial mediante el uso de nuestra infraestructura en la nube.
+                  Explora nuestra biblioteca para dominar AIBot24. Aprende a configurar integraciones avanzadas y gestionar métricas de alto nivel para escalar tu operación comercial mediante nuestra infraestructura cloud.
                 </p>
               </div>
               <Button variant="outline" className="w-full h-14 rounded-full border-2 border-slate-200 bg-transparent hover:bg-slate-50 text-slate-900 font-black text-[11px] uppercase tracking-[0.2em] transition-all">
@@ -125,16 +119,14 @@ export default function HelpPage() {
                       {faq.q}
                     </span>
                   </AccordionTrigger>
-                  <AccordionItem value={`item-${idx}`}>
-                    <AccordionContent className="pb-8 pt-2">
-                      <div className="flex gap-4">
-                        <div className="h-full w-1 bg-secondary/20 rounded-full" />
-                        <p className="text-[13px] text-slate-600 leading-relaxed font-medium">
-                          {faq.a}
-                        </p>
-                      </div>
-                    </AccordionContent>
-                  </AccordionItem>
+                  <AccordionContent className="pb-8 pt-2">
+                    <div className="flex gap-4">
+                      <div className="h-full w-1 bg-secondary/20 rounded-full" />
+                      <p className="text-[13px] text-slate-600 leading-relaxed font-medium">
+                        {faq.a}
+                      </p>
+                    </div>
+                  </AccordionContent>
                 </AccordionItem>
               ))}
             </Accordion>
