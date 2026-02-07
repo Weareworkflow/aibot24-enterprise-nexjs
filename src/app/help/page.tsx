@@ -47,7 +47,7 @@ export default function HelpPage() {
       <Navbar />
       <main className="container mx-auto px-4 py-12 max-w-6xl space-y-8">
         
-        {/* 1. FAQ - Ahora contiene el Header para ahorrar espacio */}
+        {/* 1. FAQ - Ahora contiene el Header integrado */}
         <Card className="border-none shadow-2xl rounded-[3rem] bg-white overflow-hidden high-volume">
           <CardHeader className="p-10 border-b border-slate-50 bg-slate-50/30 flex flex-row items-center gap-6">
             <Button 
@@ -99,30 +99,9 @@ export default function HelpPage() {
           </CardContent>
         </Card>
 
-        {/* 2. Grid de Contacto y Documentación */}
+        {/* 2. Grid de Documentación y Contacto (Invertidos) */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <Card className="border-none shadow-2xl rounded-[2.5rem] bg-white overflow-hidden high-volume group">
-            <CardHeader className="p-8 border-b border-slate-50 flex flex-row items-center gap-5">
-              <div className="h-12 w-12 rounded-2xl bg-secondary/10 flex items-center justify-center text-secondary group-hover:bg-secondary group-hover:text-white transition-all shadow-sm border border-secondary/5">
-                <Mail className="h-6 w-6" />
-              </div>
-              <div>
-                <CardTitle className="text-xl font-headline font-bold">Contacto</CardTitle>
-                <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest mt-1">Soporte Técnico Directo</p>
-              </div>
-            </CardHeader>
-            <CardContent className="p-10 space-y-8">
-              <div className="space-y-4">
-                <p className="text-[13px] text-slate-600 font-medium leading-relaxed">
-                  Optimiza tus flujos para maximizar el rendimiento<br className="hidden lg:block" /> mediante soporte experto para tu flota operativa.
-                </p>
-              </div>
-              <Button className="w-full h-14 rounded-full bg-secondary hover:bg-secondary/90 text-white font-black text-[11px] uppercase tracking-[0.2em] shadow-xl shadow-secondary/20 transition-all hover:scale-[1.02]">
-                SOLICITAR ASISTENCIA
-              </Button>
-            </CardContent>
-          </Card>
-
+          {/* Documentación (Izquierda) */}
           <Card className="border-none shadow-2xl rounded-[2.5rem] bg-white overflow-hidden high-volume group">
             <CardHeader className="p-8 border-b border-slate-50 flex flex-row items-center gap-5">
               <div className="h-12 w-12 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-500 group-hover:bg-slate-900 group-hover:text-white transition-all shadow-sm border border-slate-200/50">
@@ -139,8 +118,34 @@ export default function HelpPage() {
                   Explora nuestra biblioteca completa de documentación para<br className="hidden lg:block" /> dominar todas las capacidades de AIBot24.
                 </p>
               </div>
-              <Button variant="outline" className="w-full h-14 rounded-full border-2 border-slate-200 bg-transparent hover:bg-slate-50 hover:text-secondary text-slate-900 font-black text-[11px] uppercase tracking-[0.2em] transition-all">
+              <Button 
+                variant="outline" 
+                className="w-full h-14 rounded-full border-2 border-slate-200 bg-transparent hover:bg-slate-50 hover:text-secondary text-slate-900 font-black text-[11px] uppercase tracking-[0.2em] transition-all"
+              >
                 EXPLORAR GUIA
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Contacto (Derecha) */}
+          <Card className="border-none shadow-2xl rounded-[2.5rem] bg-white overflow-hidden high-volume group">
+            <CardHeader className="p-8 border-b border-slate-50 flex flex-row items-center gap-5">
+              <div className="h-12 w-12 rounded-2xl bg-secondary/10 flex items-center justify-center text-secondary group-hover:bg-secondary group-hover:text-white transition-all shadow-sm border border-secondary/5">
+                <Mail className="h-6 w-6" />
+              </div>
+              <div>
+                <CardTitle className="text-xl font-headline font-bold">Contacto</CardTitle>
+                <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest mt-1">Soporte Técnico Directo</p>
+              </div>
+            </CardHeader>
+            <CardContent className="p-10 space-y-8">
+              <div className="space-y-4">
+                <p className="text-[13px] text-slate-600 font-medium leading-relaxed">
+                  Optimiza tus flujos para maximizar el rendimiento mediante<br className="hidden lg:block" /> soporte experto para tu flota operativa.
+                </p>
+              </div>
+              <Button className="w-full h-14 rounded-full bg-secondary hover:bg-secondary/90 text-white font-black text-[11px] uppercase tracking-[0.2em] shadow-xl shadow-secondary/20 transition-all hover:scale-[1.02]">
+                SOLICITAR ASISTENCIA
               </Button>
             </CardContent>
           </Card>
