@@ -121,14 +121,12 @@ export default function NewAgentPage() {
     setIsSaving(true);
 
     try {
-      // 1. Generar Objetivo y Tono en automático basado en el Rol
       const aiResponse = await generateAgentConfig({
         prompt: `Genera un objetivo estratégico breve y un tono de comunicación para un agente con el rol: ${config.role} de la empresa ${config.company}.`
       });
 
       const agentId = Date.now().toString();
       
-      // 2. Crear el objeto final con instrucciones en blanco
       const newAgent: AIAgent = {
         id: agentId,
         tenantId: effectiveTenantId,
@@ -138,7 +136,7 @@ export default function NewAgentPage() {
         company: config.company,
         objective: aiResponse.objective || "Atención al cliente inteligente.",
         tone: aiResponse.tone || "Profesional y resolutivo.",
-        knowledge: "", // Instrucciones en blanco como se solicitó
+        knowledge: "", 
         color: config.color,
         isActive: true,
         createdAt: new Date().toISOString(),
@@ -170,23 +168,23 @@ export default function NewAgentPage() {
   const isColorStep = CONFIG_STEPS[currentStep].key === 'color';
 
   return (
-    <div className="flex flex-col h-screen bg-[#F0F3F5] overflow-hidden">
+    <div className="flex flex-col h-screen bg-background overflow-hidden transition-colors duration-300">
       <Navbar />
       <main className="flex-1 flex flex-col items-center justify-center p-4">
         <div className="w-full max-w-xl flex flex-col h-[calc(100vh-120px)]">
           <div className="mb-4 flex items-center justify-between px-2">
-            <h1 className="text-sm font-black uppercase tracking-[0.2em] text-slate-500 flex items-center gap-2">
+            <h1 className="text-sm font-black uppercase tracking-[0.2em] text-muted-foreground flex items-center gap-2">
               <Bot className="h-4 w-4 text-secondary" />
               Diseño de Agente Chat
             </h1>
             <div className="flex gap-1">
               {[0,1,2,3].map(i => (
-                <div key={i} className={cn("h-1 w-4 rounded-full transition-all", i <= currentStep ? "bg-secondary" : "bg-slate-300")} />
+                <div key={i} className={cn("h-1 w-4 rounded-full transition-all", i <= currentStep ? "bg-secondary" : "bg-muted")} />
               ))}
             </div>
           </div>
 
-          <Card className="flex-1 border-none shadow-2xl flex flex-col overflow-hidden rounded-[2.5rem] bg-white high-volume">
+          <Card className="flex-1 border-none shadow-2xl flex flex-col overflow-hidden rounded-[2.5rem] bg-card high-volume transition-colors duration-300">
             <ScrollArea className="flex-1 p-6" ref={scrollRef}>
               <div className="space-y-4">
                 {messages.map((msg) => (
@@ -201,7 +199,7 @@ export default function NewAgentPage() {
                       "px-4 py-2.5 rounded-2xl text-[13px] font-medium shadow-sm border", 
                       msg.role === 'user' 
                         ? "bg-secondary text-white border-transparent rounded-tr-none" 
-                        : "bg-slate-50 text-slate-700 border-slate-100 rounded-tl-none"
+                        : "bg-muted/50 text-foreground border-border/40 rounded-tl-none"
                     )}>
                       {msg.content}
                     </div>
@@ -209,14 +207,14 @@ export default function NewAgentPage() {
                 ))}
 
                 {!isFinished && isColorStep && (
-                  <div className="grid grid-cols-8 gap-2 p-3 bg-slate-50 rounded-3xl border border-dashed border-slate-200 animate-in zoom-in-95 duration-500">
+                  <div className="grid grid-cols-8 gap-2 p-3 bg-muted/30 rounded-3xl border border-dashed border-border/60 animate-in zoom-in-95 duration-500">
                     {ASSISTANT_COLORS.map(c => (
                       <button 
                         key={c} 
                         onClick={() => handleNextStep(c)} 
                         className={cn(
                           "h-8 w-8 rounded-lg border-2 shadow-sm transition-all hover:scale-110 flex items-center justify-center relative", 
-                          config.color === c ? "border-secondary ring-2 ring-secondary/20" : "border-white"
+                          config.color === c ? "border-secondary ring-2 ring-secondary/20" : "border-background"
                         )} 
                         style={{ backgroundColor: c }}
                       >
@@ -228,7 +226,7 @@ export default function NewAgentPage() {
 
                 {isFinished && (
                   <div className="pt-4 animate-in slide-in-from-bottom-4 duration-700">
-                    <Card className="bg-slate-900 text-white rounded-[2rem] p-6 shadow-xl border-none">
+                    <Card className="bg-slate-900 dark:bg-slate-950 text-white rounded-[2rem] p-6 shadow-xl border-none">
                       <div className="flex items-center justify-between mb-4">
                         <div className="space-y-1">
                           <p className="text-[9px] font-black uppercase tracking-widest text-secondary flex items-center gap-1">
@@ -258,11 +256,11 @@ export default function NewAgentPage() {
             </ScrollArea>
 
             {!isFinished && !isColorStep && (
-              <CardFooter className="p-4 bg-white border-t">
-                <div className="flex items-center gap-2 w-full bg-slate-50 p-1.5 rounded-2xl border border-slate-100 shadow-inner group">
+              <CardFooter className="p-4 bg-card border-t border-border/60">
+                <div className="flex items-center gap-2 w-full bg-muted/30 p-1.5 rounded-2xl border border-border/40 shadow-inner group">
                   <Input 
                     placeholder="Responde aquí..." 
-                    className="flex-1 bg-transparent border-none focus-visible:ring-0 h-10 text-[13px] px-3 font-medium"
+                    className="flex-1 bg-transparent border-none focus-visible:ring-0 h-10 text-[13px] px-3 font-medium text-foreground placeholder:text-muted-foreground"
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handleNextStep()}
