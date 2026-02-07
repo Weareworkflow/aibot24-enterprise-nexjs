@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useMemo, useState, useEffect } from "react";
@@ -118,7 +117,7 @@ export default function SettingsPage() {
             </div>
             <div className="flex items-center gap-2 px-3 py-1 bg-accent/10 rounded-full border border-accent/20">
               <div className="h-1.5 w-1.5 bg-accent rounded-full animate-pulse" />
-              <span className="text-[8px] font-black uppercase text-accent tracking-widest">Sincronizado</span>
+              <span className="text-[8px] font-black uppercase text-accent tracking-widest">Activo</span>
             </div>
           </CardHeader>
 
