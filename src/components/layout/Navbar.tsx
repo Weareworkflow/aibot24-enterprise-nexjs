@@ -36,10 +36,6 @@ export function Navbar() {
         </div>
 
         <div className="flex items-center gap-4 flex-shrink-0">
-          <div className="hidden md:block">
-            <PortalMenu />
-          </div>
-          
           <Link
             href="/agents/new"
             className={cn(
@@ -51,6 +47,10 @@ export function Navbar() {
             <Plus className="h-4 w-4" />
             <span className="hidden lg:inline">Nuevo Agente</span>
           </Link>
+
+          <div className="hidden md:block">
+            <PortalMenu />
+          </div>
         </div>
       </div>
     </nav>

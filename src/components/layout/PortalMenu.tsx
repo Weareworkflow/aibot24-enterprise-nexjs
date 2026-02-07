@@ -5,8 +5,7 @@ import { useUIStore } from "@/lib/store";
 import { 
   Settings, 
   HelpCircle, 
-  Building2,
-  ChevronDown
+  MoreVertical
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -24,7 +23,6 @@ export function PortalMenu() {
   const { tenantId, domain } = useUIStore();
   const router = useRouter();
   
-  // Extraemos el nombre del portal del dominio (ej: workflowteams.bitrix24.es -> WORKFLOWTEAMS)
   const portalName = domain 
     ? domain.split('.')[0].toUpperCase() 
     : (tenantId ? "PORTAL ACTIVO" : "SESIÓN ANÓNIMA");
@@ -32,15 +30,8 @@ export function PortalMenu() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="h-10 gap-3 px-3 pill-rounded hover:bg-slate-100 transition-all border-none group">
-          <div className="h-7 w-7 rounded-lg bg-secondary/10 flex items-center justify-center text-secondary group-hover:bg-secondary group-hover:text-white transition-all">
-            <Building2 className="h-4 w-4" />
-          </div>
-          <div className="flex flex-col items-start">
-            <span className="text-[10px] font-black uppercase tracking-widest text-slate-800 leading-none mb-1">Portal</span>
-            <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-tight leading-none">{portalName}</span>
-          </div>
-          <ChevronDown className="h-3.5 w-3.5 text-slate-400 group-data-[state=open]:rotate-180 transition-transform" />
+        <Button variant="ghost" size="icon" className="h-10 w-10 rounded-2xl bg-slate-50 border border-slate-100 hover:bg-slate-100 transition-all flex items-center justify-center">
+          <MoreVertical className="h-5 w-5 text-slate-400" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-64 p-2 rounded-[2rem] border-none shadow-2xl bg-white animate-in fade-in zoom-in-95 duration-200" align="end" sideOffset={10}>
