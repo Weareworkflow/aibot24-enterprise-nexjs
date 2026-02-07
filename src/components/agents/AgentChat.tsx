@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useRef } from "react";
@@ -31,6 +32,7 @@ import { IntegrationModals } from "./IntegrationModals";
 import { IdentitySection } from "./AgentChat/IdentitySection";
 import { IntegrationsSection } from "./AgentChat/IntegrationsSection";
 import { AiRefiner } from "./AgentChat/AiRefiner";
+import { useUIStore } from "@/lib/store";
 
 interface AgentChatProps {
   agent: AIAgent;
@@ -42,17 +44,23 @@ export function AgentChat({ agent }: AgentChatProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const db = useFirestore();
   const { toast } = useToast();
+  const { updateAgentLocal } = useUIStore();
 
   const handleManualUpdate = (field: string, value: any, title?: string) => {
     if (!db || !agent) return;
+    
+    // Actualización inmediata en Zustand para UI fluida
+    updateAgentLocal(agent.id, { [field]: value });
+
     const agentRef = doc(db, "agents", agent.id);
     updateDoc(agentRef, { [field]: value })
       .then(() => {
         if (title) {
-          toast({ title: "Sincronizado", description: `${title} actualizado con éxito.` });
+          toast({ title: "Sincronizado", description: `${title} actualizado en tiempo real.` });
         }
       })
       .catch(async (error) => {
+        // Si falla Firestore, revertimos o emitimos error
         errorEmitter.emit('permission-error', new FirestorePermissionError({
           path: agentRef.path,
           operation: 'update',
@@ -78,13 +86,11 @@ export function AgentChat({ agent }: AgentChatProps) {
             </div>
             <div className="flex gap-2 items-center">
                <div className="h-2 w-2 rounded-full bg-accent animate-ping" />
-               <span className="text-[8px] font-black uppercase tracking-widest text-accent">Sincronizado</span>
+               <span className="text-[8px] font-black uppercase tracking-widest text-accent">Zustand Sync Activo</span>
             </div>
           </div>
 
           <Accordion type="single" collapsible defaultValue="identidad" className="w-full">
-            
-            {/* 1. IDENTIDAD (Incluye Objetivo y Tono) */}
             <AccordionItem value="identidad" className="border-b-0 px-8">
               <AccordionTrigger className="hover:no-underline py-8 group">
                 <div className="flex items-center gap-4 text-[12px] font-black uppercase tracking-[0.2em] text-slate-600 group-hover:text-secondary transition-colors">
@@ -99,7 +105,6 @@ export function AgentChat({ agent }: AgentChatProps) {
               </AccordionContent>
             </AccordionItem>
 
-            {/* 2. INTEGRACIONES */}
             <AccordionItem value="integraciones" className="border-b-0 px-8">
               <AccordionTrigger className="hover:no-underline py-8 group">
                 <div className="flex items-center gap-4 text-[12px] font-black uppercase tracking-[0.2em] text-slate-600 group-hover:text-secondary transition-colors">
@@ -119,7 +124,6 @@ export function AgentChat({ agent }: AgentChatProps) {
             </AccordionItem>
           </Accordion>
 
-          {/* Refinador de IA */}
           <div className="mt-8 px-8 pb-10">
             <Collapsible open={isChatOpen} onOpenChange={setIsChatOpen} className="w-full">
               <CollapsibleTrigger asChild>
