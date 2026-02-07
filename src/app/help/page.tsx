@@ -65,7 +65,7 @@ export default function HelpPage() {
             <CardContent className="p-10 space-y-8">
               <div className="space-y-4">
                 <p className="text-[13px] text-slate-600 font-medium leading-relaxed">
-                  ¿Asistencia técnica personalizada? Nuestro equipo optimizará tus flujos con IA para maximizar el rendimiento de tu flota.
+                  ¿Necesitas soporte técnico experto? Optimizamos tus flujos para maximizar<br className="hidden lg:block" /> el rendimiento de tu flota operativa.
                 </p>
               </div>
               <Button className="w-full h-14 rounded-full bg-secondary hover:bg-secondary/90 text-white font-black text-[11px] uppercase tracking-[0.2em] shadow-xl shadow-secondary/20 transition-all hover:scale-[1.02]">
@@ -87,11 +87,11 @@ export default function HelpPage() {
             <CardContent className="p-10 space-y-8">
               <div className="space-y-4">
                 <p className="text-[13px] text-slate-600 font-medium leading-relaxed">
-                  Explora nuestra biblioteca completa para dominar AIBot24. Configura integraciones y gestiona métricas para escalar tu operación.
+                  Explora nuestra biblioteca de documentación para dominar AIBot24 y<br className="hidden lg:block" /> configurar integraciones de alto nivel.
                 </p>
               </div>
-              <Button variant="outline" className="w-full h-14 rounded-full border-2 border-slate-200 bg-transparent hover:bg-slate-50 text-slate-900 font-black text-[11px] uppercase tracking-[0.2em] transition-all">
-                EXPLORAR GUÍAS
+              <Button variant="outline" className="w-full h-14 rounded-full border-2 border-slate-200 bg-transparent hover:bg-slate-50 hover:text-secondary text-slate-900 font-black text-[11px] uppercase tracking-[0.2em] transition-all">
+                GUIAS
               </Button>
             </CardContent>
           </Card>
