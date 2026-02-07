@@ -5,9 +5,8 @@ import { useState, useEffect, useRef } from "react";
 import { Navbar } from "@/components/layout/Navbar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { Sparkles, Loader2, Send, Bot, Rocket, MessageSquareText } from "lucide-react";
+import { Sparkles, Loader2, Send, Bot, Rocket, Check, Palette } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -19,13 +18,17 @@ import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { useUIStore } from "@/lib/store";
 
+const ASSISTANT_COLORS = [
+  "#1B75BB", "#41E0F0", "#2FC6F6", "#22c55e", "#10b981", 
+  "#3b82f6", "#ef4444", "#f97316", "#a855f7", "#06b6d4", 
+  "#ec4899", "#84cc16", "#78350f", "#1e293b", "#475569", "#94a3b8"
+];
+
 const CONFIG_STEPS = [
   { key: 'name', question: "¡Hola! Soy tu Arquitecto Virtual. Vamos a diseñar tu agente de chat de élite. Primero, ¿qué nombre llevará esta unidad?", label: "Nombre" },
   { key: 'role', question: "Entendido. ¿Cuál será su función o cargo específico dentro de la organización?", label: "Rol" },
   { key: 'company', question: "¿Para qué empresa o marca estará operando?", label: "Empresa" },
-  { key: 'objective', question: "Crucial. ¿Cuál es el objetivo principal que debe cumplir en cada interacción?", label: "Objetivo" },
-  { key: 'tone', question: "¿Qué tono de voz y personalidad prefieres? (Ej: Ejecutivo y directo, Amable y cercano...)", label: "Tono" },
-  { key: 'knowledge', question: "Finalmente, entrégame las instrucciones detalladas para el agente. Reglas, manuales, FAQs o cualquier dato técnico esencial.", label: "Instrucciones" },
+  { key: 'color', question: "Perfecto. Por último, selecciona el color de identidad para este agente:", label: "Color" },
 ];
 
 export default function NewAgentPage() {
@@ -35,9 +38,10 @@ export default function NewAgentPage() {
     name: "",
     role: "",
     company: "",
-    objective: "",
-    tone: "",
-    knowledge: ""
+    color: ASSISTANT_COLORS[0],
+    objective: "Atención al cliente y soporte inteligente.",
+    tone: "Profesional, amable y resolutivo.",
+    knowledge: "Eres un asistente de IA de élite. Responde siempre con precisión y cortesía."
   });
   
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -69,17 +73,18 @@ export default function NewAgentPage() {
     }
   }, [messages, isFinished]);
 
-  const handleSendMessage = () => {
-    if (!inputValue.trim() || isFinished) return;
+  const handleSendMessage = (valueOverride?: string) => {
+    const value = valueOverride || inputValue;
+    if (!value.trim() || isFinished) return;
 
     const userMsg: ChatMessage = {
       id: Date.now().toString(),
       role: "user",
-      content: inputValue,
+      content: CONFIG_STEPS[currentConfigIndex].key === 'color' ? "Color seleccionado" : value,
       timestamp: new Date().toISOString()
     };
 
-    const updatedConfig = { ...config, [CONFIG_STEPS[currentConfigIndex].key]: inputValue };
+    const updatedConfig = { ...config, [CONFIG_STEPS[currentConfigIndex].key]: value };
     setConfig(updatedConfig);
     setMessages(prev => [...prev, userMsg]);
     setInputValue("");
@@ -101,7 +106,7 @@ export default function NewAgentPage() {
         setMessages(prev => [...prev, {
           id: (Date.now() + 1).toString(),
           role: "assistant",
-          content: "¡Excelente! He procesado toda la información. Aquí tienes la ficha técnica final de tu agente de chat. Revisa los detalles y confirma el despliegue.",
+          content: "¡Excelente! He configurado el núcleo de tu agente. Revisa la ficha técnica y confirma el despliegue para activarlo en tu portal.",
           timestamp: new Date().toISOString()
         }]);
       }, 800);
@@ -150,6 +155,7 @@ export default function NewAgentPage() {
         objective: config.objective,
         tone: config.tone,
         knowledge: config.knowledge,
+        color: config.color,
         isActive: true,
         createdAt: new Date().toISOString(),
         integrations: {
@@ -164,7 +170,7 @@ export default function NewAgentPage() {
         },
         metrics: {
           usageCount: 0,
-          performanceRating: 5.0,
+          performanceRating: 100,
           totalInteractionMetric: 0,
           tokens: "0",
           transfers: 0,
@@ -178,7 +184,7 @@ export default function NewAgentPage() {
       setIsSaving(false);
       toast({
         title: "Agente Desplegado",
-        description: `${config.name} ha sido activado correctamente en tu portal.`,
+        description: `${config.name} ha sido activado correctamente.`,
       });
       router.push("/");
 
@@ -191,6 +197,8 @@ export default function NewAgentPage() {
     }
   };
 
+  const isColorStep = CONFIG_STEPS[currentConfigIndex].key === 'color';
+
   return (
     <div className="flex flex-col min-h-screen bg-[#F0F3F5]">
       <Navbar />
@@ -200,160 +208,148 @@ export default function NewAgentPage() {
             <Bot className="h-6 w-6 text-secondary" />
             Arquitecto de Agentes Chat
           </h1>
-          <div className="flex items-center gap-4">
-            <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">
-              {isFinished ? "Revisión de Arquitectura" : `Fase: ${CONFIG_STEPS[currentConfigIndex].label}`}
-            </p>
-            {tenantId && (
-              <p className="text-[9px] bg-secondary/10 text-secondary px-2 py-0.5 rounded-full font-black uppercase tracking-widest">
-                Tenant: {tenantId.substring(0, 8)}...
-              </p>
-            )}
-          </div>
+          <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">
+            {isFinished ? "Revisión de Arquitectura" : `Fase: ${CONFIG_STEPS[currentConfigIndex].label}`}
+          </p>
         </div>
 
-        <div className="grid gap-6">
-          <div className="space-y-6">
-            <Card className="border-none shadow-lg animate-in slide-in-from-bottom-4 duration-500 overflow-hidden card-rounded bg-white">
-              <CardHeader className="bg-white border-b py-4 px-6">
-                <div className="flex items-center gap-4">
-                  <div className="h-12 w-12 rounded-full bg-primary flex items-center justify-center text-white shadow-inner">
-                    <Bot className="h-7 w-7" />
-                  </div>
-                  <div>
-                    <CardTitle className="text-sm font-black uppercase tracking-widest">Arquitecto Virtual</CardTitle>
-                    <div className="flex items-center gap-1.5 text-[9px] font-black uppercase text-secondary">
-                      <span className="h-2 w-2 bg-secondary rounded-full animate-pulse" />
-                      Protocolo de Chat Activo
+        <Card className="border-none shadow-xl animate-in slide-in-from-bottom-4 duration-500 overflow-hidden card-rounded bg-white">
+          <CardHeader className="bg-white border-b py-4 px-6 flex flex-row items-center gap-4">
+            <div className="h-10 w-10 rounded-full bg-secondary flex items-center justify-center text-white shadow-inner">
+              <Bot className="h-6 w-6" />
+            </div>
+            <div>
+              <CardTitle className="text-[10px] font-black uppercase tracking-widest">Protocolo Arquitecto</CardTitle>
+              <div className="flex items-center gap-1.5 text-[8px] font-black uppercase text-secondary">
+                <span className="h-1.5 w-1.5 bg-secondary rounded-full animate-pulse" />
+                Sesión Activa
+              </div>
+            </div>
+          </CardHeader>
+          
+          <CardContent className="p-0">
+            <ScrollArea className="h-[450px] p-6" ref={scrollRef}>
+              <div className="space-y-6 pb-4">
+                {messages.map((msg) => (
+                  <div
+                    key={msg.id}
+                    className={cn(
+                      "flex flex-col max-w-[85%] space-y-1 animate-in fade-in slide-in-from-bottom-2",
+                      msg.role === 'user' ? "ml-auto items-end" : "items-start"
+                    )}
+                  >
+                    <div
+                      className={cn(
+                        "px-5 py-3 rounded-2xl text-[13px] shadow-sm leading-relaxed",
+                        msg.role === 'user' 
+                          ? "bg-secondary text-white rounded-tr-none" 
+                          : "bg-muted/50 text-foreground rounded-tl-none border"
+                      )}
+                    >
+                      {msg.content}
                     </div>
                   </div>
-                </div>
-              </CardHeader>
-              
-              <CardContent className="p-0">
-                <ScrollArea className="h-[450px] p-6" ref={scrollRef}>
-                  <div className="space-y-6 pb-4">
-                    {messages.map((msg) => (
-                      <div
-                        key={msg.id}
-                        className={cn(
-                          "flex flex-col max-w-[90%] space-y-1 animate-in fade-in slide-in-from-bottom-2",
-                          msg.role === 'user' ? "ml-auto items-end" : "items-start"
-                        )}
-                      >
-                        <div
+                ))}
+
+                {!isFinished && isColorStep && (
+                  <div className="animate-in fade-in slide-in-from-bottom-4 bg-slate-50 p-6 rounded-[2rem] border border-dashed border-slate-200">
+                    <div className="flex items-center gap-2 mb-4">
+                      <Palette className="h-4 w-4 text-secondary" />
+                      <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Selector de ADN Visual</span>
+                    </div>
+                    <div className="flex flex-wrap gap-3">
+                      {ASSISTANT_COLORS.map(c => (
+                        <button 
+                          key={c} 
+                          onClick={() => handleSendMessage(c)} 
                           className={cn(
-                            "px-5 py-3 rounded-2xl text-xs shadow-sm leading-relaxed",
-                            msg.role === 'user' 
-                              ? "bg-secondary text-white rounded-tr-none" 
-                              : "bg-muted/50 text-foreground rounded-tl-none border"
-                          )}
+                            "h-10 w-10 rounded-[1rem] border-2 shadow-sm transition-all hover:scale-110 flex items-center justify-center relative", 
+                            config.color === c ? "border-secondary scale-110 ring-4 ring-secondary/10" : "border-white"
+                          )} 
+                          style={{ backgroundColor: c }}
                         >
-                          {msg.content}
-                        </div>
-                        <span className="text-[8px] font-black text-muted-foreground uppercase px-2 tracking-widest">
-                          {msg.role === 'user' ? 'Respuesta Operador' : 'Arquitecto'}
-                        </span>
-                      </div>
-                    ))}
+                          {config.color === c && <Check className="h-5 w-5 text-white drop-shadow-lg" />}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
-                    {isFinished && (
-                      <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 delay-300">
-                        <Card className="bg-[#F8FAFC] border-2 border-dashed border-secondary/30 rounded-[2rem] overflow-hidden">
-                          <div className="bg-secondary p-4 flex items-center justify-between text-white">
-                            <h4 className="text-[10px] font-black uppercase tracking-[0.2em]">Ficha Técnica de Despliegue (Chat)</h4>
-                            <Sparkles className="h-4 w-4" />
+                {isFinished && (
+                  <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
+                    <Card className="bg-[#F8FAFC] border-2 border-dashed border-secondary/30 rounded-[2.5rem] overflow-hidden">
+                      <div className="bg-secondary p-4 flex items-center justify-between text-white">
+                        <h4 className="text-[10px] font-black uppercase tracking-[0.2em]">Ficha de Despliegue</h4>
+                        <div 
+                          className="h-6 w-6 rounded-full border-2 border-white shadow-sm"
+                          style={{ backgroundColor: config.color }}
+                        />
+                      </div>
+                      <CardContent className="p-8 space-y-6">
+                        <div className="grid grid-cols-2 gap-6">
+                          <div className="space-y-1">
+                            <p className="text-[8px] font-black text-muted-foreground uppercase tracking-widest">Nombre Operativo</p>
+                            <p className="text-sm font-bold text-slate-800">{config.name}</p>
                           </div>
-                          <CardContent className="p-6 space-y-5">
-                            <div className="grid grid-cols-2 gap-4">
-                              <div className="space-y-1">
-                                <p className="text-[8px] font-black text-muted-foreground uppercase">Nombre</p>
-                                <p className="text-xs font-bold">{config.name}</p>
-                              </div>
-                              <div className="space-y-1">
-                                <p className="text-[8px] font-black text-muted-foreground uppercase">Rol</p>
-                                <p className="text-xs font-bold">{config.role}</p>
-                              </div>
-                              <div className="space-y-1">
-                                <p className="text-[8px] font-black text-muted-foreground uppercase">Empresa</p>
-                                <p className="text-xs font-bold">{config.company}</p>
-                              </div>
-                              <div className="space-y-1">
-                                <p className="text-[8px] font-black text-muted-foreground uppercase">Objetivo</p>
-                                <p className="text-xs font-bold">{config.objective}</p>
-                              </div>
-                            </div>
-                            <div className="space-y-1">
-                              <p className="text-[8px] font-black text-muted-foreground uppercase">Tono</p>
-                              <p className="text-[11px] p-2 bg-white rounded-lg border italic">{config.tone}</p>
-                            </div>
-                            <div className="space-y-1">
-                              <p className="text-[8px] font-black text-muted-foreground uppercase">Instrucciones de Comportamiento</p>
-                              <div className="max-h-32 overflow-y-auto text-[10px] p-3 bg-white rounded-xl border border-dashed font-mono leading-relaxed">
-                                {config.knowledge}
-                              </div>
-                            </div>
-                          </CardContent>
-                          <CardFooter className="bg-white p-4 border-t flex justify-center">
-                            <Button 
-                              onClick={handleSave} 
-                              disabled={isSaving}
-                              className="w-full h-12 pill-rounded bg-secondary hover:bg-secondary/90 text-white font-black text-[10px] uppercase tracking-widest gap-2 shadow-lg shadow-secondary/20"
-                            >
-                              {isSaving ? (
-                                <>
-                                  <Loader2 className="h-4 w-4 animate-spin" />
-                                  Verificando Protocolos...
-                                </>
-                              ) : (
-                                <>
-                                  <Rocket className="h-4 w-4" />
-                                  Confirmar y Desplegar Bot de Chat
-                                </>
-                              )}
-                            </Button>
-                          </CardFooter>
-                        </Card>
-                      </div>
-                    )}
+                          <div className="space-y-1">
+                            <p className="text-[8px] font-black text-muted-foreground uppercase tracking-widest">Rol / Cargo</p>
+                            <p className="text-sm font-bold text-slate-800">{config.role}</p>
+                          </div>
+                          <div className="space-y-1 col-span-2">
+                            <p className="text-[8px] font-black text-muted-foreground uppercase tracking-widest">Empresa Representada</p>
+                            <p className="text-sm font-bold text-slate-800">{config.company}</p>
+                          </div>
+                        </div>
+                      </CardContent>
+                      <CardFooter className="bg-white p-6 border-t">
+                        <Button 
+                          onClick={handleSave} 
+                          disabled={isSaving}
+                          className="w-full h-14 rounded-full bg-secondary hover:bg-secondary/90 text-white font-black text-[11px] uppercase tracking-[0.15em] gap-3 shadow-xl shadow-secondary/20 transition-all active:scale-95"
+                        >
+                          {isSaving ? (
+                            <>
+                              <Loader2 className="h-5 w-5 animate-spin" />
+                              Sincronizando...
+                            </>
+                          ) : (
+                            <>
+                              <Rocket className="h-5 w-5" />
+                              Confirmar y Desplegar Bot
+                            </>
+                          )}
+                        </Button>
+                      </CardFooter>
+                    </Card>
                   </div>
-                </ScrollArea>
-              </CardContent>
+                )}
+              </div>
+            </ScrollArea>
+          </CardContent>
 
-              {!isFinished && (
-                <CardFooter className="p-4 bg-white border-t">
-                  <div className="flex items-center gap-3 w-full bg-muted/30 p-2 rounded-2xl">
-                    {CONFIG_STEPS[currentConfigIndex].key === 'knowledge' ? (
-                      <Textarea 
-                        placeholder="Define aquí el manual de comportamiento, reglas de negocio o FAQs..."
-                        className="flex-1 bg-transparent border-none focus-visible:ring-0 min-h-[60px] text-xs resize-none"
-                        value={inputValue}
-                        onChange={(e) => setInputValue(e.target.value)}
-                        onKeyDown={(e) => e.key === 'Enter' && e.ctrlKey && handleSendMessage()}
-                      />
-                    ) : (
-                      <Input 
-                        placeholder="Escribe tu respuesta..." 
-                        className="flex-1 bg-transparent border-none focus-visible:ring-0 h-10 text-xs px-4"
-                        value={inputValue}
-                        onChange={(e) => setInputValue(e.target.value)}
-                        onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
-                      />
-                    )}
-                    <Button 
-                      size="icon" 
-                      className="rounded-xl h-10 w-10 bg-secondary hover:bg-secondary/90 flex-shrink-0 shadow-md"
-                      onClick={handleSendMessage}
-                      disabled={!inputValue.trim()}
-                    >
-                      <Send className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </CardFooter>
-              )}
-            </Card>
-          </div>
-        </div>
+          {!isFinished && !isColorStep && (
+            <CardFooter className="p-4 bg-white border-t">
+              <div className="flex items-center gap-3 w-full bg-muted/30 p-2 rounded-2xl border border-slate-100 shadow-inner">
+                <Input 
+                  placeholder="Escribe tu respuesta..." 
+                  className="flex-1 bg-transparent border-none focus-visible:ring-0 h-10 text-[13px] px-4"
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
+                  autoFocus
+                />
+                <Button 
+                  size="icon" 
+                  className="rounded-xl h-10 w-10 bg-secondary hover:bg-secondary/90 flex-shrink-0 shadow-md transition-transform active:scale-90"
+                  onClick={() => handleSendMessage()}
+                  disabled={!inputValue.trim()}
+                >
+                  <Send className="h-4 w-4" />
+                </Button>
+              </div>
+            </CardFooter>
+          )}
+        </Card>
       </main>
     </div>
   );
