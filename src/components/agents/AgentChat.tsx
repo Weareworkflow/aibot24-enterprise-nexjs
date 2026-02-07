@@ -7,7 +7,6 @@ import {
   Settings2,
   Code2,
   Share2,
-  BookOpen,
   Wand2,
   ChevronDown,
   ChevronUp,
@@ -32,7 +31,6 @@ import { FirestorePermissionError } from '@/firebase/errors';
 import { IntegrationModals } from "./IntegrationModals";
 import { IdentitySection } from "./AgentChat/IdentitySection";
 import { InstructionsSection } from "./AgentChat/InstructionsSection";
-import { KnowledgeSection } from "./AgentChat/KnowledgeSection";
 import { IntegrationsSection } from "./AgentChat/IntegrationsSection";
 import { AiRefiner } from "./AgentChat/AiRefiner";
 
@@ -118,22 +116,7 @@ export function AgentChat({ agent }: AgentChatProps) {
               </AccordionContent>
             </AccordionItem>
 
-            {/* 3. CONOCIMIENTO */}
-            <AccordionItem value="conocimiento" className="border-b-0 px-8">
-              <AccordionTrigger className="hover:no-underline py-8 group">
-                <div className="flex items-center gap-4 text-[13px] font-black uppercase tracking-[0.2em] text-slate-600 group-hover:text-secondary transition-colors">
-                  <div className="h-8 w-8 rounded-xl bg-slate-100 flex items-center justify-center group-data-[state=open]:bg-secondary group-data-[state=open]:text-white transition-all">
-                    <BookOpen className="h-4 w-4" />
-                  </div>
-                  Conocimiento
-                </div>
-              </AccordionTrigger>
-              <AccordionContent className="pb-10 pt-2 animate-in fade-in slide-in-from-top-2">
-                <KnowledgeSection agent={agent} onUpdate={handleManualUpdate} />
-              </AccordionContent>
-            </AccordionItem>
-
-            {/* 4. INTEGRACIONES */}
+            {/* 3. INTEGRACIONES */}
             <AccordionItem value="integraciones" className="border-b-0 px-8">
               <AccordionTrigger className="hover:no-underline py-8 group">
                 <div className="flex items-center gap-4 text-[13px] font-black uppercase tracking-[0.2em] text-slate-600 group-hover:text-secondary transition-colors">
