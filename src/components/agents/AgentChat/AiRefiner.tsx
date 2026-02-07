@@ -1,13 +1,13 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { AIAgent } from "@/lib/types";
 import { cn } from "@/lib/utils";
-import { Send, Loader2 } from "lucide-react";
+import { Send, Loader2, Sparkles } from "lucide-react";
 import { refineAgentConfig } from "@/ai/flows/refine-agent-config";
 import { doc, updateDoc, Firestore } from "firebase/firestore";
 import { errorEmitter } from '@/firebase/error-emitter';
@@ -20,14 +20,29 @@ interface AiRefinerProps {
 export function AiRefiner({ agent, db }: AiRefinerProps) {
   const [feedbackInput, setFeedbackInput] = useState("");
   const [isRefining, setIsRefining] = useState(false);
-  const [history, setHistory] = useState<{role: 'user' | 'assistant', content: string}[]>([]);
+  const [history, setHistory] = useState<{role: 'user' | 'assistant', content: string, id: string}[]>([]);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (scrollRef.current) {
+      const scrollContainer = scrollRef.current.querySelector('[data-radix-scroll-area-viewport]');
+      if (scrollContainer) {
+        scrollContainer.scrollTop = scrollContainer.scrollHeight;
+      }
+    }
+  }, [history, isRefining]);
 
   const handleRefine = async () => {
     if (!feedbackInput.trim() || !db) return;
     const userFeedback = feedbackInput;
     setFeedbackInput("");
     setIsRefining(true);
-    setHistory(prev => [...prev, { role: 'user', content: userFeedback }]);
+    
+    setHistory(prev => [...prev, { 
+      id: Date.now().toString(),
+      role: 'user', 
+      content: userFeedback 
+    }]);
     
     try {
       const suggestion = await refineAgentConfig({
@@ -51,6 +66,7 @@ export function AiRefiner({ agent, db }: AiRefinerProps) {
       });
 
       setHistory(prev => [...prev, { 
+        id: (Date.now() + 1).toString(),
         role: 'assistant', 
         content: `Arquitectura de ${agent.name} optimizada con éxito. ${suggestion.explanation}`
       }]);
@@ -63,46 +79,66 @@ export function AiRefiner({ agent, db }: AiRefinerProps) {
   };
 
   return (
-    <div className="flex flex-col h-[350px]">
-      <ScrollArea className="flex-1 p-6">
+    <div className="flex flex-col h-full bg-white">
+      <ScrollArea className="flex-1 p-6" ref={scrollRef}>
         <div className="space-y-4">
-          {history.map((item, idx) => (
+          <div className="flex flex-col items-center justify-center py-6 text-center space-y-2 opacity-50">
+            <Sparkles className="h-5 w-5 text-secondary" />
+            <p className="text-[9px] font-black uppercase tracking-widest text-slate-400">Canal de Configuración Directo</p>
+          </div>
+
+          {history.length === 0 && (
+            <div className="bg-slate-50 border border-slate-100 p-4 rounded-2xl text-[12px] text-slate-600 font-medium leading-relaxed">
+              Hola, soy el Arquitecto de IA. Pídeme cualquier ajuste técnico: "Cambia el tono a formal", "Agrega soporte para devoluciones", etc.
+            </div>
+          )}
+
+          {history.map((item) => (
             <div 
-              key={idx} 
+              key={item.id} 
               className={cn(
-                "flex flex-col max-w-[85%] space-y-1", 
+                "flex flex-col max-w-[85%] animate-in fade-in slide-in-from-bottom-2 duration-300", 
                 item.role === 'user' ? "ml-auto items-end" : "items-start"
               )}
             >
               <div 
                 className={cn(
-                  "px-4 py-3 rounded-2xl text-[13px] border", 
-                  item.role === 'user' ? "bg-secondary text-white" : "bg-white"
+                  "px-4 py-2.5 rounded-2xl text-[13px] font-medium shadow-sm border", 
+                  item.role === 'user' 
+                    ? "bg-secondary text-white border-transparent rounded-tr-none" 
+                    : "bg-slate-50 text-slate-700 border-slate-100 rounded-tl-none"
                 )}
               >
                 {item.content}
               </div>
             </div>
           ))}
-          {isRefining && <Loader2 className="h-6 w-6 animate-spin mx-auto text-secondary" />}
+          
+          {isRefining && (
+            <div className="flex items-center gap-2 p-3 bg-slate-50 rounded-2xl border border-slate-100 w-fit animate-pulse">
+              <Loader2 className="h-4 w-4 animate-spin text-secondary" />
+              <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Analizando arquitectura...</span>
+            </div>
+          )}
         </div>
       </ScrollArea>
-      <div className="p-4 border-t bg-slate-50">
-        <div className="flex items-center gap-2 bg-white p-1 rounded-2xl border">
+
+      <div className="p-4 border-t bg-slate-50/50">
+        <div className="flex items-center gap-2 bg-white p-1.5 rounded-2xl border border-slate-200 shadow-inner group">
           <Input 
-            placeholder="Ej: Haz que el tono sea más ejecutivo..." 
-            className="border-none bg-transparent h-10 text-[13px]" 
+            placeholder="Escribe un ajuste..." 
+            className="flex-1 border-none bg-transparent focus-visible:ring-0 h-10 text-[13px] px-3 font-medium" 
             value={feedbackInput} 
             onChange={(e) => setFeedbackInput(e.target.value)} 
             onKeyDown={(e) => e.key === 'Enter' && handleRefine()} 
           />
           <Button 
             size="icon" 
-            className="rounded-xl h-10 w-10 bg-secondary" 
+            className="rounded-xl h-10 w-10 bg-secondary hover:bg-secondary/90 shadow-lg shadow-secondary/10" 
             onClick={handleRefine} 
             disabled={!feedbackInput.trim() || isRefining}
           >
-            <Send className="h-5 w-5" />
+            <Send className="h-4 w-4" />
           </Button>
         </div>
       </div>
