@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -25,6 +26,28 @@
     --ring: 199 89% 48%;
     --radius: 1.5rem;
   }
+
+  .dark {
+    --background: 224 71% 4%;
+    --foreground: 210 40% 98%;
+    --card: 224 71% 4%;
+    --card-foreground: 210 40% 98%;
+    --popover: 224 71% 4%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 210 40% 98%;
+    --primary-foreground: 224 71% 4%;
+    --secondary: 199 89% 48%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 224 71% 10%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 142 70% 45%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 224 71% 12%;
+    --input: 224 71% 12%;
+    --ring: 199 89% 48%;
+  }
 }
 
 @layer base {
@@ -32,7 +55,7 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground font-body antialiased selection:bg-secondary/20;
+    @apply bg-background text-foreground font-body antialiased selection:bg-secondary/20 transition-colors duration-300;
   }
   h1, h2, h3, h4, h5, h6 {
     @apply font-headline tracking-tight;
@@ -54,8 +77,15 @@
     0 8px 10px -6px rgba(0,0,0,0.1);
 }
 
+.dark .high-volume {
+  box-shadow: 
+    0 0 0 1px rgba(255,255,255,0.05),
+    0 20px 25px -5px rgba(0,0,0,0.3),
+    0 8px 10px -6px rgba(0,0,0,0.3);
+}
+
 .glass-card {
-  @apply bg-white border border-slate-200/60 shadow-xl;
+  @apply bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 shadow-xl;
 }
 
 .card-rounded {
@@ -73,7 +103,7 @@
   @apply bg-transparent;
 }
 .modern-scroll::-webkit-scrollbar-thumb {
-  @apply bg-slate-200 rounded-full hover:bg-slate-300 transition-colors;
+  @apply bg-slate-200 dark:bg-slate-800 rounded-full hover:bg-slate-300 dark:hover:bg-slate-700 transition-colors;
 }
 
 @keyframes float {
@@ -87,5 +117,5 @@
 }
 
 .input-volumetric {
-  @apply bg-slate-50/50 border-slate-200/60 shadow-inner focus:bg-white transition-all duration-300;
+  @apply bg-slate-50/50 dark:bg-slate-900/50 border-slate-200/60 dark:border-slate-800 shadow-inner focus:bg-white dark:focus:bg-slate-900 transition-all duration-300;
 }

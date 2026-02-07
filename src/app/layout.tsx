@@ -1,8 +1,10 @@
+
 import type {Metadata} from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import { FirebaseClientProvider } from "@/firebase";
 import { FirebaseErrorListener } from "@/components/firebase/FirebaseErrorListener";
+import { ThemeProvider } from "@/components/layout/ThemeProvider";
 
 export const metadata: Metadata = {
   title: 'AIBot24 - Intelligent Voice Agents',
@@ -17,7 +19,7 @@ export default function RootLayout({
   const isDev = process.env.NODE_ENV === 'development';
 
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
@@ -41,7 +43,6 @@ export default function RootLayout({
                     },
                     callMethod: (method, params, callback) => {
                       console.log("[DEV MOCK] BX24.callMethod simulado:", method, params);
-                      // En desarrollo, esto evita errores de referencia
                       if (callback) callback({ error: "SDK simulado en modo desarrollo" });
                     }
                   };
@@ -52,11 +53,18 @@ export default function RootLayout({
         )}
       </head>
       <body className="font-body antialiased min-h-screen bg-background">
-        <FirebaseClientProvider>
-          {children}
-          <Toaster />
-          <FirebaseErrorListener />
-        </FirebaseClientProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="light"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <FirebaseClientProvider>
+            {children}
+            <Toaster />
+            <FirebaseErrorListener />
+          </FirebaseClientProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
