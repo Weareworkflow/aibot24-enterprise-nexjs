@@ -10,7 +10,7 @@ interface LogoProps {
 
 export function Logo({ className, showText = true }: LogoProps) {
   return (
-    <div className={cn("flex items-center gap-2", className)}>
+    <div className={cn("flex items-center gap-2 transition-colors duration-300", className)}>
       <div className="relative w-10 h-10 flex-shrink-0">
         <svg
           viewBox="0 0 100 100"
@@ -27,9 +27,9 @@ export function Logo({ className, showText = true }: LogoProps) {
             d="M75 50C75 63.8071 63.8071 75 50 75C46.5 75 43.2 74.3 40.2 73L30 80V70.5C23.8 66.5 20 59.2 20 51C20 37.1929 31.1929 26 45 26C46.8 26 48.5 26.2 50.2 26.6C54.8 19.8 62.8 15.5 71.8 15.5C86.2 15.5 98 27.3 98 41.7C98 48.2 95.6 54.2 91.6 58.8C91.9 60.2 92 61.6 92 63C92 71.3 85.3 78 77 78H75V50Z"
             fill="url(#paint1_linear)"
           />
-          <rect x="38" y="42" width="24" height="18" rx="6" fill="white" />
-          <circle cx="42" cy="42" r="1.5" fill="white" />
-          <circle cx="58" cy="42" r="1.5" fill="white" />
+          <rect x="38" y="42" width="24" height="18" rx="6" className="fill-card transition-colors duration-300" />
+          <circle cx="42" cy="42" r="1.5" className="fill-card" />
+          <circle cx="58" cy="42" r="1.5" className="fill-card" />
           <circle cx="45" cy="51" r="2.5" fill="#2FC6F6">
             <animate attributeName="opacity" values="1;0.5;1" dur="2s" repeatCount="indefinite" />
           </circle>
@@ -37,8 +37,8 @@ export function Logo({ className, showText = true }: LogoProps) {
             <animate attributeName="opacity" values="1;0.5;1" dur="2s" repeatCount="indefinite" />
           </circle>
           <path d="M47 56C47 56 48.5 57.5 50 57.5C51.5 57.5 53 56 53 56" stroke="#2FC6F6" strokeWidth="1" strokeLinecap="round" />
-          <path d="M28 45L24 52H29L25 59" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-          <path d="M72 35L76 42H71L75 49" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M28 45L24 52H29L25 59" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-secondary-foreground" />
+          <path d="M72 35L76 42H71L75 49" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-secondary-foreground" />
           
           <defs>
             <linearGradient id="paint0_linear" x1="10" y1="50" x2="100" y2="50" gradientUnits="userSpaceOnUse">
@@ -53,7 +53,7 @@ export function Logo({ className, showText = true }: LogoProps) {
         </svg>
       </div>
       {showText && (
-        <span className="font-headline text-2xl font-bold text-foreground tracking-tighter flex items-center">
+        <span className="font-headline text-2xl font-bold text-foreground tracking-tighter flex items-center transition-colors">
           AI<span className="text-secondary italic">Bot</span>24 <span className="text-secondary font-black uppercase text-[11px] tracking-[0.25em] ml-3 border-l-2 pl-3 border-border h-6 flex items-center self-center">Enterprise</span>
         </span>
       )}

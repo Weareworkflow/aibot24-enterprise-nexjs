@@ -35,7 +35,7 @@ export default function HomePage() {
   const { data: agents, loading, error } = useCollection<AIAgent>(agentsQuery);
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#F7F9FB]">
+    <div className="flex flex-col min-h-screen bg-background transition-colors duration-300">
       <Navbar />
       <main className="container mx-auto px-4 py-8 space-y-8">
         
@@ -44,12 +44,12 @@ export default function HomePage() {
             <div className="flex items-center gap-4">
               <Info className="h-6 w-6 text-secondary flex-shrink-0" />
               <div>
-                <p className="text-sm font-bold text-slate-800">No se ha detectado el portal de Bitrix24</p>
+                <p className="text-sm font-bold text-foreground">No se ha detectado el portal de Bitrix24</p>
                 <p className="text-[11px] text-muted-foreground uppercase font-black tracking-widest mt-1">Es necesario ejecutar el protocolo de enlace inicial</p>
               </div>
             </div>
             <Link href="/install">
-              <Button variant="default" className="pill-rounded bg-secondary text-white text-[10px] font-black uppercase tracking-widest px-6">
+              <Button variant="default" className="pill-rounded bg-secondary text-secondary-foreground text-[10px] font-black uppercase tracking-widest px-6">
                 Enlazar Portal →
               </Button>
             </Link>
