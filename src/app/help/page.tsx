@@ -72,21 +72,11 @@ export default function HelpPage() {
             <CardContent className="p-10 space-y-8">
               <div className="space-y-4">
                 <p className="text-[13px] text-slate-600 font-medium leading-relaxed">
-                  ¿Necesitas asistencia técnica personalizada o una implementación a medida para tu organización?
+                  ¿Necesitas asistencia técnica personalizada o una implementación a medida para tu organización? Nuestro equipo está listo para intervenir.
                 </p>
-                <div className="flex items-center gap-4 py-2">
-                  <div className="flex items-center gap-2 bg-slate-50 px-4 py-2 rounded-full border">
-                    <Phone className="h-3.5 w-3.5 text-secondary" />
-                    <span className="text-[11px] font-bold">+1 (800) AIBOT-24</span>
-                  </div>
-                  <div className="flex items-center gap-2 bg-slate-50 px-4 py-2 rounded-full border">
-                    <MessageCircle className="h-3.5 w-3.5 text-secondary" />
-                    <span className="text-[11px] font-bold">Chat Live</span>
-                  </div>
-                </div>
               </div>
               <Button className="w-full h-14 rounded-full bg-secondary hover:bg-secondary/90 text-white font-black text-[11px] uppercase tracking-[0.2em] shadow-xl shadow-secondary/20 transition-all hover:scale-[1.02]">
-                SUPPORT
+                SOLICITAR ASISTENCIA
               </Button>
             </CardContent>
           </Card>
@@ -113,7 +103,7 @@ export default function HelpPage() {
                 </div>
               </div>
               <Button variant="outline" className="w-full h-14 rounded-full border-2 border-slate-200 bg-transparent hover:bg-slate-50 text-slate-900 font-black text-[11px] uppercase tracking-[0.2em] transition-all">
-                GUIDES
+                EXPLORAR GUÍAS
               </Button>
             </CardContent>
           </Card>
