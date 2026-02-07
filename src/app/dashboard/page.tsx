@@ -27,7 +27,6 @@ export default function DashboardPage() {
 
   const { data: firestoreAgents, loading: collectionLoading, error } = useCollection<AIAgent>(agentsQuery);
 
-  // Sincronizamos Firestore con Zustand para tener datos centralizados
   useEffect(() => {
     if (firestoreAgents) {
       setAgents(firestoreAgents);
@@ -54,8 +53,8 @@ export default function DashboardPage() {
   return (
     <div className="flex flex-col min-h-screen bg-[#F7F9FB]">
       <Navbar />
-      <main className="container mx-auto px-4 py-8 space-y-8">
-        <div className="max-w-6xl mx-auto flex items-center justify-between mb-4">
+      <main className="w-full px-4 md:px-8 py-8 space-y-8">
+        <div className="w-full flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-secondary/10 rounded-xl">
               <LayoutDashboard className="h-5 w-5 text-secondary" />
@@ -82,7 +81,7 @@ export default function DashboardPage() {
             <p className="text-destructive font-black uppercase tracking-widest text-[10px]">Error de Sincronización</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6 w-full">
             {filteredAgents.map(agent => (
               <AgentCard key={agent.id} agent={agent} />
             ))}
@@ -97,7 +96,7 @@ export default function DashboardPage() {
             )}
 
             {globalAgents.length === 0 && !collectionLoading && (
-              <div className="col-span-full py-24 text-center space-y-8 flex flex-col items-center border-2 border-dashed border-slate-200 rounded-[3rem] bg-white shadow-sm max-w-4xl mx-auto">
+              <div className="col-span-full py-24 text-center space-y-8 flex flex-col items-center border-2 border-dashed border-slate-200 rounded-[3rem] bg-white shadow-sm w-full max-w-4xl mx-auto">
                 <div className="h-20 w-20 rounded-full bg-secondary/5 flex items-center justify-center">
                   <Sparkles className="h-10 w-10 text-secondary/30" />
                 </div>

@@ -60,14 +60,14 @@ export function AgentList({ agents, loading, error, tenantId }: AgentListProps) 
 
   if (!agents || agents.length === 0) {
     return (
-      <div className="col-span-full py-24 text-center space-y-8 flex flex-col items-center border-2 border-dashed border-slate-200 rounded-[3rem] bg-white shadow-sm max-w-4xl mx-auto animate-in fade-in zoom-in duration-700">
+      <div className="col-span-full py-24 text-center space-y-8 flex flex-col items-center border-2 border-dashed border-slate-200 rounded-[3rem] bg-white shadow-sm w-full max-w-4xl mx-auto animate-in fade-in zoom-in duration-700">
         <div className="relative">
           <div className="absolute inset-0 bg-secondary/10 rounded-full blur-2xl animate-pulse" />
           <div className="relative h-20 w-20 rounded-full bg-secondary/10 flex items-center justify-center">
             <Sparkles className="h-10 w-10 text-secondary" />
           </div>
         </div>
-        <div className="space-y-2 max-w-md">
+        <div className="space-y-2 max-w-md p-4">
           <h2 className="text-xl font-headline font-bold">Sin Flota Activa</h2>
           <p className="text-[11px] text-muted-foreground uppercase font-black tracking-widest leading-relaxed">
             Tu portal Bitrix24 aún no cuenta con agentes de chat inteligentes. Inicia el protocolo para automatizar tu atención.
@@ -102,7 +102,7 @@ export function AgentList({ agents, loading, error, tenantId }: AgentListProps) 
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-1000">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6 w-full animate-in fade-in slide-in-from-bottom-4 duration-1000">
       {filteredAgents.map(agent => (
         <AgentCard key={agent.id} agent={agent} />
       ))}
