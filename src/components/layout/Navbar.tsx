@@ -28,7 +28,7 @@ export function Navbar() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground group-focus-within:text-secondary transition-colors" />
             <Input 
               placeholder="Buscar agentes, roles o empresas..." 
-              className="w-full h-9 pl-10 bg-muted/50 border-none rounded-xl text-[11px] focus-visible:ring-1 focus-visible:ring-secondary/30 transition-all font-medium"
+              className="w-full h-9 pl-10 bg-muted/50 border-none rounded-xl text-[11px] focus-visible:ring-1 focus-visible:ring-secondary/30 transition-all font-medium text-foreground placeholder:text-muted-foreground"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
