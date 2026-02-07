@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Logo } from "./Logo";
 import { useUIStore } from "@/lib/store";
+import { PortalMenu } from "./PortalMenu";
 
 export function Navbar() {
   const pathname = usePathname();
@@ -34,7 +35,11 @@ export function Navbar() {
           </div>
         </div>
 
-        <div className="flex items-center gap-3 flex-shrink-0">
+        <div className="flex items-center gap-4 flex-shrink-0">
+          <div className="hidden md:block">
+            <PortalMenu />
+          </div>
+          
           <Link
             href="/agents/new"
             className={cn(
