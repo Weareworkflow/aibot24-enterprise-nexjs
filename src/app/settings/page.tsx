@@ -94,151 +94,126 @@ export default function SettingsPage() {
   return (
     <div className="flex flex-col min-h-screen bg-[#F0F3F5]">
       <Navbar />
-      <main className="container mx-auto px-4 py-12 max-w-4xl space-y-8">
+      <main className="container mx-auto px-4 py-8 max-w-4xl space-y-6">
         
-        {/* Tarjeta de Perfil y Navegación Integrada */}
-        <Card className="border-none shadow-2xl rounded-[3rem] bg-white overflow-hidden high-volume">
-          <CardHeader className="p-10 border-b border-slate-50 bg-slate-50/30">
-            <div className="flex items-center gap-6">
+        <Card className="border-none shadow-2xl rounded-[2.5rem] bg-white overflow-hidden high-volume">
+          {/* Header Compacto Integrado */}
+          <CardHeader className="p-6 border-b border-slate-50 bg-slate-50/30 flex flex-row items-center justify-between">
+            <div className="flex items-center gap-4">
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="h-12 w-12 flex items-center justify-center bg-white rounded-2xl hover:bg-slate-900 hover:text-white transition-all shadow-md border border-slate-100 flex-shrink-0"
+                className="h-10 w-10 flex items-center justify-center bg-white rounded-xl hover:bg-slate-900 hover:text-white transition-all shadow-sm border border-slate-100"
                 onClick={() => router.back()}
               >
-                <ArrowLeft className="h-6 w-6" />
+                <ArrowLeft className="h-5 w-5" />
               </Button>
               <div>
-                <CardTitle className="text-2xl font-headline font-bold text-slate-900">Configuración</CardTitle>
-                <p className="text-[10px] font-black uppercase text-muted-foreground tracking-[0.2em] mt-1.5 flex items-center gap-2">
+                <CardTitle className="text-lg font-headline font-bold text-slate-900 leading-none">Configuración</CardTitle>
+                <p className="text-[9px] font-black uppercase text-muted-foreground tracking-widest mt-1 flex items-center gap-1.5">
                   <ShieldCheck className="h-3 w-3 text-secondary" />
-                  Protocolo Enterprise Activo
+                  Enterprise Protocol
                 </p>
               </div>
             </div>
+            <div className="flex items-center gap-2 px-3 py-1 bg-accent/10 rounded-full border border-accent/20">
+              <div className="h-1.5 w-1.5 bg-accent rounded-full animate-pulse" />
+              <span className="text-[8px] font-black uppercase text-accent tracking-widest">Sincronizado</span>
+            </div>
           </CardHeader>
-          <CardContent className="p-10 space-y-10">
-            {/* Alternativa Visual de Perfil */}
-            <div className="bg-slate-900 rounded-[2.5rem] p-8 text-white flex flex-col md:flex-row items-center justify-between gap-6 shadow-2xl relative overflow-hidden group">
-              <div className="absolute inset-0 bg-gradient-to-br from-secondary/20 to-transparent opacity-50" />
-              <div className="flex items-center gap-6 relative z-10">
-                <div className="h-20 w-20 rounded-[1.8rem] bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20 group-hover:scale-105 transition-transform duration-500">
-                  <Building2 className="h-10 w-10 text-secondary" />
+
+          <CardContent className="p-6 space-y-8">
+            {/* Perfil Horizontal Compacto */}
+            <div className="bg-slate-900 rounded-3xl p-5 text-white flex items-center justify-between shadow-xl">
+              <div className="flex items-center gap-4">
+                <div className="h-12 w-12 rounded-2xl bg-white/10 flex items-center justify-center border border-white/10">
+                  <Building2 className="h-6 w-6 text-secondary" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold font-headline">{portalName}</h3>
-                  <div className="flex items-center gap-2 mt-1">
-                    <Globe className="h-3 w-3 text-slate-400" />
-                    <p className="text-[11px] font-medium text-slate-400">{domain || "bitrix24.enterprise"}</p>
+                  <h3 className="text-sm font-bold font-headline leading-none">{portalName}</h3>
+                  <p className="text-[10px] text-slate-400 mt-1 flex items-center gap-1">
+                    <Globe className="h-2.5 w-2.5" />
+                    {domain || "bitrix24.enterprise"}
+                  </p>
+                </div>
+              </div>
+              <div className="text-right">
+                <p className="text-[8px] font-black uppercase text-slate-500 tracking-widest">Member ID</p>
+                <p className="text-[10px] font-mono font-bold text-secondary">{tenantId || "N/A"}</p>
+              </div>
+            </div>
+
+            {/* Protocolos Técnicos en Grid */}
+            <div className="space-y-6">
+              <div className="flex items-center gap-3 px-1">
+                <Sparkles className="h-4 w-4 text-secondary" />
+                <h4 className="text-[11px] font-black uppercase tracking-widest text-slate-700">Protocolos de Integración</h4>
+              </div>
+
+              <div className="grid grid-cols-1 gap-6">
+                {/* Webhook */}
+                <div className="space-y-2.5">
+                  <div className="flex items-center gap-2">
+                    <Link2 className="h-3.5 w-3.5 text-secondary" />
+                    <Label className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Webhook del Agente AI</Label>
+                  </div>
+                  <Input 
+                    value={formData.serviceWebhook}
+                    onChange={(e) => setFormData({...formData, serviceWebhook: e.target.value})}
+                    placeholder="https://su-portal.bitrix24.com/rest/1/..." 
+                    className="h-11 bg-slate-50/50 border-slate-100 rounded-xl px-4 text-[12px] focus:bg-white transition-all shadow-inner"
+                  />
+                </div>
+
+                {/* OAuth Fields */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2.5">
+                    <div className="flex items-center gap-2">
+                      <Key className="h-3.5 w-3.5 text-secondary" />
+                      <Label className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Cliente ID</Label>
+                    </div>
+                    <Input 
+                      value={formData.clientId}
+                      onChange={(e) => setFormData({...formData, clientId: e.target.value})}
+                      placeholder="local.65..." 
+                      className="h-11 bg-slate-50/50 border-slate-100 rounded-xl px-4 font-mono text-[11px] focus:bg-white transition-all shadow-inner"
+                    />
+                  </div>
+                  <div className="space-y-2.5">
+                    <div className="flex items-center gap-2">
+                      <ShieldCheck className="h-3.5 w-3.5 text-secondary" />
+                      <Label className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Secret ID</Label>
+                    </div>
+                    <Input 
+                      type="password"
+                      value={formData.clientSecret}
+                      onChange={(e) => setFormData({...formData, clientSecret: e.target.value})}
+                      placeholder="••••••••••••••••" 
+                      className="h-11 bg-slate-50/50 border-slate-100 rounded-xl px-4 font-mono text-[11px] focus:bg-white transition-all shadow-inner"
+                    />
                   </div>
                 </div>
               </div>
-              <div className="flex flex-col items-center md:items-end gap-1 relative z-10">
-                <span className="text-[9px] font-black uppercase tracking-[0.2em] text-secondary">Estado de Enlace</span>
-                <div className="flex items-center gap-2 px-4 py-1.5 bg-accent/20 rounded-full border border-accent/30">
-                  <div className="h-2 w-2 bg-accent rounded-full animate-pulse" />
-                  <span className="text-[10px] font-black uppercase text-accent tracking-widest">Sincronizado</span>
-                </div>
-              </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="space-y-3">
-                <Label className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Identificador de Portal</Label>
-                <div className="h-14 flex items-center px-6 bg-slate-50 rounded-2xl border border-slate-100 font-bold text-slate-800 shadow-inner">
-                  {tenantId || "N/A"}
-                </div>
-              </div>
-              <div className="space-y-3">
-                <Label className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Infraestructura</Label>
-                <div className="h-14 flex items-center px-6 bg-slate-50 rounded-2xl border border-slate-100 font-medium text-slate-600 shadow-inner">
-                  <Database className="h-3.5 w-3.5 mr-3 text-slate-400" />
-                  Cloud Firebase Architecture
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Tarjeta de Protocolos Técnicos */}
-        <Card className="border-none shadow-2xl rounded-[3rem] bg-white overflow-hidden high-volume">
-          <CardHeader className="p-10 border-b border-slate-50 flex flex-row items-center justify-between bg-slate-50/10">
-            <div className="flex items-center gap-4">
-              <div className="h-12 w-12 rounded-2xl bg-slate-900 flex items-center justify-center text-white">
-                <Sparkles className="h-6 w-6" />
-              </div>
-              <div>
-                <CardTitle className="text-xl font-headline font-bold">Protocolos Bitrix24</CardTitle>
-                <p className="text-[9px] font-black uppercase text-slate-400 tracking-widest mt-1">Integración de Agente IA</p>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="p-10 space-y-10">
-            
-            {/* Webhook del Agente AI (Prioritario) */}
-            <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <Link2 className="h-3 w-3 text-secondary" />
-                <Label className="text-[10px] font-black uppercase text-slate-600 tracking-widest">Webhook del Agente AI</Label>
-              </div>
-              <Input 
-                value={formData.serviceWebhook}
-                onChange={(e) => setFormData({...formData, serviceWebhook: e.target.value})}
-                placeholder="https://su-portal.bitrix24.com/rest/1/webhook-del-agente/" 
-                className="h-14 bg-slate-50 border-slate-200 rounded-2xl px-6 font-medium text-[12px] focus:bg-white transition-all shadow-inner"
-              />
-              <p className="text-[9px] text-muted-foreground font-bold uppercase tracking-widest pl-2">
-                Punto de enlace REST necesario para que el Agente de IA procese eventos externos.
-              </p>
-            </div>
-
-            {/* Credenciales OAuth */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <Key className="h-3 w-3 text-secondary" />
-                  <Label className="text-[10px] font-black uppercase text-slate-600 tracking-widest">Cliente ID</Label>
-                </div>
-                <Input 
-                  value={formData.clientId}
-                  onChange={(e) => setFormData({...formData, clientId: e.target.value})}
-                  placeholder="local.65..." 
-                  className="h-14 bg-slate-50 border-slate-200 rounded-2xl px-6 font-mono text-[11px] focus:bg-white transition-all shadow-inner"
-                />
-              </div>
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <ShieldCheck className="h-3 w-3 text-secondary" />
-                  <Label className="text-[10px] font-black uppercase text-slate-600 tracking-widest">Secret ID</Label>
-                </div>
-                <Input 
-                  type="password"
-                  value={formData.clientSecret}
-                  onChange={(e) => setFormData({...formData, clientSecret: e.target.value})}
-                  placeholder="••••••••••••••••" 
-                  className="h-14 bg-slate-50 border-slate-200 rounded-2xl px-6 font-mono text-[11px] focus:bg-white transition-all shadow-inner"
-                />
-              </div>
-            </div>
-
-            {/* Botón Guardar */}
-            <div className="pt-4">
+            {/* Acciones */}
+            <div className="pt-2">
               <Button 
                 onClick={handleSave}
                 disabled={isSaving}
-                className="w-full h-14 rounded-full bg-secondary hover:bg-secondary/90 text-white font-black text-[11px] uppercase tracking-[0.2em] shadow-xl shadow-secondary/20 transition-all hover:scale-[1.01]"
+                className="w-full h-12 rounded-2xl bg-secondary hover:bg-secondary/90 text-white font-black text-[10px] uppercase tracking-[0.2em] shadow-lg shadow-secondary/10 transition-all active:scale-95"
               >
-                {isSaving ? <Loader2 className="h-5 w-5 animate-spin mr-3" /> : <Save className="h-5 w-5 mr-3" />}
-                {isSaving ? "Guardando Protocolo..." : "Sincronizar Parámetros"}
+                {isSaving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
+                {isSaving ? "Sincronizando..." : "Guardar Cambios"}
               </Button>
             </div>
           </CardContent>
         </Card>
 
-        <div className="flex justify-center pt-8 pb-12">
-          <div className="flex items-center gap-3 px-6 py-3 bg-white/50 rounded-full border border-slate-200 shadow-sm backdrop-blur-sm">
-            <span className="h-2 w-2 bg-accent rounded-full animate-pulse" />
-            <span className="text-[10px] font-black uppercase text-slate-500 tracking-[0.2em]">Conexión REST Activa con Bitrix24</span>
+        <div className="flex justify-center">
+          <div className="flex items-center gap-2 px-4 py-2 bg-white/40 rounded-full border border-slate-200 backdrop-blur-sm">
+            <Database className="h-3 w-3 text-slate-400" />
+            <span className="text-[9px] font-black uppercase text-slate-400 tracking-widest">Cloud Sync Architecture</span>
           </div>
         </div>
       </main>
