@@ -129,7 +129,6 @@ export default function SettingsPage() {
                 <div>
                   <h3 className="text-xl font-bold font-headline leading-tight tracking-tight text-white">{portalName}</h3>
                   <div className="mt-1 flex flex-col">
-                    <span className="text-[8px] font-black uppercase text-slate-500 tracking-widest mb-0.5">Dominio Bitrix24</span>
                     <p className="text-[11px] text-slate-400 font-medium flex items-center gap-1.5">
                       <Globe className="h-3 w-3 text-secondary/60" />
                       {domain || "workflowteams.bitrix24.es"}
