@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Label } from "@/components/ui/label";
@@ -24,53 +25,53 @@ export function IdentitySection({ agent, onUpdate }: IdentitySectionProps) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-3">
           <div className="flex items-center gap-2.5">
-            <div className="h-8 w-8 rounded-xl bg-slate-100 flex items-center justify-center">
-              <User className="h-4 w-4 text-slate-500" />
+            <div className="h-8 w-8 rounded-xl bg-muted/50 flex items-center justify-center border border-border/40">
+              <User className="h-4 w-4 text-muted-foreground" />
             </div>
-            <Label className="text-[10px] font-black uppercase text-slate-600 tracking-[0.2em]">Nombre Operativo</Label>
+            <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-[0.2em]">Nombre Operativo</Label>
           </div>
           <Input 
             value={agent.name} 
             onChange={(e) => onUpdate('name', e.target.value)} 
-            className="h-12 text-sm font-bold bg-slate-50/50 border-slate-100 rounded-[1.2rem] focus-visible:ring-1 focus-visible:ring-secondary/20 px-6 transition-all hover:bg-white" 
+            className="h-12 text-sm font-bold bg-muted/30 border-border rounded-[1.2rem] focus-visible:ring-1 focus-visible:ring-secondary/20 px-6 transition-all hover:bg-card" 
           />
         </div>
         <div className="space-y-3">
           <div className="flex items-center gap-2.5">
-            <div className="h-8 w-8 rounded-xl bg-slate-100 flex items-center justify-center">
-              <Briefcase className="h-4 w-4 text-slate-500" />
+            <div className="h-8 w-8 rounded-xl bg-muted/50 flex items-center justify-center border border-border/40">
+              <Briefcase className="h-4 w-4 text-muted-foreground" />
             </div>
-            <Label className="text-[10px] font-black uppercase text-slate-600 tracking-[0.2em]">Rol / Especialidad</Label>
+            <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-[0.2em]">Rol / Especialidad</Label>
           </div>
           <Input 
             value={agent.role} 
             onChange={(e) => onUpdate('role', e.target.value)} 
-            className="h-12 text-sm font-bold bg-slate-50/50 border-slate-100 rounded-[1.2rem] focus-visible:ring-1 focus-visible:ring-secondary/20 px-6 transition-all hover:bg-white" 
+            className="h-12 text-sm font-bold bg-muted/30 border-border rounded-[1.2rem] focus-visible:ring-1 focus-visible:ring-secondary/20 px-6 transition-all hover:bg-card" 
           />
         </div>
         <div className="space-y-3 md:col-span-2">
           <div className="flex items-center gap-2.5">
-            <div className="h-8 w-8 rounded-xl bg-slate-100 flex items-center justify-center">
-              <Building2 className="h-4 w-4 text-slate-500" />
+            <div className="h-8 w-8 rounded-xl bg-muted/50 flex items-center justify-center border border-border/40">
+              <Building2 className="h-4 w-4 text-muted-foreground" />
             </div>
-            <Label className="text-[10px] font-black uppercase text-slate-600 tracking-[0.2em]">Organización Representada</Label>
+            <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-[0.2em]">Organización Representada</Label>
           </div>
           <Input 
             value={agent.company} 
             onChange={(e) => onUpdate('company', e.target.value)} 
-            className="h-12 text-sm font-bold bg-slate-50/50 border-slate-100 rounded-[1.2rem] focus-visible:ring-1 focus-visible:ring-secondary/20 px-6 transition-all hover:bg-white" 
+            className="h-12 text-sm font-bold bg-muted/30 border-border rounded-[1.2rem] focus-visible:ring-1 focus-visible:ring-secondary/20 px-6 transition-all hover:bg-card" 
           />
         </div>
       </div>
 
       {/* ADN Visual */}
-      <div className="pt-6 border-t border-slate-100">
+      <div className="pt-6 border-t border-border/40">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
-            <div className="h-8 w-8 rounded-xl bg-slate-100 flex items-center justify-center">
-              <Palette className="h-4 w-4 text-slate-500" />
+            <div className="h-8 w-8 rounded-xl bg-muted/50 flex items-center justify-center border border-border/40">
+              <Palette className="h-4 w-4 text-muted-foreground" />
             </div>
-            <Label className="text-[10px] font-black uppercase text-slate-600 tracking-[0.15em]">ADN Visual</Label>
+            <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-[0.15em]">ADN Visual</Label>
           </div>
           <Sparkles className="h-3 w-3 text-secondary/40 animate-pulse" />
         </div>
@@ -81,7 +82,7 @@ export function IdentitySection({ agent, onUpdate }: IdentitySectionProps) {
               onClick={() => onUpdate('color', c)} 
               className={cn(
                 "h-9 w-9 rounded-[0.8rem] border-2 shadow-sm transition-all hover:scale-110 flex items-center justify-center relative", 
-                agent.color === c ? "border-secondary ring-4 ring-secondary/10" : "border-white"
+                agent.color === c ? "border-secondary ring-4 ring-secondary/10" : "border-background"
               )} 
               style={{ backgroundColor: c }}
             >

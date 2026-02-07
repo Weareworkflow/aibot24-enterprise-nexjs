@@ -27,10 +27,10 @@ export function IntegrationsSection({ agent, onUpdate, onOpenModal }: Integratio
   return (
     <div className="flex flex-col gap-3">
       {INTEGRATION_LIST.map((int) => (
-        <div key={int.title} className="flex items-center justify-between p-4 border rounded-2xl bg-white shadow-sm">
+        <div key={int.title} className="flex items-center justify-between p-4 border border-border/60 rounded-2xl bg-muted/30 shadow-sm transition-colors hover:bg-muted/50">
           <div className="flex items-center gap-4">
             <int.icon className={cn("h-5 w-5", agent.integrations?.[int.title] ? "text-secondary" : "text-muted-foreground")} />
-            <span className="text-[12px] font-black uppercase tracking-wider">{int.title}</span>
+            <span className="text-[12px] font-black uppercase tracking-wider text-foreground">{int.title}</span>
           </div>
           <Switch 
             checked={agent.integrations?.[int.title] || false} 
