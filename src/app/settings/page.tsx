@@ -13,8 +13,6 @@ import {
   ArrowLeft,
   Loader2,
   Save,
-  Sparkles,
-  Info,
   Palette,
   CloudCog,
   Sun,
@@ -99,7 +97,6 @@ export default function SettingsPage() {
       <Navbar />
       <main className="container mx-auto px-4 py-8 max-w-4xl space-y-6">
         
-        {/* Cabecera Integrada (Sin Tarjeta/Banner) */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-6 px-4 mb-2">
           <div className="flex items-center gap-5 w-full sm:w-auto">
             <Button 
@@ -112,14 +109,16 @@ export default function SettingsPage() {
             </Button>
             <div className="flex flex-col">
               <div className="flex items-center gap-3">
-                <h1 className="text-2xl font-headline font-bold text-foreground leading-none">WORKFLOWTEAMS</h1>
+                <h1 className="text-2xl font-headline font-bold text-foreground leading-none">
+                  {domain ? domain.split('.')[0].toUpperCase() : "WORKFLOWTEAMS"}
+                </h1>
                 <div className="flex items-center gap-1.5 px-2.5 py-0.5 bg-accent/10 rounded-full border border-accent/20">
                   <span className="h-1.5 w-1.5 bg-accent rounded-full animate-pulse" />
                   <span className="text-[9px] font-black uppercase text-accent tracking-widest">Activo</span>
                 </div>
               </div>
               <p className="text-[11px] font-bold text-muted-foreground mt-1 tracking-tight">
-                workflowteams.bitrix24.es
+                {domain || "workflowteams.bitrix24.es"}
               </p>
             </div>
           </div>
@@ -153,17 +152,9 @@ export default function SettingsPage() {
 
               <TabsContent value="conexion" className="space-y-10 focus-visible:outline-none">
                 <div className="space-y-6">
-                  <div className="flex flex-col gap-2.5 px-1">
-                    <div className="flex items-center gap-3 text-foreground">
-                      <Key className="h-4 w-4 text-secondary" />
-                      <h4 className="text-[11px] font-black uppercase tracking-widest opacity-80">Credenciales de Instalación Bitrix24</h4>
-                    </div>
-                    <div className="flex items-start gap-2 bg-blue-50/10 dark:bg-blue-900/10 p-4 rounded-xl border border-blue-100/20 dark:border-blue-800/20">
-                      <Info className="h-4 w-4 text-blue-500 mt-0.5 flex-shrink-0" />
-                      <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider leading-relaxed">
-                        El Client ID y Secret ID se localizan en la sección de configuración de instalación de aplicaciones locales de su portal Bitrix24.
-                      </p>
-                    </div>
+                  <div className="flex items-center gap-3 text-foreground px-1">
+                    <Key className="h-4 w-4 text-secondary" />
+                    <h4 className="text-[11px] font-black uppercase tracking-widest opacity-80">Credenciales de Instalación Bitrix24</h4>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -187,20 +178,15 @@ export default function SettingsPage() {
                       />
                     </div>
                   </div>
+                  <p className="text-[9px] text-muted-foreground font-bold uppercase tracking-wider leading-relaxed px-1 max-w-2xl italic">
+                    Nota: El Client ID y Secret ID se localizan en la sección de configuración de instalación de aplicaciones locales de su portal Bitrix24.
+                  </p>
                 </div>
 
                 <div className="space-y-6 pt-4 border-t border-border/40">
-                  <div className="flex flex-col gap-2.5 px-1">
-                    <div className="flex items-center gap-3 text-foreground">
-                      <Link2 className="h-4 w-4 text-secondary" />
-                      <h4 className="text-[11px] font-black uppercase tracking-widest opacity-80">Canal de Comunicación AI</h4>
-                    </div>
-                    <div className="flex items-start gap-2 bg-muted/30 p-4 rounded-xl border border-border/40">
-                      <Sparkles className="h-4 w-4 text-secondary mt-0.5 flex-shrink-0" />
-                      <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider leading-relaxed">
-                        Este es el servicio del agente dedicado para este portal. Es el endpoint de enlace para procesar interacciones inteligentes.
-                      </p>
-                    </div>
+                  <div className="flex items-center gap-3 text-foreground px-1">
+                    <Link2 className="h-4 w-4 text-secondary" />
+                    <h4 className="text-[11px] font-black uppercase tracking-widest opacity-80">Canal de Comunicación AI</h4>
                   </div>
 
                   <div className="space-y-2.5">
@@ -211,6 +197,9 @@ export default function SettingsPage() {
                       placeholder="https://agent-service-abc.a.run.app" 
                       className="h-12 bg-muted/30 border-border rounded-xl px-4 text-[12px] focus:bg-background transition-all shadow-inner"
                     />
+                    <p className="text-[9px] text-muted-foreground font-bold uppercase tracking-wider leading-relaxed px-1 italic">
+                      Nota: Este es el servicio del agente dedicado para este portal. Es el endpoint de enlace para procesar interacciones inteligentes.
+                    </p>
                   </div>
                 </div>
               </TabsContent>
