@@ -15,8 +15,10 @@ import {
   HelpCircle, 
   ShieldCheck,
   Zap,
-  Mail
+  Mail,
+  ArrowLeft
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 const FAQS = [
   {
@@ -38,65 +40,33 @@ const FAQS = [
 ];
 
 export default function HelpPage() {
+  const router = useRouter();
+
   return (
     <div className="flex flex-col min-h-screen bg-[#F0F3F5]">
       <Navbar />
       <main className="container mx-auto px-4 py-12 max-w-6xl space-y-8">
         
-        <div className="mb-4">
-          <h1 className="text-3xl font-headline font-bold text-slate-900">Centro de Operaciones y Ayuda</h1>
-          <p className="text-[10px] font-black uppercase text-muted-foreground tracking-[0.3em] mt-2 flex items-center gap-2">
-            <ShieldCheck className="h-3 w-3 text-secondary" />
-            Protocolo de Soporte Elite Activo
-          </p>
+        {/* Header con Botón de Regreso */}
+        <div className="flex items-center gap-6 mb-4">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="h-12 w-12 flex items-center justify-center bg-white rounded-2xl hover:bg-slate-900 hover:text-white transition-all shadow-md border border-slate-100 flex-shrink-0"
+            onClick={() => router.back()}
+          >
+            <ArrowLeft className="h-6 w-6" />
+          </Button>
+          <div>
+            <h1 className="text-3xl font-headline font-bold text-slate-900">Centro de Operaciones y Ayuda</h1>
+            <p className="text-[10px] font-black uppercase text-muted-foreground tracking-[0.3em] mt-2 flex items-center gap-2">
+              <ShieldCheck className="h-3 w-3 text-secondary" />
+              Protocolo de Soporte Elite Activo
+            </p>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <Card className="border-none shadow-2xl rounded-[2.5rem] bg-white overflow-hidden high-volume group">
-            <CardHeader className="p-8 border-b border-slate-50 flex flex-row items-center gap-5">
-              <div className="h-12 w-12 rounded-2xl bg-secondary/10 flex items-center justify-center text-secondary group-hover:bg-secondary group-hover:text-white transition-all shadow-sm border border-secondary/5">
-                <Mail className="h-6 w-6" />
-              </div>
-              <div>
-                <CardTitle className="text-xl font-headline font-bold">Contacto</CardTitle>
-                <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest mt-1">Soporte Técnico Directo</p>
-              </div>
-            </CardHeader>
-            <CardContent className="p-10 space-y-8">
-              <div className="space-y-4">
-                <p className="text-[13px] text-slate-600 font-medium leading-relaxed">
-                  ¿Necesitas soporte técnico experto? Optimizamos tus flujos para maximizar<br className="hidden lg:block" /> el rendimiento de tu flota operativa.
-                </p>
-              </div>
-              <Button className="w-full h-14 rounded-full bg-secondary hover:bg-secondary/90 text-white font-black text-[11px] uppercase tracking-[0.2em] shadow-xl shadow-secondary/20 transition-all hover:scale-[1.02]">
-                SOLICITAR ASISTENCIA
-              </Button>
-            </CardContent>
-          </Card>
-
-          <Card className="border-none shadow-2xl rounded-[2.5rem] bg-white overflow-hidden high-volume group">
-            <CardHeader className="p-8 border-b border-slate-50 flex flex-row items-center gap-5">
-              <div className="h-12 w-12 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-500 group-hover:bg-slate-900 group-hover:text-white transition-all shadow-sm border border-slate-200/50">
-                <BookOpen className="h-6 w-6" />
-              </div>
-              <div>
-                <CardTitle className="text-xl font-headline font-bold text-slate-900">Documentación</CardTitle>
-                <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest mt-1">Manuales y Guías Técnicas</p>
-              </div>
-            </CardHeader>
-            <CardContent className="p-10 space-y-8">
-              <div className="space-y-4">
-                <p className="text-[13px] text-slate-600 font-medium leading-relaxed">
-                  Explora nuestra biblioteca completa de documentación para dominar todas<br className="hidden lg:block" /> las capacidades de AIBot24 y escalar tu operación.
-                </p>
-              </div>
-              <Button variant="outline" className="w-full h-14 rounded-full border-2 border-slate-200 bg-transparent hover:bg-slate-50 hover:text-secondary text-slate-900 font-black text-[11px] uppercase tracking-[0.2em] transition-all">
-                EXPLORAR GUIA
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-
+        {/* 1. FAQ - Ahora en primera posición */}
         <Card className="border-none shadow-2xl rounded-[3rem] bg-white overflow-hidden high-volume">
           <CardHeader className="p-10 border-b border-slate-50 bg-slate-50/30 flex flex-row items-center gap-5">
             <div className="h-12 w-12 rounded-2xl bg-white flex items-center justify-center text-secondary shadow-md border border-slate-100">
@@ -133,6 +103,53 @@ export default function HelpPage() {
             </Accordion>
           </CardContent>
         </Card>
+
+        {/* 2. Grid de Contacto y Documentación */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <Card className="border-none shadow-2xl rounded-[2.5rem] bg-white overflow-hidden high-volume group">
+            <CardHeader className="p-8 border-b border-slate-50 flex flex-row items-center gap-5">
+              <div className="h-12 w-12 rounded-2xl bg-secondary/10 flex items-center justify-center text-secondary group-hover:bg-secondary group-hover:text-white transition-all shadow-sm border border-secondary/5">
+                <Mail className="h-6 w-6" />
+              </div>
+              <div>
+                <CardTitle className="text-xl font-headline font-bold">Contacto</CardTitle>
+                <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest mt-1">Soporte Técnico Directo</p>
+              </div>
+            </CardHeader>
+            <CardContent className="p-10 space-y-8">
+              <div className="space-y-4">
+                <p className="text-[13px] text-slate-600 font-medium leading-relaxed">
+                  Optimiza tus flujos para maximizar el rendimiento<br className="hidden lg:block" /> de tu flota operativa mediante soporte experto.
+                </p>
+              </div>
+              <Button className="w-full h-14 rounded-full bg-secondary hover:bg-secondary/90 text-white font-black text-[11px] uppercase tracking-[0.2em] shadow-xl shadow-secondary/20 transition-all hover:scale-[1.02]">
+                SOLICITAR ASISTENCIA
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card className="border-none shadow-2xl rounded-[2.5rem] bg-white overflow-hidden high-volume group">
+            <CardHeader className="p-8 border-b border-slate-50 flex flex-row items-center gap-5">
+              <div className="h-12 w-12 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-500 group-hover:bg-slate-900 group-hover:text-white transition-all shadow-sm border border-slate-200/50">
+                <BookOpen className="h-6 w-6" />
+              </div>
+              <div>
+                <CardTitle className="text-xl font-headline font-bold text-slate-900">Documentación</CardTitle>
+                <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest mt-1">Manuales y Guías Técnicas</p>
+              </div>
+            </CardHeader>
+            <CardContent className="p-10 space-y-8">
+              <div className="space-y-4">
+                <p className="text-[13px] text-slate-600 font-medium leading-relaxed">
+                  Explora nuestra biblioteca de documentación para dominar<br className="hidden lg:block" /> las capacidades de AIBot24 y escalar tu operación.
+                </p>
+              </div>
+              <Button variant="outline" className="w-full h-14 rounded-full border-2 border-slate-200 bg-transparent hover:bg-slate-50 hover:text-secondary text-slate-900 font-black text-[11px] uppercase tracking-[0.2em] transition-all">
+                EXPLORAR GUIA
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
 
         <div className="flex justify-center pt-8 pb-12">
           <div className="flex items-center gap-3 px-6 py-3 bg-white/50 rounded-full border border-slate-200 shadow-sm backdrop-blur-sm">
