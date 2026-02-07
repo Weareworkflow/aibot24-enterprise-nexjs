@@ -16,7 +16,8 @@ import {
   ArrowLeft,
   Loader2,
   Save,
-  Database
+  Database,
+  Sparkles
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useUIStore } from "@/lib/store";
@@ -95,68 +96,103 @@ export default function SettingsPage() {
       <Navbar />
       <main className="container mx-auto px-4 py-12 max-w-4xl space-y-8">
         
-        {/* Header Consola */}
-        <div className="flex items-center gap-6 mb-2">
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="h-12 w-12 flex items-center justify-center bg-white rounded-2xl hover:bg-slate-900 hover:text-white transition-all shadow-md border border-slate-100 flex-shrink-0"
-            onClick={() => router.back()}
-          >
-            <ArrowLeft className="h-6 w-6" />
-          </Button>
-          <div>
-            <h1 className="text-2xl font-headline font-bold text-slate-900">Consola de Configuración</h1>
-            <p className="text-[10px] font-black uppercase text-muted-foreground tracking-[0.2em] mt-2 flex items-center gap-2">
-              <ShieldCheck className="h-3 w-3 text-secondary" />
-              Gestión de Protocolos Enterprise
-            </p>
-          </div>
-        </div>
-
-        {/* 1. Perfil de Empresa (Principal) */}
+        {/* Tarjeta de Perfil y Navegación Integrada */}
         <Card className="border-none shadow-2xl rounded-[3rem] bg-white overflow-hidden high-volume">
           <CardHeader className="p-10 border-b border-slate-50 bg-slate-50/30">
-            <div className="flex items-center gap-4">
-              <div className="h-12 w-12 rounded-2xl bg-secondary/10 flex items-center justify-center text-secondary">
-                <Building2 className="h-6 w-6" />
+            <div className="flex items-center gap-6">
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="h-12 w-12 flex items-center justify-center bg-white rounded-2xl hover:bg-slate-900 hover:text-white transition-all shadow-md border border-slate-100 flex-shrink-0"
+                onClick={() => router.back()}
+              >
+                <ArrowLeft className="h-6 w-6" />
+              </Button>
+              <div>
+                <CardTitle className="text-2xl font-headline font-bold text-slate-900">Configuración</CardTitle>
+                <p className="text-[10px] font-black uppercase text-muted-foreground tracking-[0.2em] mt-1.5 flex items-center gap-2">
+                  <ShieldCheck className="h-3 w-3 text-secondary" />
+                  Protocolo Enterprise Activo
+                </p>
               </div>
-              <CardTitle className="text-xl font-headline font-bold">Perfil de Empresa</CardTitle>
             </div>
           </CardHeader>
-          <CardContent className="p-10 grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="space-y-3">
-              <Label className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Nombre del Portal</Label>
-              <div className="h-14 flex items-center px-6 bg-slate-50 rounded-2xl border border-slate-100 font-bold text-slate-800 shadow-inner">
-                {portalName}
+          <CardContent className="p-10 space-y-10">
+            {/* Alternativa Visual de Perfil */}
+            <div className="bg-slate-900 rounded-[2.5rem] p-8 text-white flex flex-col md:flex-row items-center justify-between gap-6 shadow-2xl relative overflow-hidden group">
+              <div className="absolute inset-0 bg-gradient-to-br from-secondary/20 to-transparent opacity-50" />
+              <div className="flex items-center gap-6 relative z-10">
+                <div className="h-20 w-20 rounded-[1.8rem] bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20 group-hover:scale-105 transition-transform duration-500">
+                  <Building2 className="h-10 w-10 text-secondary" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold font-headline">{portalName}</h3>
+                  <div className="flex items-center gap-2 mt-1">
+                    <Globe className="h-3 w-3 text-slate-400" />
+                    <p className="text-[11px] font-medium text-slate-400">{domain || "bitrix24.enterprise"}</p>
+                  </div>
+                </div>
+              </div>
+              <div className="flex flex-col items-center md:items-end gap-1 relative z-10">
+                <span className="text-[9px] font-black uppercase tracking-[0.2em] text-secondary">Estado de Enlace</span>
+                <div className="flex items-center gap-2 px-4 py-1.5 bg-accent/20 rounded-full border border-accent/30">
+                  <div className="h-2 w-2 bg-accent rounded-full animate-pulse" />
+                  <span className="text-[10px] font-black uppercase text-accent tracking-widest">Sincronizado</span>
+                </div>
               </div>
             </div>
-            <div className="space-y-3">
-              <Label className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Dominio Bitrix24</Label>
-              <div className="h-14 flex items-center px-6 bg-slate-50 rounded-2xl border border-slate-100 font-medium text-slate-600 shadow-inner overflow-hidden truncate">
-                <Globe className="h-3.5 w-3.5 mr-3 text-slate-400" />
-                {domain || "N/A"}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="space-y-3">
+                <Label className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Identificador de Portal</Label>
+                <div className="h-14 flex items-center px-6 bg-slate-50 rounded-2xl border border-slate-100 font-bold text-slate-800 shadow-inner">
+                  {tenantId || "N/A"}
+                </div>
+              </div>
+              <div className="space-y-3">
+                <Label className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Infraestructura</Label>
+                <div className="h-14 flex items-center px-6 bg-slate-50 rounded-2xl border border-slate-100 font-medium text-slate-600 shadow-inner">
+                  <Database className="h-3.5 w-3.5 mr-3 text-slate-400" />
+                  Cloud Firebase Architecture
+                </div>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* 2. Integración Bitrix24 (Técnico) */}
+        {/* Tarjeta de Protocolos Técnicos */}
         <Card className="border-none shadow-2xl rounded-[3rem] bg-white overflow-hidden high-volume">
-          <CardHeader className="p-10 border-b border-slate-50 flex flex-row items-center justify-between">
+          <CardHeader className="p-10 border-b border-slate-50 flex flex-row items-center justify-between bg-slate-50/10">
             <div className="flex items-center gap-4">
               <div className="h-12 w-12 rounded-2xl bg-slate-900 flex items-center justify-center text-white">
-                <Database className="h-6 w-6" />
+                <Sparkles className="h-6 w-6" />
               </div>
               <div>
-                <CardTitle className="text-xl font-headline font-bold">Integración Bitrix24</CardTitle>
-                <p className="text-[9px] font-black uppercase text-slate-400 tracking-widest mt-1">Parámetros de Instalación REST</p>
+                <CardTitle className="text-xl font-headline font-bold">Protocolos Bitrix24</CardTitle>
+                <p className="text-[9px] font-black uppercase text-slate-400 tracking-widest mt-1">Integración de Agente IA</p>
               </div>
             </div>
           </CardHeader>
           <CardContent className="p-10 space-y-10">
             
-            {/* Campos OAuth */}
+            {/* Webhook del Agente AI (Prioritario) */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <Link2 className="h-3 w-3 text-secondary" />
+                <Label className="text-[10px] font-black uppercase text-slate-600 tracking-widest">Webhook del Agente AI</Label>
+              </div>
+              <Input 
+                value={formData.serviceWebhook}
+                onChange={(e) => setFormData({...formData, serviceWebhook: e.target.value})}
+                placeholder="https://su-portal.bitrix24.com/rest/1/webhook-del-agente/" 
+                className="h-14 bg-slate-50 border-slate-200 rounded-2xl px-6 font-medium text-[12px] focus:bg-white transition-all shadow-inner"
+              />
+              <p className="text-[9px] text-muted-foreground font-bold uppercase tracking-widest pl-2">
+                Punto de enlace REST necesario para que el Agente de IA procese eventos externos.
+              </p>
+            </div>
+
+            {/* Credenciales OAuth */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="space-y-3">
                 <div className="flex items-center gap-2">
@@ -183,23 +219,6 @@ export default function SettingsPage() {
                   className="h-14 bg-slate-50 border-slate-200 rounded-2xl px-6 font-mono text-[11px] focus:bg-white transition-all shadow-inner"
                 />
               </div>
-            </div>
-
-            {/* Webhook de Servicio */}
-            <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <Link2 className="h-3 w-3 text-secondary" />
-                <Label className="text-[10px] font-black uppercase text-slate-600 tracking-widest">Webhook de Servicio</Label>
-              </div>
-              <Input 
-                value={formData.serviceWebhook}
-                onChange={(e) => setFormData({...formData, serviceWebhook: e.target.value})}
-                placeholder="https://su-portal.bitrix24.com/rest/1/webhook-key/" 
-                className="h-14 bg-slate-50 border-slate-200 rounded-2xl px-6 font-medium text-[12px] focus:bg-white transition-all shadow-inner"
-              />
-              <p className="text-[9px] text-muted-foreground font-bold uppercase tracking-widest pl-2">
-                Endpoint para notificaciones de eventos y triggers externos.
-              </p>
             </div>
 
             {/* Botón Guardar */}
