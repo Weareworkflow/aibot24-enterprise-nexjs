@@ -5,17 +5,15 @@ import { useState, useEffect, useRef } from "react";
 import { Navbar } from "@/components/layout/Navbar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { Loader2, Send, Bot, Rocket, Check, Palette } from "lucide-react";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { Loader2, Send, Bot, Rocket, Check } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { ChatMessage, AIAgent } from "@/lib/types";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useFirestore } from "@/firebase";
-import { collection, doc, setDoc, query, where, getDocs } from "firebase/firestore";
-import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError } from '@/firebase/errors';
+import { doc, setDoc } from "firebase/firestore";
 import { useUIStore } from "@/lib/store";
 
 const ASSISTANT_COLORS = [
@@ -25,14 +23,14 @@ const ASSISTANT_COLORS = [
 ];
 
 const CONFIG_STEPS = [
-  { key: 'name', question: "¿Qué nombre llevará el agente?", label: "Nombre" },
-  { key: 'role', question: "¿Cuál será su rol o cargo?", label: "Rol" },
-  { key: 'company', question: "¿Para qué empresa operará?", label: "Empresa" },
-  { key: 'color', question: "Selecciona el color de identidad:", label: "Color" },
+  { key: 'name', question: "¿Nombre del agente?" },
+  { key: 'role', question: "¿Cuál será su rol?" },
+  { key: 'company', question: "¿Empresa que representa?" },
+  { key: 'color', question: "Selecciona su color:" },
 ];
 
 export default function NewAgentPage() {
-  const [currentConfigIndex, setCurrentConfigIndex] = useState(0);
+  const [currentStep, setCurrentStep] = useState(0);
   const [isFinished, setIsFinished] = useState(false);
   const [config, setConfig] = useState({
     name: "",
@@ -73,49 +71,51 @@ export default function NewAgentPage() {
     }
   }, [messages, isFinished]);
 
-  const handleSendMessage = (valueOverride?: string) => {
+  const handleNextStep = (valueOverride?: string) => {
     const value = valueOverride || inputValue;
     if (!value.trim() || isFinished) return;
 
+    const currentKey = CONFIG_STEPS[currentStep].key;
+    
+    // User message
     const userMsg: ChatMessage = {
       id: Date.now().toString(),
       role: "user",
-      content: CONFIG_STEPS[currentConfigIndex].key === 'color' ? "Color seleccionado" : value,
+      content: currentKey === 'color' ? "Identidad visual seleccionada" : value,
       timestamp: new Date().toISOString()
     };
 
-    const updatedConfig = { ...config, [CONFIG_STEPS[currentConfigIndex].key]: value };
-    setConfig(updatedConfig);
+    setConfig(prev => ({ ...prev, [currentKey]: value }));
     setMessages(prev => [...prev, userMsg]);
     setInputValue("");
 
-    if (currentConfigIndex < CONFIG_STEPS.length - 1) {
+    if (currentStep < CONFIG_STEPS.length - 1) {
+      const nextStep = currentStep + 1;
+      setCurrentStep(nextStep);
       setTimeout(() => {
-        const nextIndex = currentConfigIndex + 1;
-        setCurrentConfigIndex(nextIndex);
         setMessages(prev => [...prev, {
           id: (Date.now() + 1).toString(),
           role: "assistant",
-          content: CONFIG_STEPS[nextIndex].question,
+          content: CONFIG_STEPS[nextStep].question,
+          timestamp: new Date().toISOString()
+        }]);
+      }, 300);
+    } else {
+      setIsFinished(true);
+      setTimeout(() => {
+        setMessages(prev => [...prev, {
+          id: (Date.now() + 1).toString(),
+          role: "assistant",
+          content: "Protocolo listo. Pulsa desplegar.",
           timestamp: new Date().toISOString()
         }]);
       }, 400);
-    } else {
-      setTimeout(() => {
-        setIsFinished(true);
-        setMessages(prev => [...prev, {
-          id: (Date.now() + 1).toString(),
-          role: "assistant",
-          content: "Arquitectura lista. Confirma el despliegue para activar la unidad.",
-          timestamp: new Date().toISOString()
-        }]);
-      }, 500);
     }
   };
 
   const handleSave = async () => {
     if (!db || !tenantId) {
-      toast({ variant: "destructive", title: "Error", description: "Sin portal detectado." });
+      toast({ variant: "destructive", title: "Error", description: "Contexto no válido." });
       return;
     }
 
@@ -135,125 +135,133 @@ export default function NewAgentPage() {
         color: config.color,
         isActive: true,
         createdAt: new Date().toISOString(),
-        integrations: {
-          "Open Lines (Chat Bitrix24)": false,
-          "WhatsApp Business": false,
-          "CRM Bitrix24": false,
-          "Calendario Bitrix24": false,
-          "Catálogo Bitrix24": false,
-          "Documentos Bitrix24": false,
-          "Drive Bitrix24": false,
-          "API REST": false
-        },
+        integrations: {},
         metrics: {
           usageCount: 0,
           performanceRating: 100,
           totalInteractionMetric: 0,
-          tokens: "0",
-          transfers: 0,
-          abandoned: 0
+          tokens: "0"
         }
       };
 
       await setDoc(doc(db, "agents", agentId), newAgent);
-      toast({ title: "Agente Desplegado", description: `${config.name} activado.` });
+      toast({ title: "Agente Activo", description: `${config.name} desplegado.` });
       router.push("/");
     } catch (error: any) {
-      errorEmitter.emit('permission-error', new FirestorePermissionError({ path: "agents", operation: 'create' }));
+      toast({ variant: "destructive", title: "Error al guardar", description: error.message });
     } finally {
       setIsSaving(false);
     }
   };
 
-  const isColorStep = CONFIG_STEPS[currentConfigIndex].key === 'color';
+  const isColorStep = CONFIG_STEPS[currentStep].key === 'color';
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#F0F3F5]">
+    <div className="flex flex-col h-screen bg-[#F0F3F5] overflow-hidden">
       <Navbar />
-      <main className="container mx-auto px-4 pt-8 max-w-2xl pb-20">
-        <div className="mb-6">
-          <h1 className="text-xl font-headline font-bold text-foreground flex items-center gap-2">
-            <Bot className="h-5 w-5 text-secondary" />
-            Nuevo Agente de Chat
-          </h1>
-        </div>
+      <main className="flex-1 flex flex-col items-center justify-center p-4">
+        <div className="w-full max-w-xl flex flex-col h-[calc(100vh-120px)]">
+          <div className="mb-4 flex items-center justify-between px-2">
+            <h1 className="text-sm font-black uppercase tracking-[0.2em] text-slate-500 flex items-center gap-2">
+              <Bot className="h-4 w-4 text-secondary" />
+              Nuevo Agente Chat
+            </h1>
+            <div className="flex gap-1">
+              {[0,1,2,3].map(i => (
+                <div key={i} className={cn("h-1 w-4 rounded-full transition-all", i <= currentStep ? "bg-secondary" : "bg-slate-300")} />
+              ))}
+            </div>
+          </div>
 
-        <Card className="border-none shadow-2xl overflow-hidden rounded-[2.5rem] bg-white">
-          <CardContent className="p-0">
-            <ScrollArea className="h-[400px] p-6" ref={scrollRef}>
+          <Card className="flex-1 border-none shadow-2xl flex flex-col overflow-hidden rounded-[2.5rem] bg-white high-volume">
+            <ScrollArea className="flex-1 p-6" ref={scrollRef}>
               <div className="space-y-4">
                 {messages.map((msg) => (
-                  <div key={msg.id} className={cn("flex flex-col max-w-[85%] animate-in fade-in slide-in-from-bottom-1", msg.role === 'user' ? "ml-auto items-end" : "items-start")}>
-                    <div className={cn("px-4 py-2.5 rounded-2xl text-[13px] shadow-sm", msg.role === 'user' ? "bg-secondary text-white rounded-tr-none" : "bg-muted/50 text-foreground rounded-tl-none border")}>
+                  <div 
+                    key={msg.id} 
+                    className={cn(
+                      "flex flex-col max-w-[80%] animate-in fade-in slide-in-from-bottom-2 duration-300", 
+                      msg.role === 'user' ? "ml-auto items-end" : "items-start"
+                    )}
+                  >
+                    <div className={cn(
+                      "px-4 py-2.5 rounded-2xl text-[13px] font-medium shadow-sm border", 
+                      msg.role === 'user' 
+                        ? "bg-secondary text-white border-transparent rounded-tr-none" 
+                        : "bg-slate-50 text-slate-700 border-slate-100 rounded-tl-none"
+                    )}>
                       {msg.content}
                     </div>
                   </div>
                 ))}
 
                 {!isFinished && isColorStep && (
-                  <div className="grid grid-cols-8 gap-2 p-4 bg-slate-50 rounded-[2rem] border border-dashed border-slate-200 animate-in fade-in zoom-in-95 duration-300">
+                  <div className="grid grid-cols-8 gap-2 p-3 bg-slate-50 rounded-3xl border border-dashed border-slate-200 animate-in zoom-in-95 duration-500">
                     {ASSISTANT_COLORS.map(c => (
                       <button 
                         key={c} 
-                        onClick={() => handleSendMessage(c)} 
-                        className={cn("h-8 w-8 rounded-lg border-2 shadow-sm transition-all hover:scale-110 flex items-center justify-center", config.color === c ? "border-secondary ring-2 ring-secondary/20" : "border-white")} 
+                        onClick={() => handleNextStep(c)} 
+                        className={cn(
+                          "h-8 w-8 rounded-lg border-2 shadow-sm transition-all hover:scale-110 flex items-center justify-center relative", 
+                          config.color === c ? "border-secondary ring-2 ring-secondary/20" : "border-white"
+                        )} 
                         style={{ backgroundColor: c }}
                       >
-                        {config.color === c && <Check className="h-4 w-4 text-white" />}
+                        {config.color === c && <Check className="h-4 w-4 text-white drop-shadow-sm" />}
                       </button>
                     ))}
                   </div>
                 )}
 
                 {isFinished && (
-                  <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 pt-4">
-                    <Card className="bg-[#F8FAFC] border-2 border-secondary/20 rounded-[2rem] overflow-hidden">
-                      <CardContent className="p-6 space-y-4">
-                        <div className="flex items-center justify-between">
-                          <div className="space-y-1">
-                            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">{config.role}</p>
-                            <h3 className="font-bold text-lg">{config.name}</h3>
-                          </div>
-                          <div className="h-10 w-10 rounded-xl shadow-lg" style={{ backgroundColor: config.color }} />
+                  <div className="pt-4 animate-in slide-in-from-bottom-4 duration-700">
+                    <Card className="bg-slate-900 text-white rounded-[2rem] p-6 shadow-xl border-none">
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="space-y-1">
+                          <p className="text-[9px] font-black uppercase tracking-widest text-secondary">{config.role}</p>
+                          <h3 className="font-bold text-lg">{config.name}</h3>
                         </div>
-                        <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">{config.company}</p>
-                      </CardContent>
-                      <CardFooter className="bg-white p-4 border-t">
-                        <Button onClick={handleSave} disabled={isSaving} className="w-full h-12 rounded-full bg-secondary hover:bg-secondary/90 text-white font-black text-[10px] uppercase tracking-widest gap-2">
-                          {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Rocket className="h-4 w-4" />}
-                          Confirmar y Desplegar
-                        </Button>
-                      </CardFooter>
+                        <div className="h-10 w-10 rounded-xl shadow-lg border-2 border-white/10" style={{ backgroundColor: config.color }} />
+                      </div>
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{config.company}</p>
+                      <Button 
+                        onClick={handleSave} 
+                        disabled={isSaving} 
+                        className="w-full mt-6 h-12 rounded-full bg-secondary hover:bg-secondary/90 text-white font-black text-[10px] uppercase tracking-widest gap-2 shadow-xl shadow-secondary/20"
+                      >
+                        {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Rocket className="h-4 w-4" />}
+                        Desplegar Agente
+                      </Button>
                     </Card>
                   </div>
                 )}
               </div>
             </ScrollArea>
-          </CardContent>
 
-          {!isFinished && !isColorStep && (
-            <CardFooter className="p-4 bg-white border-t">
-              <div className="flex items-center gap-2 w-full bg-muted/30 p-1.5 rounded-2xl border border-slate-100">
-                <Input 
-                  placeholder="Escribe aquí..." 
-                  className="flex-1 bg-transparent border-none focus-visible:ring-0 h-9 text-[13px] px-3"
-                  value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
-                  autoFocus
-                />
-                <Button 
-                  size="icon" 
-                  className="rounded-xl h-9 w-9 bg-secondary hover:bg-secondary/90"
-                  onClick={() => handleSendMessage()}
-                  disabled={!inputValue.trim()}
-                >
-                  <Send className="h-4 w-4" />
-                </Button>
-              </div>
-            </CardFooter>
-          )}
-        </Card>
+            {!isFinished && !isColorStep && (
+              <CardFooter className="p-4 bg-white border-t">
+                <div className="flex items-center gap-2 w-full bg-slate-50 p-1.5 rounded-2xl border border-slate-100 shadow-inner group">
+                  <Input 
+                    placeholder="Escribe aquí..." 
+                    className="flex-1 bg-transparent border-none focus-visible:ring-0 h-10 text-[13px] px-3 font-medium"
+                    value={inputValue}
+                    onChange={(e) => setInputValue(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleNextStep()}
+                    autoFocus
+                  />
+                  <Button 
+                    size="icon" 
+                    className="rounded-xl h-10 w-10 bg-secondary hover:bg-secondary/90 shadow-lg shadow-secondary/10"
+                    onClick={() => handleNextStep()}
+                    disabled={!inputValue.trim()}
+                  >
+                    <Send className="h-4 w-4" />
+                  </Button>
+                </div>
+              </CardFooter>
+            )}
+          </Card>
+        </div>
       </main>
     </div>
   );
