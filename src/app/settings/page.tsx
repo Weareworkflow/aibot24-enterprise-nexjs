@@ -16,7 +16,8 @@ import {
   Loader2,
   Save,
   Database,
-  Sparkles
+  Sparkles,
+  Info
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useUIStore } from "@/lib/store";
@@ -146,9 +147,17 @@ export default function SettingsPage() {
             </div>
 
             <div className="space-y-6">
-              <div className="flex items-center gap-3 px-1">
-                <Sparkles className="h-4 w-4 text-secondary" />
-                <h4 className="text-[11px] font-black uppercase tracking-widest text-slate-700">Protocolos de Integración</h4>
+              <div className="flex flex-col gap-2.5 px-1">
+                <div className="flex items-center gap-3">
+                  <Sparkles className="h-4 w-4 text-secondary" />
+                  <h4 className="text-[11px] font-black uppercase tracking-widest text-slate-700">Protocolos de Integración Bitrix24</h4>
+                </div>
+                <div className="flex items-start gap-2 bg-blue-50/50 p-3 rounded-xl border border-blue-100/50">
+                  <Info className="h-3.5 w-3.5 text-blue-500 mt-0.5 flex-shrink-0" />
+                  <p className="text-[9px] text-slate-500 font-bold uppercase tracking-wider leading-relaxed">
+                    Las credenciales Client y Secret se localizan en la sección de configuración de instalación de app locales dentro de su portal Bitrix24.
+                  </p>
+                </div>
               </div>
 
               <div className="grid grid-cols-1 gap-6">
