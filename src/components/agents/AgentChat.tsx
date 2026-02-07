@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useRef } from "react";
@@ -9,8 +8,7 @@ import {
   Share2,
   Wand2,
   ChevronDown,
-  ChevronUp,
-  Activity
+  ChevronUp
 } from "lucide-react";
 import {
   Accordion,
@@ -73,23 +71,6 @@ export function AgentChat({ agent }: AgentChatProps) {
     <div className="flex flex-col h-full glass-card rounded-[2.5rem] overflow-hidden transition-all duration-700 animate-in fade-in slide-in-from-bottom-8 shadow-2xl border-none">
       <ScrollArea className="flex-1 modern-scroll" ref={scrollRef}>
         <div className="flex flex-col min-h-full">
-          {/* Dashboard de Estado Sutil */}
-          <div className="bg-slate-50/50 p-6 flex items-center justify-between border-b border-slate-100">
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-2xl bg-white shadow-sm flex items-center justify-center border border-slate-100">
-                <Activity className="h-5 w-5 text-secondary animate-pulse" />
-              </div>
-              <div>
-                <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Protocolo de Configuración</p>
-                <h2 className="text-sm font-bold">Consola Operativa v3.0</h2>
-              </div>
-            </div>
-            <div className="flex gap-2 items-center">
-               <div className="h-2 w-2 rounded-full bg-accent animate-ping" />
-               <span className="text-[8px] font-black uppercase tracking-widest text-accent">Zustand Sync Activo</span>
-            </div>
-          </div>
-
           <Accordion type="single" collapsible defaultValue="identidad" className="w-full">
             <AccordionItem value="identidad" className="border-b-0 px-8">
               <AccordionTrigger className="hover:no-underline py-8 group">
