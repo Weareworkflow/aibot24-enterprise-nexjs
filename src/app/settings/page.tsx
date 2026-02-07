@@ -122,6 +122,7 @@ export default function SettingsPage() {
           </CardHeader>
 
           <CardContent className="p-6 space-y-8">
+            {/* 1. Perfil de Empresa */}
             <div className="bg-slate-900 rounded-[2rem] p-6 text-white flex items-center justify-between shadow-xl">
               <div className="flex items-center gap-5">
                 <div className="h-14 w-14 rounded-2xl bg-white/10 flex items-center justify-center border border-white/10 backdrop-blur-sm shadow-inner">
@@ -146,38 +147,25 @@ export default function SettingsPage() {
               </div>
             </div>
 
-            <div className="space-y-6">
-              <div className="flex flex-col gap-2.5 px-1">
-                <div className="flex items-center gap-3">
-                  <Sparkles className="h-4 w-4 text-secondary" />
-                  <h4 className="text-[11px] font-black uppercase tracking-widest text-slate-700">Protocolos de Integración Bitrix24</h4>
-                </div>
-                <div className="flex items-start gap-2 bg-blue-50/50 p-3 rounded-xl border border-blue-100/50">
-                  <Info className="h-3.5 w-3.5 text-blue-500 mt-0.5 flex-shrink-0" />
-                  <p className="text-[9px] text-slate-500 font-bold uppercase tracking-wider leading-relaxed">
-                    Las credenciales Client y Secret se localizan en la sección de configuración de instalación de app locales dentro de su portal Bitrix24.
-                  </p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 gap-6">
-                <div className="space-y-2.5">
-                  <div className="flex items-center gap-2">
-                    <Link2 className="h-3.5 w-3.5 text-secondary" />
-                    <Label className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Webhook del Agente AI</Label>
+            <div className="space-y-10">
+              {/* 2. Credenciales Bitrix24 (PRIMERO) */}
+              <div className="space-y-6">
+                <div className="flex flex-col gap-2.5 px-1">
+                  <div className="flex items-center gap-3">
+                    <Key className="h-4 w-4 text-secondary" />
+                    <h4 className="text-[11px] font-black uppercase tracking-widest text-slate-700">Credenciales de Instalación Bitrix24</h4>
                   </div>
-                  <Input 
-                    value={formData.serviceWebhook}
-                    onChange={(e) => setFormData({...formData, serviceWebhook: e.target.value})}
-                    placeholder="https://su-portal.bitrix24.com/rest/1/..." 
-                    className="h-11 bg-slate-50/50 border-slate-100 rounded-xl px-4 text-[12px] focus:bg-white transition-all shadow-inner"
-                  />
+                  <div className="flex items-start gap-2 bg-blue-50/50 p-3 rounded-xl border border-blue-100/50">
+                    <Info className="h-3.5 w-3.5 text-blue-500 mt-0.5 flex-shrink-0" />
+                    <p className="text-[9px] text-slate-500 font-bold uppercase tracking-wider leading-relaxed">
+                      El Client ID y Secret ID se localizan en la sección de configuración de instalación de aplicaciones locales de su portal Bitrix24.
+                    </p>
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2.5">
                     <div className="flex items-center gap-2">
-                      <Key className="h-3.5 w-3.5 text-secondary" />
                       <Label className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Cliente ID</Label>
                     </div>
                     <Input 
@@ -189,7 +177,6 @@ export default function SettingsPage() {
                   </div>
                   <div className="space-y-2.5">
                     <div className="flex items-center gap-2">
-                      <ShieldCheck className="h-3.5 w-3.5 text-secondary" />
                       <Label className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Secret ID</Label>
                     </div>
                     <Input 
@@ -202,16 +189,44 @@ export default function SettingsPage() {
                   </div>
                 </div>
               </div>
+
+              {/* 3. Webhook del Agente (SEGUNDO) */}
+              <div className="space-y-6 pt-4 border-t border-slate-50">
+                <div className="flex flex-col gap-2.5 px-1">
+                  <div className="flex items-center gap-3">
+                    <Link2 className="h-4 w-4 text-secondary" />
+                    <h4 className="text-[11px] font-black uppercase tracking-widest text-slate-700">Canal de Comunicación AI</h4>
+                  </div>
+                  <div className="flex items-start gap-2 bg-slate-50 p-3 rounded-xl border border-slate-100">
+                    <Sparkles className="h-3.5 w-3.5 text-secondary mt-0.5 flex-shrink-0" />
+                    <p className="text-[9px] text-slate-500 font-bold uppercase tracking-wider leading-relaxed">
+                      Este es el servicio del agente dedicado para este portal. Es el endpoint de enlace para procesar interacciones inteligentes.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="space-y-2.5">
+                  <div className="flex items-center gap-2">
+                    <Label className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Webhook del Agente AI</Label>
+                  </div>
+                  <Input 
+                    value={formData.serviceWebhook}
+                    onChange={(e) => setFormData({...formData, serviceWebhook: e.target.value})}
+                    placeholder="https://su-portal.bitrix24.com/rest/1/..." 
+                    className="h-11 bg-slate-50/50 border-slate-100 rounded-xl px-4 text-[12px] focus:bg-white transition-all shadow-inner"
+                  />
+                </div>
+              </div>
             </div>
 
-            <div className="pt-2">
+            <div className="pt-4">
               <Button 
                 onClick={handleSave}
                 disabled={isSaving}
                 className="w-full h-12 rounded-2xl bg-secondary hover:bg-secondary/90 text-white font-black text-[10px] uppercase tracking-[0.2em] shadow-lg shadow-secondary/10 transition-all active:scale-95"
               >
                 {isSaving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
-                {isSaving ? "Sincronizando..." : "Guardar Cambios"}
+                {isSaving ? "Sincronizando..." : "Guardar Protocolo de Integración"}
               </Button>
             </div>
           </CardContent>
