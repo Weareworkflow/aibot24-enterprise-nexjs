@@ -66,10 +66,9 @@ export default function HelpPage() {
             <CardContent className="p-10 space-y-8">
               <div className="space-y-4">
                 <p className="text-[13px] text-slate-600 font-medium leading-relaxed">
-                  ¿Necesitas asistencia técnica personalizada o una implementación a medida para tu organización? 
-                  Nuestro equipo de arquitectos está listo para intervenir y optimizar tus flujos de trabajo con 
-                  inteligencia artificial avanzada, garantizando soluciones eficientes para maximizar el 
-                  rendimiento de tu flota de agentes inteligentes en Bitrix24.
+                  ¿Necesitas asistencia técnica personalizada o una implementación a medida para tu empresa? 
+                  Nuestro equipo de arquitectos está listo para optimizar tus flujos con IA avanzada, 
+                  garantizando soluciones eficientes para maximizar el rendimiento de tu flota inteligente.
                 </p>
               </div>
               <Button className="w-full h-14 rounded-full bg-secondary hover:bg-secondary/90 text-white font-black text-[11px] uppercase tracking-[0.2em] shadow-xl shadow-secondary/20 transition-all hover:scale-[1.02]">
@@ -92,8 +91,8 @@ export default function HelpPage() {
               <div className="space-y-4">
                 <p className="text-[13px] text-slate-600 font-medium leading-relaxed">
                   Explora nuestra biblioteca completa de documentación para dominar todas las capacidades de AIBot24. 
-                  Aprende a configurar integraciones avanzadas, optimizar protocolos de comportamiento y 
-                  gestionar métricas operativas de alto nivel para escalar tu operación comercial.
+                  Aprende a configurar integraciones avanzadas y gestionar métricas operativas de alto nivel 
+                  para escalar tu operación comercial mediante el uso de nuestra infraestructura en la nube.
                 </p>
               </div>
               <Button variant="outline" className="w-full h-14 rounded-full border-2 border-slate-200 bg-transparent hover:bg-slate-50 text-slate-900 font-black text-[11px] uppercase tracking-[0.2em] transition-all">
@@ -126,14 +125,16 @@ export default function HelpPage() {
                       {faq.q}
                     </span>
                   </AccordionTrigger>
-                  <AccordionContent className="pb-8 pt-2">
-                    <div className="flex gap-4">
-                      <div className="h-full w-1 bg-secondary/20 rounded-full" />
-                      <p className="text-[13px] text-slate-600 leading-relaxed font-medium">
-                        {faq.a}
-                      </p>
-                    </div>
-                  </AccordionContent>
+                  <AccordionItem value={`item-${idx}`}>
+                    <AccordionContent className="pb-8 pt-2">
+                      <div className="flex gap-4">
+                        <div className="h-full w-1 bg-secondary/20 rounded-full" />
+                        <p className="text-[13px] text-slate-600 leading-relaxed font-medium">
+                          {faq.a}
+                        </p>
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
                 </AccordionItem>
               ))}
             </Accordion>
