@@ -90,7 +90,7 @@ export function AgentChat({ agent }: AgentChatProps) {
 
       <ScrollArea className="flex-1 modern-scroll" ref={scrollRef}>
         <div className="flex flex-col p-4">
-          <Accordion type="single" collapsible defaultValue="identidad" className="w-full">
+          <Accordion type="single" collapsible className="w-full">
             <AccordionItem value="identidad" className="border-b-0 px-4">
               <AccordionTrigger className="hover:no-underline py-8 group border-b border-slate-50">
                 <div className="flex items-center gap-5 text-[13px] font-black uppercase tracking-[0.2em] text-secondary transition-colors">
