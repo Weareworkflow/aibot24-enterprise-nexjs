@@ -126,7 +126,7 @@ export default function SettingsPage() {
           </CardHeader>
 
           <CardContent className="p-6 space-y-8">
-            {/* Perfil de Empresa (Siempre visible) */}
+            {/* Perfil de Empresa */}
             <div className="bg-slate-900 rounded-[2rem] p-6 text-white flex items-center justify-between shadow-xl">
               <div className="flex items-center gap-5">
                 <div className="h-14 w-14 rounded-2xl bg-white/10 flex items-center justify-center border border-white/10 backdrop-blur-sm shadow-inner">
@@ -153,11 +153,17 @@ export default function SettingsPage() {
 
             <Tabs defaultValue="conexion" className="w-full">
               <TabsList className="grid w-full grid-cols-2 h-12 bg-slate-50 rounded-2xl p-1 mb-8">
-                <TabsTrigger value="conexion" className="rounded-xl text-[10px] font-black uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:shadow-sm">
+                <TabsTrigger 
+                  value="conexion" 
+                  className="rounded-xl text-[10px] font-black uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-secondary transition-all"
+                >
                   <CloudCog className="h-3.5 w-3.5 mr-2" />
                   Conexión
                 </TabsTrigger>
-                <TabsTrigger value="apariencia" className="rounded-xl text-[10px] font-black uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:shadow-sm">
+                <TabsTrigger 
+                  value="apariencia" 
+                  className="rounded-xl text-[10px] font-black uppercase tracking-widest data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-secondary transition-all"
+                >
                   <Palette className="h-3.5 w-3.5 mr-2" />
                   Apariencia
                 </TabsTrigger>
