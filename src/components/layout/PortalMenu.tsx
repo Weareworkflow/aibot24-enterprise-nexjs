@@ -18,9 +18,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
 
 export function PortalMenu() {
   const { tenantId, domain } = useUIStore();
+  const router = useRouter();
   
   // Extraemos el nombre del portal del dominio (ej: workflowteams.bitrix24.es -> WORKFLOWTEAMS)
   const portalName = domain 
@@ -52,14 +54,20 @@ export function PortalMenu() {
         <DropdownMenuSeparator className="bg-slate-50 mx-2 h-px" />
         
         <DropdownMenuGroup className="p-1">
-          <DropdownMenuItem className="h-12 px-4 rounded-2xl gap-3 cursor-pointer focus:bg-slate-50 group">
+          <DropdownMenuItem 
+            className="h-12 px-4 rounded-2xl gap-3 cursor-pointer focus:bg-slate-50 group"
+            onClick={() => router.push('/')}
+          >
             <div className="h-8 w-8 rounded-xl bg-slate-50 flex items-center justify-center group-focus:bg-white transition-colors">
               <Settings className="h-4 w-4 text-slate-500" />
             </div>
             <span className="text-[11px] font-black uppercase tracking-widest text-slate-700">Configuración</span>
           </DropdownMenuItem>
           
-          <DropdownMenuItem className="h-12 px-4 rounded-2xl gap-3 cursor-pointer focus:bg-slate-50 group">
+          <DropdownMenuItem 
+            className="h-12 px-4 rounded-2xl gap-3 cursor-pointer focus:bg-slate-50 group"
+            onClick={() => router.push('/help')}
+          >
             <div className="h-8 w-8 rounded-xl bg-slate-50 flex items-center justify-center group-focus:bg-white transition-colors">
               <HelpCircle className="h-4 w-4 text-slate-500" />
             </div>
