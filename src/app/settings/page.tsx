@@ -148,7 +148,7 @@ export default function SettingsPage() {
             </div>
 
             <div className="space-y-10">
-              {/* 2. Credenciales Bitrix24 (PRIMERO) */}
+              {/* 2. Credenciales Bitrix24 */}
               <div className="space-y-6">
                 <div className="flex flex-col gap-2.5 px-1">
                   <div className="flex items-center gap-3">
@@ -190,7 +190,7 @@ export default function SettingsPage() {
                 </div>
               </div>
 
-              {/* 3. Webhook del Agente (SEGUNDO) */}
+              {/* 3. Webhook del Agente */}
               <div className="space-y-6 pt-4 border-t border-slate-50">
                 <div className="flex flex-col gap-2.5 px-1">
                   <div className="flex items-center gap-3">
@@ -212,7 +212,7 @@ export default function SettingsPage() {
                   <Input 
                     value={formData.serviceWebhook}
                     onChange={(e) => setFormData({...formData, serviceWebhook: e.target.value})}
-                    placeholder="https://su-portal.bitrix24.com/rest/1/..." 
+                    placeholder="https://agent-service-abc.a.run.app" 
                     className="h-11 bg-slate-50/50 border-slate-100 rounded-xl px-4 text-[12px] focus:bg-white transition-all shadow-inner"
                   />
                 </div>
