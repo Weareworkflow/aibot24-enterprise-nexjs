@@ -6,7 +6,7 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { Sparkles, Loader2, Send, Bot, Rocket, Check, Palette } from "lucide-react";
+import { Loader2, Send, Bot, Rocket, Check, Palette } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -25,10 +25,10 @@ const ASSISTANT_COLORS = [
 ];
 
 const CONFIG_STEPS = [
-  { key: 'name', question: "¡Hola! Soy tu Arquitecto Virtual. Vamos a diseñar tu agente de chat de élite. Primero, ¿qué nombre llevará esta unidad?", label: "Nombre" },
-  { key: 'role', question: "Entendido. ¿Cuál será su función o cargo específico dentro de la organización?", label: "Rol" },
-  { key: 'company', question: "¿Para qué empresa o marca estará operando?", label: "Empresa" },
-  { key: 'color', question: "Perfecto. Por último, selecciona el color de identidad para este agente:", label: "Color" },
+  { key: 'name', question: "¿Qué nombre llevará el agente?", label: "Nombre" },
+  { key: 'role', question: "¿Cuál será su rol o cargo?", label: "Rol" },
+  { key: 'company', question: "¿Para qué empresa operará?", label: "Empresa" },
+  { key: 'color', question: "Selecciona el color de identidad:", label: "Color" },
 ];
 
 export default function NewAgentPage() {
@@ -39,9 +39,9 @@ export default function NewAgentPage() {
     role: "",
     company: "",
     color: ASSISTANT_COLORS[0],
-    objective: "Atención al cliente y soporte inteligente.",
-    tone: "Profesional, amable y resolutivo.",
-    knowledge: "Eres un asistente de IA de élite. Responde siempre con precisión y cortesía."
+    objective: "Atención al cliente inteligente.",
+    tone: "Profesional y resolutivo.",
+    knowledge: "Eres un asistente de IA de élite. Responde con precisión."
   });
   
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -99,51 +99,28 @@ export default function NewAgentPage() {
           content: CONFIG_STEPS[nextIndex].question,
           timestamp: new Date().toISOString()
         }]);
-      }, 600);
+      }, 400);
     } else {
       setTimeout(() => {
         setIsFinished(true);
         setMessages(prev => [...prev, {
           id: (Date.now() + 1).toString(),
           role: "assistant",
-          content: "¡Excelente! He configurado el núcleo de tu agente. Revisa la ficha técnica y confirma el despliegue para activarlo en tu portal.",
+          content: "Arquitectura lista. Confirma el despliegue para activar la unidad.",
           timestamp: new Date().toISOString()
         }]);
-      }, 800);
+      }, 500);
     }
   };
 
   const handleSave = async () => {
     if (!db || !tenantId) {
-      toast({
-        variant: "destructive",
-        title: "Error de Sesión",
-        description: "No se ha detectado un member_id válido de Bitrix24.",
-      });
+      toast({ variant: "destructive", title: "Error", description: "Sin portal detectado." });
       return;
     }
 
     setIsSaving(true);
-
     try {
-      const agentsRef = collection(db, "agents");
-      const q = query(agentsRef, where("tenantId", "==", tenantId));
-      const querySnapshot = await getDocs(q);
-      
-      const isDuplicate = querySnapshot.docs.some(doc => 
-        doc.data().name.toLowerCase() === config.name.toLowerCase()
-      );
-      
-      if (isDuplicate) {
-        setIsSaving(false);
-        toast({
-          variant: "destructive",
-          title: "Nombre Duplicado",
-          description: `Ya existe un agente llamado "${config.name}" en tu portal. Por favor, elige otro nombre.`,
-        });
-        return;
-      }
-
       const agentId = Date.now().toString();
       const newAgent: AIAgent = {
         id: agentId,
@@ -178,22 +155,13 @@ export default function NewAgentPage() {
         }
       };
 
-      const agentRef = doc(db, "agents", agentId);
-      await setDoc(agentRef, newAgent);
-      
-      setIsSaving(false);
-      toast({
-        title: "Agente Desplegado",
-        description: `${config.name} ha sido activado correctamente.`,
-      });
+      await setDoc(doc(db, "agents", agentId), newAgent);
+      toast({ title: "Agente Desplegado", description: `${config.name} activado.` });
       router.push("/");
-
     } catch (error: any) {
+      errorEmitter.emit('permission-error', new FirestorePermissionError({ path: "agents", operation: 'create' }));
+    } finally {
       setIsSaving(false);
-      errorEmitter.emit('permission-error', new FirestorePermissionError({
-        path: "agents",
-        operation: 'create'
-      }));
     }
   };
 
@@ -202,122 +170,58 @@ export default function NewAgentPage() {
   return (
     <div className="flex flex-col min-h-screen bg-[#F0F3F5]">
       <Navbar />
-      <main className="container mx-auto px-4 pt-8 max-w-4xl pb-20">
-        <div className="mb-6 space-y-1">
-          <h1 className="text-2xl font-headline font-bold text-foreground flex items-center gap-3">
-            <Bot className="h-6 w-6 text-secondary" />
-            Arquitecto de Agentes Chat
+      <main className="container mx-auto px-4 pt-8 max-w-2xl pb-20">
+        <div className="mb-6">
+          <h1 className="text-xl font-headline font-bold text-foreground flex items-center gap-2">
+            <Bot className="h-5 w-5 text-secondary" />
+            Nuevo Agente de Chat
           </h1>
-          <p className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">
-            {isFinished ? "Revisión de Arquitectura" : `Fase: ${CONFIG_STEPS[currentConfigIndex].label}`}
-          </p>
         </div>
 
-        <Card className="border-none shadow-xl animate-in slide-in-from-bottom-4 duration-500 overflow-hidden card-rounded bg-white">
-          <CardHeader className="bg-white border-b py-4 px-6 flex flex-row items-center gap-4">
-            <div className="h-10 w-10 rounded-full bg-secondary flex items-center justify-center text-white shadow-inner">
-              <Bot className="h-6 w-6" />
-            </div>
-            <div>
-              <CardTitle className="text-[10px] font-black uppercase tracking-widest">Protocolo Arquitecto</CardTitle>
-              <div className="flex items-center gap-1.5 text-[8px] font-black uppercase text-secondary">
-                <span className="h-1.5 w-1.5 bg-secondary rounded-full animate-pulse" />
-                Sesión Activa
-              </div>
-            </div>
-          </CardHeader>
-          
+        <Card className="border-none shadow-2xl overflow-hidden rounded-[2.5rem] bg-white">
           <CardContent className="p-0">
-            <ScrollArea className="h-[450px] p-6" ref={scrollRef}>
-              <div className="space-y-6 pb-4">
+            <ScrollArea className="h-[400px] p-6" ref={scrollRef}>
+              <div className="space-y-4">
                 {messages.map((msg) => (
-                  <div
-                    key={msg.id}
-                    className={cn(
-                      "flex flex-col max-w-[85%] space-y-1 animate-in fade-in slide-in-from-bottom-2",
-                      msg.role === 'user' ? "ml-auto items-end" : "items-start"
-                    )}
-                  >
-                    <div
-                      className={cn(
-                        "px-5 py-3 rounded-2xl text-[13px] shadow-sm leading-relaxed",
-                        msg.role === 'user' 
-                          ? "bg-secondary text-white rounded-tr-none" 
-                          : "bg-muted/50 text-foreground rounded-tl-none border"
-                      )}
-                    >
+                  <div key={msg.id} className={cn("flex flex-col max-w-[85%] animate-in fade-in slide-in-from-bottom-1", msg.role === 'user' ? "ml-auto items-end" : "items-start")}>
+                    <div className={cn("px-4 py-2.5 rounded-2xl text-[13px] shadow-sm", msg.role === 'user' ? "bg-secondary text-white rounded-tr-none" : "bg-muted/50 text-foreground rounded-tl-none border")}>
                       {msg.content}
                     </div>
                   </div>
                 ))}
 
                 {!isFinished && isColorStep && (
-                  <div className="animate-in fade-in slide-in-from-bottom-4 bg-slate-50 p-6 rounded-[2rem] border border-dashed border-slate-200">
-                    <div className="flex items-center gap-2 mb-4">
-                      <Palette className="h-4 w-4 text-secondary" />
-                      <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Selector de ADN Visual</span>
-                    </div>
-                    <div className="flex flex-wrap gap-3">
-                      {ASSISTANT_COLORS.map(c => (
-                        <button 
-                          key={c} 
-                          onClick={() => handleSendMessage(c)} 
-                          className={cn(
-                            "h-10 w-10 rounded-[1rem] border-2 shadow-sm transition-all hover:scale-110 flex items-center justify-center relative", 
-                            config.color === c ? "border-secondary scale-110 ring-4 ring-secondary/10" : "border-white"
-                          )} 
-                          style={{ backgroundColor: c }}
-                        >
-                          {config.color === c && <Check className="h-5 w-5 text-white drop-shadow-lg" />}
-                        </button>
-                      ))}
-                    </div>
+                  <div className="grid grid-cols-8 gap-2 p-4 bg-slate-50 rounded-[2rem] border border-dashed border-slate-200 animate-in fade-in zoom-in-95 duration-300">
+                    {ASSISTANT_COLORS.map(c => (
+                      <button 
+                        key={c} 
+                        onClick={() => handleSendMessage(c)} 
+                        className={cn("h-8 w-8 rounded-lg border-2 shadow-sm transition-all hover:scale-110 flex items-center justify-center", config.color === c ? "border-secondary ring-2 ring-secondary/20" : "border-white")} 
+                        style={{ backgroundColor: c }}
+                      >
+                        {config.color === c && <Check className="h-4 w-4 text-white" />}
+                      </button>
+                    ))}
                   </div>
                 )}
 
                 {isFinished && (
-                  <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
-                    <Card className="bg-[#F8FAFC] border-2 border-dashed border-secondary/30 rounded-[2.5rem] overflow-hidden">
-                      <div className="bg-secondary p-4 flex items-center justify-between text-white">
-                        <h4 className="text-[10px] font-black uppercase tracking-[0.2em]">Ficha de Despliegue</h4>
-                        <div 
-                          className="h-6 w-6 rounded-full border-2 border-white shadow-sm"
-                          style={{ backgroundColor: config.color }}
-                        />
-                      </div>
-                      <CardContent className="p-8 space-y-6">
-                        <div className="grid grid-cols-2 gap-6">
+                  <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 pt-4">
+                    <Card className="bg-[#F8FAFC] border-2 border-secondary/20 rounded-[2rem] overflow-hidden">
+                      <CardContent className="p-6 space-y-4">
+                        <div className="flex items-center justify-between">
                           <div className="space-y-1">
-                            <p className="text-[8px] font-black text-muted-foreground uppercase tracking-widest">Nombre Operativo</p>
-                            <p className="text-sm font-bold text-slate-800">{config.name}</p>
+                            <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">{config.role}</p>
+                            <h3 className="font-bold text-lg">{config.name}</h3>
                           </div>
-                          <div className="space-y-1">
-                            <p className="text-[8px] font-black text-muted-foreground uppercase tracking-widest">Rol / Cargo</p>
-                            <p className="text-sm font-bold text-slate-800">{config.role}</p>
-                          </div>
-                          <div className="space-y-1 col-span-2">
-                            <p className="text-[8px] font-black text-muted-foreground uppercase tracking-widest">Empresa Representada</p>
-                            <p className="text-sm font-bold text-slate-800">{config.company}</p>
-                          </div>
+                          <div className="h-10 w-10 rounded-xl shadow-lg" style={{ backgroundColor: config.color }} />
                         </div>
+                        <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">{config.company}</p>
                       </CardContent>
-                      <CardFooter className="bg-white p-6 border-t">
-                        <Button 
-                          onClick={handleSave} 
-                          disabled={isSaving}
-                          className="w-full h-14 rounded-full bg-secondary hover:bg-secondary/90 text-white font-black text-[11px] uppercase tracking-[0.15em] gap-3 shadow-xl shadow-secondary/20 transition-all active:scale-95"
-                        >
-                          {isSaving ? (
-                            <>
-                              <Loader2 className="h-5 w-5 animate-spin" />
-                              Sincronizando...
-                            </>
-                          ) : (
-                            <>
-                              <Rocket className="h-5 w-5" />
-                              Confirmar y Desplegar Bot
-                            </>
-                          )}
+                      <CardFooter className="bg-white p-4 border-t">
+                        <Button onClick={handleSave} disabled={isSaving} className="w-full h-12 rounded-full bg-secondary hover:bg-secondary/90 text-white font-black text-[10px] uppercase tracking-widest gap-2">
+                          {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Rocket className="h-4 w-4" />}
+                          Confirmar y Desplegar
                         </Button>
                       </CardFooter>
                     </Card>
@@ -329,10 +233,10 @@ export default function NewAgentPage() {
 
           {!isFinished && !isColorStep && (
             <CardFooter className="p-4 bg-white border-t">
-              <div className="flex items-center gap-3 w-full bg-muted/30 p-2 rounded-2xl border border-slate-100 shadow-inner">
+              <div className="flex items-center gap-2 w-full bg-muted/30 p-1.5 rounded-2xl border border-slate-100">
                 <Input 
-                  placeholder="Escribe tu respuesta..." 
-                  className="flex-1 bg-transparent border-none focus-visible:ring-0 h-10 text-[13px] px-4"
+                  placeholder="Escribe aquí..." 
+                  className="flex-1 bg-transparent border-none focus-visible:ring-0 h-9 text-[13px] px-3"
                   value={inputValue}
                   onChange={(e) => setInputValue(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
@@ -340,7 +244,7 @@ export default function NewAgentPage() {
                 />
                 <Button 
                   size="icon" 
-                  className="rounded-xl h-10 w-10 bg-secondary hover:bg-secondary/90 flex-shrink-0 shadow-md transition-transform active:scale-90"
+                  className="rounded-xl h-9 w-9 bg-secondary hover:bg-secondary/90"
                   onClick={() => handleSendMessage()}
                   disabled={!inputValue.trim()}
                 >
