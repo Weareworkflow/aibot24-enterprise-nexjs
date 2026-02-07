@@ -87,11 +87,11 @@ export default function HelpPage() {
             <CardContent className="p-10 space-y-8">
               <div className="space-y-4">
                 <p className="text-[13px] text-slate-600 font-medium leading-relaxed">
-                  Explora nuestra biblioteca de documentación para dominar AIBot24 y<br className="hidden lg:block" /> configurar integraciones de alto nivel.
+                  Explora nuestra biblioteca completa de documentación para dominar todas<br className="hidden lg:block" /> las capacidades de AIBot24 y escalar tu operación.
                 </p>
               </div>
               <Button variant="outline" className="w-full h-14 rounded-full border-2 border-slate-200 bg-transparent hover:bg-slate-50 hover:text-secondary text-slate-900 font-black text-[11px] uppercase tracking-[0.2em] transition-all">
-                GUIAS
+                EXPLORAR GUIA
               </Button>
             </CardContent>
           </Card>
