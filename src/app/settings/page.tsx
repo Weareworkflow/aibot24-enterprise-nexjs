@@ -122,27 +122,33 @@ export default function SettingsPage() {
           </CardHeader>
 
           <CardContent className="p-6 space-y-8">
-            {/* Perfil Horizontal Compacto */}
-            <div className="bg-slate-900 rounded-3xl p-5 text-white flex items-center justify-between shadow-xl">
-              <div className="flex items-center gap-4">
-                <div className="h-12 w-12 rounded-2xl bg-white/10 flex items-center justify-center border border-white/10">
-                  <Building2 className="h-6 w-6 text-secondary" />
+            {/* Perfil Horizontal Compacto (Diseño Refinado) */}
+            <div className="bg-slate-900 rounded-[2rem] p-6 text-white flex items-center justify-between shadow-xl">
+              <div className="flex items-center gap-5">
+                <div className="h-14 w-14 rounded-2xl bg-white/10 flex items-center justify-center border border-white/10 backdrop-blur-sm shadow-inner">
+                  <Building2 className="h-7 w-7 text-secondary" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold font-headline leading-none">{portalName}</h3>
-                  <p className="text-[10px] text-slate-400 mt-1 flex items-center gap-1">
-                    <Globe className="h-2.5 w-2.5" />
-                    {domain || "bitrix24.enterprise"}
-                  </p>
+                  <h3 className="text-xl font-bold font-headline leading-tight tracking-tight text-white">{portalName}</h3>
+                  <div className="mt-1 flex flex-col">
+                    <span className="text-[8px] font-black uppercase text-slate-500 tracking-widest mb-0.5">Dominio Bitrix24</span>
+                    <p className="text-[11px] text-slate-400 font-medium flex items-center gap-1.5">
+                      <Globe className="h-3 w-3 text-secondary/60" />
+                      {domain || "bitrix24.enterprise"}
+                    </p>
+                  </div>
                 </div>
               </div>
-              <div className="text-right">
-                <p className="text-[8px] font-black uppercase text-slate-500 tracking-widest">Member ID</p>
-                <p className="text-[10px] font-mono font-bold text-secondary">{tenantId || "N/A"}</p>
+              <div className="text-right hidden sm:block">
+                <p className="text-[8px] font-black uppercase text-slate-500 tracking-widest">Estado Operativo</p>
+                <div className="flex items-center gap-2 justify-end mt-1">
+                  <span className="h-2 w-2 bg-accent rounded-full animate-pulse shadow-[0_0_10px_rgba(34,197,94,0.5)]" />
+                  <p className="text-[10px] font-black uppercase text-accent">Portal Enlazado</p>
+                </div>
               </div>
             </div>
 
-            {/* Protocolos Técnicos en Grid */}
+            {/* Protocolos Técnicos */}
             <div className="space-y-6">
               <div className="flex items-center gap-3 px-1">
                 <Sparkles className="h-4 w-4 text-secondary" />
