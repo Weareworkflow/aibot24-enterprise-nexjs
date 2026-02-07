@@ -2,27 +2,24 @@
 
 import { useMemo, useState, useEffect } from "react";
 import { Navbar } from "@/components/layout/Navbar";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
-  Building2, 
-  Globe, 
-  ShieldCheck, 
   Link2, 
   Key, 
   ArrowLeft,
   Loader2,
   Save,
-  Database,
   Sparkles,
   Info,
   Palette,
   CloudCog,
   Sun,
-  Moon
+  Moon,
+  ShieldCheck
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useUIStore } from "@/lib/store";
@@ -88,7 +85,7 @@ export default function SettingsPage() {
   };
 
   if (loading) return (
-    <div className="flex flex-col min-h-screen bg-background transition-colors duration-300">
+    <div className="flex flex-col min-h-screen bg-background">
       <Navbar />
       <div className="flex-1 flex flex-col items-center justify-center gap-4">
         <Loader2 className="h-8 w-8 animate-spin text-secondary" />
@@ -97,41 +94,39 @@ export default function SettingsPage() {
     </div>
   );
 
-  const portalName = domain ? domain.split('.')[0].toUpperCase() : "WORKFLOWTEAMS";
-
   return (
     <div className="flex flex-col min-h-screen bg-background transition-colors duration-300">
       <Navbar />
       <main className="container mx-auto px-4 py-8 max-w-4xl space-y-6">
         
-        {/* Cabecera de Ajustes - Integrada y Limpia */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-6 px-4 mb-4">
-          <div className="flex items-center gap-4 w-full sm:w-auto">
+        {/* Cabecera Integrada (Sin Tarjeta/Banner) */}
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-6 px-4 mb-2">
+          <div className="flex items-center gap-5 w-full sm:w-auto">
             <Button 
               variant="ghost" 
               size="icon" 
-              className="h-10 w-10 flex items-center justify-center bg-card rounded-xl hover:bg-foreground hover:text-background transition-all shadow-sm border border-border"
+              className="h-11 w-11 flex items-center justify-center bg-card rounded-2xl hover:bg-foreground hover:text-background transition-all shadow-sm border border-border"
               onClick={() => router.back()}
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <div className="flex flex-col">
               <div className="flex items-center gap-3">
-                <h1 className="text-xl font-headline font-bold text-foreground leading-none">{portalName}</h1>
-                <div className="flex items-center gap-1.5 px-2 py-0.5 bg-accent/10 rounded-full border border-accent/20">
+                <h1 className="text-2xl font-headline font-bold text-foreground leading-none">WORKFLOWTEAMS</h1>
+                <div className="flex items-center gap-1.5 px-2.5 py-0.5 bg-accent/10 rounded-full border border-accent/20">
                   <span className="h-1.5 w-1.5 bg-accent rounded-full animate-pulse" />
-                  <span className="text-[8px] font-black uppercase text-accent tracking-widest">Activo</span>
+                  <span className="text-[9px] font-black uppercase text-accent tracking-widest">Activo</span>
                 </div>
               </div>
-              <p className="text-[10px] font-medium text-muted-foreground mt-1 lowercase tracking-tight">
-                {domain || "workflowteams.bitrix24.es"}
+              <p className="text-[11px] font-bold text-muted-foreground mt-1 tracking-tight">
+                workflowteams.bitrix24.es
               </p>
             </div>
           </div>
           <div className="text-right hidden sm:block">
-            <p className="text-[9px] font-black uppercase text-muted-foreground tracking-widest flex items-center gap-1.5 justify-end">
-              <ShieldCheck className="h-3 w-3 text-secondary" />
-              Enterprise Protocol
+            <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest flex items-center gap-2 justify-end">
+              <ShieldCheck className="h-3.5 w-3.5 text-secondary" />
+              Consola Operativa v3.1
             </p>
           </div>
         </div>
@@ -139,19 +134,19 @@ export default function SettingsPage() {
         <Card className="border-none shadow-2xl rounded-[2.5rem] bg-card text-card-foreground overflow-hidden high-volume transition-colors duration-300">
           <CardContent className="p-8 space-y-8">
             <Tabs defaultValue="conexion" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 h-12 bg-muted/50 rounded-2xl p-1 mb-8">
+              <TabsList className="grid w-full grid-cols-2 h-14 bg-muted/50 rounded-2xl p-1.5 mb-8">
                 <TabsTrigger 
                   value="conexion" 
                   className="rounded-xl text-[10px] font-black uppercase tracking-widest data-[state=active]:bg-card data-[state=active]:shadow-sm data-[state=active]:text-secondary transition-all"
                 >
-                  <CloudCog className="h-3.5 w-3.5 mr-2" />
+                  <CloudCog className="h-4 w-4 mr-2" />
                   Conexión
                 </TabsTrigger>
                 <TabsTrigger 
                   value="apariencia" 
                   className="rounded-xl text-[10px] font-black uppercase tracking-widest data-[state=active]:bg-card data-[state=active]:shadow-sm data-[state=active]:text-secondary transition-all"
                 >
-                  <Palette className="h-3.5 w-3.5 mr-2" />
+                  <Palette className="h-4 w-4 mr-2" />
                   Apariencia
                 </TabsTrigger>
               </TabsList>
@@ -164,8 +159,8 @@ export default function SettingsPage() {
                       <h4 className="text-[11px] font-black uppercase tracking-widest opacity-80">Credenciales de Instalación Bitrix24</h4>
                     </div>
                     <div className="flex items-start gap-2 bg-blue-50/10 dark:bg-blue-900/10 p-4 rounded-xl border border-blue-100/20 dark:border-blue-800/20">
-                      <Info className="h-3.5 w-3.5 text-blue-500 mt-0.5 flex-shrink-0" />
-                      <p className="text-[9px] text-muted-foreground font-bold uppercase tracking-wider leading-relaxed">
+                      <Info className="h-4 w-4 text-blue-500 mt-0.5 flex-shrink-0" />
+                      <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider leading-relaxed">
                         El Client ID y Secret ID se localizan en la sección de configuración de instalación de aplicaciones locales de su portal Bitrix24.
                       </p>
                     </div>
@@ -178,7 +173,7 @@ export default function SettingsPage() {
                         value={formData.clientId}
                         onChange={(e) => setFormData({...formData, clientId: e.target.value})}
                         placeholder="local.65..." 
-                        className="h-11 bg-muted/30 border-border rounded-xl px-4 font-mono text-[11px] focus:bg-background transition-all shadow-inner"
+                        className="h-12 bg-muted/30 border-border rounded-xl px-4 font-mono text-[11px] focus:bg-background transition-all shadow-inner"
                       />
                     </div>
                     <div className="space-y-2.5">
@@ -188,7 +183,7 @@ export default function SettingsPage() {
                         value={formData.clientSecret}
                         onChange={(e) => setFormData({...formData, clientSecret: e.target.value})}
                         placeholder="••••••••••••••••" 
-                        className="h-11 bg-muted/30 border-border rounded-xl px-4 font-mono text-[11px] focus:bg-background transition-all shadow-inner"
+                        className="h-12 bg-muted/30 border-border rounded-xl px-4 font-mono text-[11px] focus:bg-background transition-all shadow-inner"
                       />
                     </div>
                   </div>
@@ -201,8 +196,8 @@ export default function SettingsPage() {
                       <h4 className="text-[11px] font-black uppercase tracking-widest opacity-80">Canal de Comunicación AI</h4>
                     </div>
                     <div className="flex items-start gap-2 bg-muted/30 p-4 rounded-xl border border-border/40">
-                      <Sparkles className="h-3.5 w-3.5 text-secondary mt-0.5 flex-shrink-0" />
-                      <p className="text-[9px] text-muted-foreground font-bold uppercase tracking-wider leading-relaxed">
+                      <Sparkles className="h-4 w-4 text-secondary mt-0.5 flex-shrink-0" />
+                      <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider leading-relaxed">
                         Este es el servicio del agente dedicado para este portal. Es el endpoint de enlace para procesar interacciones inteligentes.
                       </p>
                     </div>
@@ -214,7 +209,7 @@ export default function SettingsPage() {
                       value={formData.serviceWebhook}
                       onChange={(e) => setFormData({...formData, serviceWebhook: e.target.value})}
                       placeholder="https://agent-service-abc.a.run.app" 
-                      className="h-11 bg-muted/30 border-border rounded-xl px-4 text-[12px] focus:bg-background transition-all shadow-inner"
+                      className="h-12 bg-muted/30 border-border rounded-xl px-4 text-[12px] focus:bg-background transition-all shadow-inner"
                     />
                   </div>
                 </div>
@@ -227,7 +222,7 @@ export default function SettingsPage() {
                       <Sun className="h-4 w-4 text-secondary" />
                       <h4 className="text-[11px] font-black uppercase tracking-widest opacity-80">Modo de Visualización</h4>
                     </div>
-                    <p className="text-[9px] text-muted-foreground font-bold uppercase tracking-wider leading-relaxed px-1">
+                    <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider leading-relaxed px-1">
                       Selecciona el tema visual para tu consola operativa.
                     </p>
                   </div>
@@ -241,20 +236,20 @@ export default function SettingsPage() {
                         key={mode.id}
                         onClick={() => setTheme(mode.id)}
                         className={cn(
-                          "flex flex-col items-center gap-3 p-8 rounded-2xl border-2 transition-all group",
+                          "flex flex-col items-center gap-4 p-10 rounded-[2rem] border-2 transition-all group",
                           theme === mode.id 
                             ? "border-secondary bg-secondary/5" 
                             : "border-border bg-muted/30 hover:border-muted-foreground/30"
                         )}
                       >
                         <div className={cn(
-                          "h-12 w-12 rounded-full flex items-center justify-center transition-all",
+                          "h-14 w-14 rounded-full flex items-center justify-center transition-all",
                           theme === mode.id ? "bg-secondary text-white scale-110" : "bg-card text-muted-foreground group-hover:text-foreground"
                         )}>
-                          <mode.icon className="h-6 w-6" />
+                          <mode.icon className="h-7 w-7" />
                         </div>
                         <span className={cn(
-                          "text-[10px] font-black uppercase tracking-widest",
+                          "text-[11px] font-black uppercase tracking-widest",
                           theme === mode.id ? "text-secondary" : "text-muted-foreground"
                         )}>
                           {mode.label}
@@ -270,20 +265,20 @@ export default function SettingsPage() {
                       <Palette className="h-4 w-4 text-secondary" />
                       <h4 className="text-[11px] font-black uppercase tracking-widest opacity-80">Identidad Visual del Portal</h4>
                     </div>
-                    <p className="text-[9px] text-muted-foreground font-bold uppercase tracking-wider leading-relaxed px-1">
+                    <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider leading-relaxed px-1">
                       Personaliza los colores de marca para este portal específico.
                     </p>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-3">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div className="space-y-4">
                       <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Color de Marca (Primario)</Label>
-                      <div className="flex gap-2">
+                      <div className="flex gap-3">
                         {["#1B75BB", "#41E0F0", "#2FC6F6", "#22c55e", "#000000"].map(color => (
                           <button 
                             key={color}
                             className={cn(
-                              "h-8 w-8 rounded-lg border-2 border-background shadow-sm transition-transform hover:scale-110",
+                              "h-10 w-10 rounded-xl border-2 border-background shadow-sm transition-transform hover:scale-110",
                               color === "#1B75BB" && "ring-2 ring-secondary/20"
                             )}
                             style={{ backgroundColor: color }}
@@ -292,10 +287,10 @@ export default function SettingsPage() {
                       </div>
                     </div>
 
-                    <div className="space-y-3">
+                    <div className="space-y-4">
                       <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Logotipo del Portal</Label>
-                      <div className="h-11 w-full border-2 border-dashed border-border rounded-xl flex items-center justify-center bg-muted/30 hover:bg-background transition-colors cursor-pointer">
-                        <span className="text-[9px] font-black uppercase text-muted-foreground">Subir Imagen (PNG/SVG)</span>
+                      <div className="h-14 w-full border-2 border-dashed border-border rounded-2xl flex items-center justify-center bg-muted/30 hover:bg-background transition-colors cursor-pointer">
+                        <span className="text-[10px] font-black uppercase text-muted-foreground">Subir Imagen (PNG/SVG)</span>
                       </div>
                     </div>
                   </div>
@@ -303,7 +298,7 @@ export default function SettingsPage() {
               </TabsContent>
             </Tabs>
 
-            <div className="pt-4">
+            <div className="pt-6">
               <Button 
                 onClick={handleSave}
                 disabled={isSaving}

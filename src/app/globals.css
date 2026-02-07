@@ -27,24 +27,24 @@
   }
 
   .dark {
-    --background: 224 71% 2%;
+    --background: 224 71% 6%; /* Deep Enterprise Blue */
     --foreground: 210 40% 98%;
-    --card: 224 71% 4%;
+    --card: 224 71% 10%;
     --card-foreground: 210 40% 98%;
-    --popover: 224 71% 4%;
+    --popover: 224 71% 10%;
     --popover-foreground: 210 40% 98%;
     --primary: 210 40% 98%;
     --primary-foreground: 224 71% 4%;
     --secondary: 199 89% 48%;
     --secondary-foreground: 0 0% 100%;
-    --muted: 224 71% 10%;
+    --muted: 224 71% 15%;
     --muted-foreground: 215 20.2% 65.1%;
     --accent: 142 70% 45%;
     --accent-foreground: 210 40% 98%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
-    --border: 224 71% 12%;
-    --input: 224 71% 12%;
+    --border: 224 71% 18%;
+    --input: 224 71% 18%;
     --ring: 199 89% 48%;
   }
 }
@@ -69,18 +69,18 @@
 }
 
 .high-volume {
-  @apply shadow-xl dark:shadow-2xl dark:shadow-black/50;
+  @apply shadow-xl dark:shadow-2xl dark:shadow-black/20;
   box-shadow: 
     0 0 0 1px rgba(0,0,0,0.02),
-    0 20px 25px -5px rgba(0,0,0,0.1),
-    0 8px 10px -6px rgba(0,0,0,0.1);
+    0 20px 25px -5px rgba(0,0,0,0.05),
+    0 8px 10px -6px rgba(0,0,0,0.05);
 }
 
 .dark .high-volume {
   box-shadow: 
     0 0 0 1px rgba(255,255,255,0.05),
-    0 20px 25px -5px rgba(0,0,0,0.4),
-    0 8px 10px -6px rgba(0,0,0,0.4);
+    0 20px 25px -5px rgba(0,0,0,0.3),
+    0 8px 10px -6px rgba(0,0,0,0.3);
 }
 
 .card-rounded {
