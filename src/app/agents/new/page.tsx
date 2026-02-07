@@ -6,7 +6,7 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import { Loader2, Send, Bot, Rocket, Check } from "lucide-react";
+import { Loader2, Send, Bot, Rocket, Check, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -15,6 +15,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useFirestore } from "@/firebase";
 import { doc, setDoc } from "firebase/firestore";
 import { useUIStore } from "@/lib/store";
+import { generateAgentConfig } from "@/ai/flows/generate-agent-config";
 
 const ASSISTANT_COLORS = [
   "#1B75BB", "#41E0F0", "#2FC6F6", "#22c55e", "#10b981", 
@@ -36,10 +37,7 @@ export default function NewAgentPage() {
     name: "",
     role: "",
     company: "",
-    color: ASSISTANT_COLORS[0],
-    objective: "Atención al cliente inteligente.",
-    tone: "Profesional y resolutivo.",
-    knowledge: "Eres un asistente de IA de élite. Responde con precisión."
+    color: ASSISTANT_COLORS[0]
   });
   
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -123,7 +121,14 @@ export default function NewAgentPage() {
     setIsSaving(true);
 
     try {
+      // 1. Generar Objetivo y Tono en automático basado en el Rol
+      const aiResponse = await generateAgentConfig({
+        prompt: `Genera un objetivo estratégico breve y un tono de comunicación para un agente con el rol: ${config.role} de la empresa ${config.company}.`
+      });
+
       const agentId = Date.now().toString();
+      
+      // 2. Crear el objeto final con instrucciones en blanco
       const newAgent: AIAgent = {
         id: agentId,
         tenantId: effectiveTenantId,
@@ -131,9 +136,9 @@ export default function NewAgentPage() {
         type: 'text',
         role: config.role,
         company: config.company,
-        objective: config.objective,
-        tone: config.tone,
-        knowledge: config.knowledge,
+        objective: aiResponse.objective || "Atención al cliente inteligente.",
+        tone: aiResponse.tone || "Profesional y resolutivo.",
+        knowledge: "", // Instrucciones en blanco como se solicitó
         color: config.color,
         isActive: true,
         createdAt: new Date().toISOString(),
@@ -147,13 +152,16 @@ export default function NewAgentPage() {
       };
 
       await setDoc(doc(db, "agents", agentId), newAgent);
-      toast({ title: "Agente Activo", description: `${config.name} ha sido desplegado exitosamente.` });
       
-      // Forzamos navegación a la página principal para ver la nueva tarjeta
+      toast({ 
+        title: "Agente Desplegado", 
+        description: `Arquitectura de ${config.name} finalizada con éxito.` 
+      });
+      
       router.push("/");
     } catch (error: any) {
       console.error("Error al guardar:", error);
-      toast({ variant: "destructive", title: "Error al guardar", description: error.message });
+      toast({ variant: "destructive", title: "Error al desplegar", description: error.message });
     } finally {
       setIsSaving(false);
     }
@@ -223,19 +231,25 @@ export default function NewAgentPage() {
                     <Card className="bg-slate-900 text-white rounded-[2rem] p-6 shadow-xl border-none">
                       <div className="flex items-center justify-between mb-4">
                         <div className="space-y-1">
-                          <p className="text-[9px] font-black uppercase tracking-widest text-secondary">{config.role}</p>
+                          <p className="text-[9px] font-black uppercase tracking-widest text-secondary flex items-center gap-1">
+                            <Sparkles className="h-2 w-2" />
+                            Auto-configuración Activa
+                          </p>
                           <h3 className="font-bold text-lg">{config.name}</h3>
                         </div>
                         <div className="h-10 w-10 rounded-xl shadow-lg border-2 border-white/10" style={{ backgroundColor: config.color }} />
                       </div>
-                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{config.company}</p>
+                      <div className="space-y-2 mb-6">
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{config.company} • {config.role}</p>
+                        <p className="text-[9px] text-slate-500 italic">Objetivo y Tono se generarán al desplegar.</p>
+                      </div>
                       <Button 
                         onClick={handleSave} 
                         disabled={isSaving} 
-                        className="w-full mt-6 h-12 rounded-full bg-secondary hover:bg-secondary/90 text-white font-black text-[10px] uppercase tracking-widest gap-2 shadow-xl shadow-secondary/20"
+                        className="w-full h-12 rounded-full bg-secondary hover:bg-secondary/90 text-white font-black text-[10px] uppercase tracking-widest gap-2 shadow-xl shadow-secondary/20"
                       >
                         {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Rocket className="h-4 w-4" />}
-                        Desplegar Agente
+                        {isSaving ? "Generando Protocolo..." : "Desplegar Agente"}
                       </Button>
                     </Card>
                   </div>
