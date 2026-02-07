@@ -1,3 +1,4 @@
+
 "use client";
 
 import { AIAgent } from "@/lib/types";
@@ -180,24 +181,23 @@ export function AgentCard({ agent }: AgentCardProps) {
           </div>
         </div>
 
-        {/* Métricas con alineación mejorada */}
         <div className="grid grid-cols-2 gap-3 mb-6">
-          <div className="bg-slate-50/80 p-4 rounded-[1.8rem] border border-slate-100 flex flex-col gap-3 transition-all hover:bg-white hover:shadow-md hover:border-slate-200">
-            <div className={cn("h-8 w-8 rounded-xl flex items-center justify-center shadow-sm", isActive ? "bg-primary text-white" : "bg-slate-200 text-slate-400")}>
-              <MessageCircle className="h-4 w-4" />
+          <div className="bg-slate-50/80 p-4 rounded-[1.8rem] border border-slate-100 flex flex-col items-center justify-center text-center gap-1.5 transition-all hover:bg-white hover:shadow-md hover:border-slate-200 h-24">
+            <div className={cn("h-7 w-7 rounded-lg flex items-center justify-center shadow-sm", isActive ? "bg-primary text-white" : "bg-slate-200 text-slate-400")}>
+              <MessageCircle className="h-3.5 w-3.5" />
             </div>
             <div>
-              <p className="text-[7px] font-black uppercase tracking-widest text-muted-foreground mb-0.5">Mensajes</p>
-              <p className="text-xl font-headline font-bold text-slate-800 leading-none">{agent.metrics.totalInteractionMetric || 0}</p>
+              <p className="text-[7px] font-black uppercase tracking-widest text-muted-foreground">Mensajes</p>
+              <p className="text-lg font-headline font-bold text-slate-800 leading-none">{agent.metrics.totalInteractionMetric || 0}</p>
             </div>
           </div>
-          <div className="bg-slate-50/80 p-4 rounded-[1.8rem] border border-slate-100 flex flex-col gap-3 transition-all hover:bg-white hover:shadow-md hover:border-slate-200">
-            <div className={cn("h-8 w-8 rounded-xl flex items-center justify-center shadow-sm", isActive ? "bg-secondary text-white" : "bg-slate-200 text-slate-400")}>
-              <Database className="h-4 w-4" />
+          <div className="bg-slate-50/80 p-4 rounded-[1.8rem] border border-slate-100 flex flex-col items-center justify-center text-center gap-1.5 transition-all hover:bg-white hover:shadow-md hover:border-slate-200 h-24">
+            <div className={cn("h-7 w-7 rounded-lg flex items-center justify-center shadow-sm", isActive ? "bg-secondary text-white" : "bg-slate-200 text-slate-400")}>
+              <Database className="h-3.5 w-3.5" />
             </div>
             <div>
-              <p className="text-[7px] font-black uppercase tracking-widest text-muted-foreground mb-0.5">Tokens</p>
-              <p className="text-xl font-headline font-bold text-slate-800 leading-none">{agent.metrics.tokens || 0}</p>
+              <p className="text-[7px] font-black uppercase tracking-widest text-muted-foreground">Tokens</p>
+              <p className="text-lg font-headline font-bold text-slate-800 leading-none">{agent.metrics.tokens || 0}</p>
             </div>
           </div>
         </div>

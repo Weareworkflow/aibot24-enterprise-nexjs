@@ -11,16 +11,13 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { 
-  Phone, 
   BookOpen, 
   HelpCircle, 
   Globe, 
-  MessageCircle, 
-  ArrowRight,
   ShieldCheck,
-  Zap
+  Zap,
+  Mail
 } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 const FAQS = [
   {
@@ -47,7 +44,6 @@ export default function HelpPage() {
       <Navbar />
       <main className="container mx-auto px-4 py-12 max-w-6xl space-y-8">
         
-        {/* Header de la página */}
         <div className="mb-4">
           <h1 className="text-3xl font-headline font-bold text-slate-900">Centro de Operaciones y Ayuda</h1>
           <p className="text-[10px] font-black uppercase text-muted-foreground tracking-[0.3em] mt-2 flex items-center gap-2">
@@ -56,13 +52,11 @@ export default function HelpPage() {
           </p>
         </div>
 
-        {/* Fila Superior: Contacto y Documentación */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {/* Tarjeta de Contacto */}
           <Card className="border-none shadow-2xl rounded-[2.5rem] bg-white overflow-hidden high-volume group">
             <CardHeader className="p-8 border-b border-slate-50 flex flex-row items-center gap-5">
               <div className="h-12 w-12 rounded-2xl bg-secondary/10 flex items-center justify-center text-secondary group-hover:bg-secondary group-hover:text-white transition-all shadow-sm border border-secondary/5">
-                <Globe className="h-6 w-6" />
+                <Mail className="h-6 w-6" />
               </div>
               <div>
                 <CardTitle className="text-xl font-headline font-bold">Contact</CardTitle>
@@ -72,7 +66,7 @@ export default function HelpPage() {
             <CardContent className="p-10 space-y-8">
               <div className="space-y-4">
                 <p className="text-[13px] text-slate-600 font-medium leading-relaxed">
-                  ¿Necesitas asistencia técnica personalizada o una implementación a medida para tu organización? Nuestro equipo está listo para intervenir.
+                  ¿Necesitas asistencia técnica personalizada o una implementación a medida para tu organización? Nuestro equipo de arquitectos está listo para intervenir.
                 </p>
               </div>
               <Button className="w-full h-14 rounded-full bg-secondary hover:bg-secondary/90 text-white font-black text-[11px] uppercase tracking-[0.2em] shadow-xl shadow-secondary/20 transition-all hover:scale-[1.02]">
@@ -81,7 +75,6 @@ export default function HelpPage() {
             </CardContent>
           </Card>
 
-          {/* Tarjeta de Documentación */}
           <Card className="border-none shadow-2xl rounded-[2.5rem] bg-white overflow-hidden high-volume group">
             <CardHeader className="p-8 border-b border-slate-50 flex flex-row items-center gap-5">
               <div className="h-12 w-12 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-500 group-hover:bg-slate-900 group-hover:text-white transition-all shadow-sm border border-slate-200/50">
@@ -109,7 +102,6 @@ export default function HelpPage() {
           </Card>
         </div>
 
-        {/* Sección de FAQ */}
         <Card className="border-none shadow-2xl rounded-[3rem] bg-white overflow-hidden high-volume">
           <CardHeader className="p-10 border-b border-slate-50 bg-slate-50/30 flex flex-row items-center gap-5">
             <div className="h-12 w-12 rounded-2xl bg-white flex items-center justify-center text-secondary shadow-md border border-slate-100">
@@ -147,7 +139,6 @@ export default function HelpPage() {
           </CardContent>
         </Card>
 
-        {/* Footer de la página de ayuda */}
         <div className="flex justify-center pt-8 pb-12">
           <div className="flex items-center gap-3 px-6 py-3 bg-white/50 rounded-full border border-slate-200 shadow-sm backdrop-blur-sm">
             <Zap className="h-4 w-4 text-secondary animate-pulse" />
