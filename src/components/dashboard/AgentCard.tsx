@@ -1,4 +1,3 @@
-
 "use client";
 
 import { AIAgent } from "@/lib/types";
@@ -95,7 +94,7 @@ export function AgentCard({ agent }: AgentCardProps) {
     <Card 
       onClick={handleCardClick}
       className={cn(
-        "group relative border border-slate-200/80 bg-white rounded-[2.5rem] p-8 transition-all duration-500 hover:shadow-[0_25px_50px_-12px_rgba(0,0,0,0.12)] hover:-translate-y-2 cursor-pointer overflow-hidden high-volume",
+        "group relative border border-slate-200/80 bg-white rounded-[2.5rem] p-7 transition-all duration-500 hover:shadow-[0_25px_50px_-12px_rgba(0,0,0,0.12)] hover:-translate-y-2 cursor-pointer overflow-hidden high-volume",
         !isActive && "opacity-80 grayscale-[0.2]"
       )}
     >
@@ -181,23 +180,24 @@ export function AgentCard({ agent }: AgentCardProps) {
           </div>
         </div>
 
+        {/* Métricas con alineación mejorada */}
         <div className="grid grid-cols-2 gap-3 mb-6">
-          <div className="bg-slate-50 p-4 rounded-[2rem] border border-slate-100 flex items-center gap-4 transition-all hover:bg-white hover:shadow-md hover:border-slate-200">
-            <div className={cn("p-2.5 rounded-2xl shadow-sm", isActive ? "bg-primary text-white" : "bg-slate-200 text-slate-400")}>
-              <MessageCircle className="h-4.5 w-4.5" />
+          <div className="bg-slate-50/80 p-4 rounded-[1.8rem] border border-slate-100 flex flex-col gap-3 transition-all hover:bg-white hover:shadow-md hover:border-slate-200">
+            <div className={cn("h-8 w-8 rounded-xl flex items-center justify-center shadow-sm", isActive ? "bg-primary text-white" : "bg-slate-200 text-slate-400")}>
+              <MessageCircle className="h-4 w-4" />
             </div>
             <div>
-              <p className="text-[8px] font-black uppercase tracking-widest text-muted-foreground">Mensajes</p>
-              <p className="text-xl font-headline font-bold text-slate-800">{agent.metrics.totalInteractionMetric || 0}</p>
+              <p className="text-[7px] font-black uppercase tracking-widest text-muted-foreground mb-0.5">Mensajes</p>
+              <p className="text-xl font-headline font-bold text-slate-800 leading-none">{agent.metrics.totalInteractionMetric || 0}</p>
             </div>
           </div>
-          <div className="bg-slate-50 p-4 rounded-[2rem] border border-slate-100 flex items-center gap-4 transition-all hover:bg-white hover:shadow-md hover:border-slate-200">
-            <div className={cn("p-2.5 rounded-2xl shadow-sm", isActive ? "bg-secondary text-white" : "bg-slate-200 text-slate-400")}>
-              <Database className="h-4.5 w-4.5" />
+          <div className="bg-slate-50/80 p-4 rounded-[1.8rem] border border-slate-100 flex flex-col gap-3 transition-all hover:bg-white hover:shadow-md hover:border-slate-200">
+            <div className={cn("h-8 w-8 rounded-xl flex items-center justify-center shadow-sm", isActive ? "bg-secondary text-white" : "bg-slate-200 text-slate-400")}>
+              <Database className="h-4 w-4" />
             </div>
             <div>
-              <p className="text-[8px] font-black uppercase tracking-widest text-muted-foreground">Tokens</p>
-              <p className="text-xl font-headline font-bold text-slate-800">{agent.metrics.tokens || 0}</p>
+              <p className="text-[7px] font-black uppercase tracking-widest text-muted-foreground mb-0.5">Tokens</p>
+              <p className="text-xl font-headline font-bold text-slate-800 leading-none">{agent.metrics.tokens || 0}</p>
             </div>
           </div>
         </div>
