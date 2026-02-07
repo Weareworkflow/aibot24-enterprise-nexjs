@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useRef } from "react";
@@ -94,11 +93,11 @@ export function AgentChat({ agent }: AgentChatProps) {
           <Accordion type="single" collapsible defaultValue="identidad" className="w-full">
             <AccordionItem value="identidad" className="border-b-0 px-4">
               <AccordionTrigger className="hover:no-underline py-8 group border-b border-slate-50">
-                <div className="flex items-center gap-5 text-[13px] font-black uppercase tracking-[0.2em] text-slate-600 group-hover:text-secondary transition-colors">
+                <div className="flex items-center gap-5 text-[13px] font-black uppercase tracking-[0.2em] text-secondary transition-colors">
                   <div className="h-12 w-12 rounded-[1.2rem] bg-slate-50 flex items-center justify-center group-data-[state=open]:bg-secondary group-data-[state=open]:text-white transition-all shadow-sm border border-slate-100">
                     <Settings2 className="h-6 w-6" />
                   </div>
-                  Identidad y Estrategia
+                  Identidad
                 </div>
               </AccordionTrigger>
               <AccordionContent className="pb-10 pt-6 animate-in fade-in slide-in-from-top-2">
@@ -108,11 +107,11 @@ export function AgentChat({ agent }: AgentChatProps) {
 
             <AccordionItem value="integraciones" className="border-b-0 px-4">
               <AccordionTrigger className="hover:no-underline py-8 group">
-                <div className="flex items-center gap-5 text-[13px] font-black uppercase tracking-[0.2em] text-slate-600 group-hover:text-secondary transition-colors">
+                <div className="flex items-center gap-5 text-[13px] font-black uppercase tracking-[0.2em] text-secondary transition-colors">
                   <div className="h-12 w-12 rounded-[1.2rem] bg-slate-50 flex items-center justify-center group-data-[state=open]:bg-secondary group-data-[state=open]:text-white transition-all shadow-sm border border-slate-100">
                     <Share2 className="h-6 w-6" />
                   </div>
-                  Canales e Integraciones
+                  Integraciones
                 </div>
               </AccordionTrigger>
               <AccordionContent className="pb-10 pt-6 animate-in fade-in slide-in-from-top-2">
