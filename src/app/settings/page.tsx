@@ -23,8 +23,7 @@ import {
   Palette,
   CloudCog,
   Sun,
-  Moon,
-  Monitor
+  Moon
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useUIStore } from "@/lib/store";
@@ -117,45 +116,28 @@ export default function SettingsPage() {
               >
                 <ArrowLeft className="h-5 w-5" />
               </Button>
-              <div>
-                <CardTitle className="text-lg font-headline font-bold text-foreground leading-none">Configuración</CardTitle>
-                <p className="text-[9px] font-black uppercase text-muted-foreground tracking-widest mt-1 flex items-center gap-1.5">
-                  <ShieldCheck className="h-3 w-3 text-secondary" />
-                  Enterprise Protocol
+              <div className="flex flex-col">
+                <div className="flex items-center gap-3">
+                  <CardTitle className="text-lg font-headline font-bold text-foreground leading-none">{portalName}</CardTitle>
+                  <div className="flex items-center gap-1.5 px-2 py-0.5 bg-accent/10 rounded-full border border-accent/20">
+                    <span className="h-1.5 w-1.5 bg-accent rounded-full animate-pulse" />
+                    <span className="text-[8px] font-black uppercase text-accent tracking-widest">Activo</span>
+                  </div>
+                </div>
+                <p className="text-[10px] font-medium text-muted-foreground mt-1 lowercase tracking-tight">
+                  {domain || "workflowteams.bitrix24.es"}
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-2 px-3 py-1 bg-accent/10 rounded-full border border-accent/20">
-              <div className="h-1.5 w-1.5 bg-accent rounded-full animate-pulse" />
-              <span className="text-[8px] font-black uppercase text-accent tracking-widest">Activo</span>
+            <div className="text-right hidden sm:block">
+              <p className="text-[9px] font-black uppercase text-muted-foreground tracking-widest flex items-center gap-1.5 justify-end">
+                <ShieldCheck className="h-3 w-3 text-secondary" />
+                Enterprise Protocol
+              </p>
             </div>
           </CardHeader>
 
           <CardContent className="p-6 space-y-8">
-            <div className="bg-primary text-primary-foreground rounded-[2rem] p-6 flex items-center justify-between shadow-xl transition-colors duration-300">
-              <div className="flex items-center gap-5">
-                <div className="h-14 w-14 rounded-2xl bg-white/10 flex items-center justify-center border border-white/10 backdrop-blur-sm shadow-inner">
-                  <Building2 className="h-7 w-7 text-secondary" />
-                </div>
-                <div>
-                  <h3 className="text-xl font-bold font-headline leading-tight tracking-tight">{portalName}</h3>
-                  <div className="mt-1 flex flex-col">
-                    <p className="text-[11px] opacity-70 font-medium flex items-center gap-1.5">
-                      <Globe className="h-3 w-3" />
-                      {domain || "workflowteams.bitrix24.es"}
-                    </p>
-                  </div>
-                </div>
-              </div>
-              <div className="text-right hidden sm:block">
-                <p className="text-[8px] font-black uppercase opacity-50 tracking-widest">Estado Operativo</p>
-                <div className="flex items-center gap-2 justify-end mt-1">
-                  <span className="h-2 w-2 bg-accent rounded-full animate-pulse shadow-[0_0_10px_rgba(34,197,94,0.5)]" />
-                  <p className="text-[10px] font-black uppercase text-accent">Portal Enlazado</p>
-                </div>
-              </div>
-            </div>
-
             <Tabs defaultValue="conexion" className="w-full">
               <TabsList className="grid w-full grid-cols-2 h-12 bg-muted rounded-2xl p-1 mb-8">
                 <TabsTrigger 
@@ -250,11 +232,10 @@ export default function SettingsPage() {
                     </p>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {[
                       { id: 'light', label: 'Claro', icon: Sun },
                       { id: 'dark', label: 'Oscuro', icon: Moon },
-                      { id: 'system', label: 'Sistema', icon: Monitor },
                     ].map((mode) => (
                       <button
                         key={mode.id}
