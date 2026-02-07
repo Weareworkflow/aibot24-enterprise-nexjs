@@ -2,10 +2,9 @@
 
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { AIAgent } from "@/lib/types";
 import { cn } from "@/lib/utils";
-import { Check, User, Briefcase, Building2, Palette, Sparkles, Target, MessageCircle } from "lucide-react";
+import { Check, User, Briefcase, Building2, Palette, Sparkles } from "lucide-react";
 
 interface IdentitySectionProps {
   agent: AIAgent;
@@ -60,38 +59,6 @@ export function IdentitySection({ agent, onUpdate }: IdentitySectionProps) {
             value={agent.company} 
             onChange={(e) => onUpdate('company', e.target.value)} 
             className="h-12 text-sm font-bold bg-slate-50/50 border-slate-100 rounded-[1.2rem] focus-visible:ring-1 focus-visible:ring-secondary/20 px-6 transition-all hover:bg-white" 
-          />
-        </div>
-      </div>
-
-      {/* Objetivo y Tono (Unidos a Identidad) */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-slate-100">
-        <div className="space-y-3">
-          <div className="flex items-center gap-2.5">
-            <div className="h-8 w-8 rounded-xl bg-secondary/5 flex items-center justify-center">
-              <Target className="h-4 w-4 text-secondary" />
-            </div>
-            <Label className="text-[10px] font-black uppercase text-slate-600 tracking-[0.2em]">Objetivo Estratégico</Label>
-          </div>
-          <Textarea 
-            value={agent.objective} 
-            onChange={(e) => onUpdate('objective', e.target.value, 'Objetivo')} 
-            className="min-h-[100px] text-sm bg-slate-50/50 border-slate-100 rounded-[1.5rem] focus-visible:ring-1 focus-visible:ring-secondary/20 p-5 leading-relaxed transition-all hover:bg-white" 
-            placeholder="¿Misión crítica?"
-          />
-        </div>
-        <div className="space-y-3">
-          <div className="flex items-center gap-2.5">
-            <div className="h-8 w-8 rounded-xl bg-accent/5 flex items-center justify-center">
-              <MessageCircle className="h-4 w-4 text-accent" />
-            </div>
-            <Label className="text-[10px] font-black uppercase text-slate-600 tracking-[0.2em]">Tono de Comunicación</Label>
-          </div>
-          <Textarea 
-            value={agent.tone} 
-            onChange={(e) => onUpdate('tone', e.target.value, 'Tono')} 
-            className="min-h-[100px] text-sm bg-slate-50/50 border-slate-100 rounded-[1.5rem] focus-visible:ring-1 focus-visible:ring-accent/20 p-5 leading-relaxed transition-all hover:bg-white" 
-            placeholder="Ej: Profesional y cordial..."
           />
         </div>
       </div>
