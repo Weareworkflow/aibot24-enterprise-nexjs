@@ -18,14 +18,16 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
+import { translations } from "@/lib/translations";
 
 export function PortalMenu() {
-  const { tenantId, domain } = useUIStore();
+  const { tenantId, domain, language } = useUIStore();
   const router = useRouter();
+  const t = translations[language].nav;
   
   const portalName = domain 
     ? domain.split('.')[0].toUpperCase() 
-    : (tenantId ? "PORTAL ACTIVO" : "SESIÓN ANÓNIMA");
+    : (tenantId ? t.active_portal : t.anonymous);
 
   return (
     <DropdownMenu>
@@ -52,7 +54,7 @@ export function PortalMenu() {
             <div className="h-8 w-8 rounded-xl bg-muted/50 flex items-center justify-center group-focus:bg-background transition-colors">
               <Settings className="h-4 w-4 text-muted-foreground" />
             </div>
-            <span className="text-[11px] font-black uppercase tracking-widest text-foreground">Configuración</span>
+            <span className="text-[11px] font-black uppercase tracking-widest text-foreground">{t.settings}</span>
           </DropdownMenuItem>
           
           <DropdownMenuItem 
@@ -62,7 +64,7 @@ export function PortalMenu() {
             <div className="h-8 w-8 rounded-xl bg-muted/50 flex items-center justify-center group-focus:bg-background transition-colors">
               <HelpCircle className="h-4 w-4 text-muted-foreground" />
             </div>
-            <span className="text-[11px] font-black uppercase tracking-widest text-foreground">Ayuda</span>
+            <span className="text-[11px] font-black uppercase tracking-widest text-foreground">{t.help}</span>
           </DropdownMenuItem>
         </DropdownMenuGroup>
       </DropdownMenuContent>

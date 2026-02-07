@@ -9,10 +9,12 @@ import { Input } from "@/components/ui/input";
 import { Logo } from "./Logo";
 import { useUIStore } from "@/lib/store";
 import { PortalMenu } from "./PortalMenu";
+import { translations } from "@/lib/translations";
 
 export function Navbar() {
   const pathname = usePathname();
-  const { searchQuery, setSearchQuery } = useUIStore();
+  const { searchQuery, setSearchQuery, language } = useUIStore();
+  const t = translations[language].nav;
 
   return (
     <nav className="border-b bg-card text-card-foreground border-border/60 sticky top-0 z-50 h-14 flex items-center shadow-sm transition-colors duration-300">
@@ -27,7 +29,7 @@ export function Navbar() {
           <div className="relative group">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground group-focus-within:text-secondary transition-colors" />
             <Input 
-              placeholder="Buscar agentes, roles o empresas..." 
+              placeholder={t.search} 
               className="w-full h-9 pl-10 bg-muted/50 border-none rounded-xl text-[11px] focus-visible:ring-1 focus-visible:ring-secondary/30 transition-all font-medium text-foreground placeholder:text-muted-foreground"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -45,7 +47,7 @@ export function Navbar() {
             )}
           >
             <Plus className="h-4 w-4" />
-            <span className="hidden lg:inline">Nuevo Agente</span>
+            <span className="hidden lg:inline">{t.new_agent}</span>
           </Link>
 
           <div className="flex items-center gap-2">

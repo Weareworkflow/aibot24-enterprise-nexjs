@@ -1,0 +1,147 @@
+
+export const translations = {
+  es: {
+    nav: {
+      search: "Buscar agentes, roles o empresas...",
+      new_agent: "Nuevo Agente",
+      settings: "Configuración",
+      help: "Ayuda",
+      anonymous: "Sesión Anónima",
+      active_portal: "Portal Activo"
+    },
+    dashboard: {
+      title: "Panel Operativo",
+      syncing: "Sincronizando con Bitrix24...",
+      error_sync: "Error de Sincronización",
+      no_fleet: "Sin Flota Activa",
+      no_fleet_desc: "Tu portal Bitrix24 aún no cuenta con agentes de chat inteligentes. Inicia el protocolo para automatizar tu atención.",
+      setup_first: "Configurar Mi Primer Bot",
+      clear_search: "Limpiar Búsqueda",
+      no_results: "No hay agentes que coincidan con"
+    },
+    agent_card: {
+      chat_bot: "AI Chat Bot",
+      active: "Activo",
+      waiting: "En Espera",
+      messages: "Mensajes",
+      tokens: "Tokens",
+      rating: "Rating",
+      transfers: "Transf.",
+      open_console: "Abrir Consola",
+      delete_title: "Protocolo de Eliminación",
+      delete_desc: "¿Confirmas la desconexión total de {name}? Esta acción es irreversible.",
+      cancel: "Cancelar",
+      delete: "Eliminar"
+    },
+    settings: {
+      title: "Configuración",
+      active: "Activo",
+      console_v: "Consola Operativa v3.1",
+      tab_connection: "Conexión",
+      tab_appearance: "Apariencia",
+      credentials_title: "Credenciales de Instalación Bitrix24",
+      client_id: "Cliente ID",
+      secret_id: "Secret ID",
+      credentials_note: "Nota: El Client ID y Secret ID se localizan en la sección de configuración de instalación de aplicaciones locales de su portal Bitrix24.",
+      communication_title: "Canal de Comunicación AI",
+      webhook_label: "Webhook del Agente AI",
+      webhook_note: "Nota: Este es el servicio del agente dedicado para este portal. Es el endpoint de enlace para procesar interacciones inteligentes.",
+      display_mode: "Modo de Visualización",
+      display_note: "Selecciona el tema visual para tu consola operativa.",
+      theme_light: "Modo Claro",
+      theme_dark: "Modo Oscuro",
+      language_title: "Idioma del Portal",
+      language_note: "Define el lenguaje predeterminado para la interfaz y los agentes.",
+      save_btn: "Guardar Protocolo de Configuración",
+      saving: "Sincronizando...",
+      saved_title: "Protocolo Guardado",
+      saved_desc: "Los parámetros de configuración han sido actualizados."
+    },
+    help: {
+      title: "Centro de Operaciones y Ayuda",
+      protocol: "Protocolo de Soporte Elite Activo",
+      faq_title: "Preguntas Frecuentes de la Flota (FAQ)",
+      doc_title: "Documentación",
+      doc_subtitle: "Manuales y Guías Técnicas",
+      doc_desc: "Explora nuestra biblioteca completa de documentación para dominar todas las capacidades de AIBot24.",
+      doc_btn: "EXPLORAR GUIA",
+      contact_title: "Contacto",
+      contact_subtitle: "Soporte Técnico Directo",
+      contact_desc: "Optimiza tus flujos para maximizar el rendimiento mediante soporte experto para tu flota operativa.",
+      contact_btn: "SOLICITAR ASISTENCIA",
+      version: "Protocolo de ayuda actualizado v3.1"
+    }
+  },
+  en: {
+    nav: {
+      search: "Search agents, roles or companies...",
+      new_agent: "New Agent",
+      settings: "Settings",
+      help: "Help",
+      anonymous: "Anonymous Session",
+      active_portal: "Active Portal"
+    },
+    dashboard: {
+      title: "Operations Dashboard",
+      syncing: "Syncing with Bitrix24...",
+      error_sync: "Synchronization Error",
+      no_fleet: "No Active Fleet",
+      no_fleet_desc: "Your Bitrix24 portal does not have intelligent chat agents yet. Start the protocol to automate your service.",
+      setup_first: "Setup My First Bot",
+      clear_search: "Clear Search",
+      no_results: "No agents match"
+    },
+    agent_card: {
+      chat_bot: "AI Chat Bot",
+      active: "Active",
+      waiting: "On Hold",
+      messages: "Messages",
+      tokens: "Tokens",
+      rating: "Rating",
+      transfers: "Transf.",
+      open_console: "Open Console",
+      delete_title: "Deletion Protocol",
+      delete_desc: "Confirm total disconnection of {name}? This action is irreversible.",
+      cancel: "Cancel",
+      delete: "Delete"
+    },
+    settings: {
+      title: "Settings",
+      active: "Active",
+      console_v: "Operations Console v3.1",
+      tab_connection: "Connection",
+      tab_appearance: "Appearance",
+      credentials_title: "Bitrix24 Installation Credentials",
+      client_id: "Client ID",
+      secret_id: "Secret ID",
+      credentials_note: "Note: Client ID and Secret ID are located in the local application installation settings of your Bitrix24 portal.",
+      communication_title: "AI Communication Channel",
+      webhook_label: "AI Agent Webhook",
+      webhook_note: "Note: This is the dedicated agent service for this portal. It's the connection endpoint to process intelligent interactions.",
+      display_mode: "Display Mode",
+      display_note: "Select the visual theme for your operations console.",
+      theme_light: "Light Mode",
+      theme_dark: "Dark Mode",
+      language_title: "Portal Language",
+      language_note: "Define the default language for the interface and agents.",
+      save_btn: "Save Configuration Protocol",
+      saving: "Syncing...",
+      saved_title: "Protocol Saved",
+      saved_desc: "Configuration parameters have been updated."
+    },
+    help: {
+      title: "Operations & Help Center",
+      protocol: "Elite Support Protocol Active",
+      faq_title: "Fleet Frequently Asked Questions (FAQ)",
+      doc_title: "Documentation",
+      doc_subtitle: "Technical Manuals and Guides",
+      doc_desc: "Explore our complete documentation library to master all the capabilities of AIBot24.",
+      doc_btn: "EXPLORE GUIDE",
+      contact_title: "Contact",
+      contact_subtitle: "Direct Technical Support",
+      contact_desc: "Optimize your flows to maximize performance through expert support for your operational fleet.",
+      contact_btn: "REQUEST ASSISTANCE",
+      version: "Help protocol updated v3.1"
+    }
+  }
+};

@@ -4,8 +4,8 @@ import { persist } from 'zustand/middleware';
 import { AIAgent } from './types';
 
 /**
- * Store global para el estado de la interfaz de usuario y contexto de Bitrix24.
- * Centraliza la flota de agentes para una reactividad inmediata en toda la app.
+ * Global store for UI state and Bitrix24 context.
+ * Manages language, theme, and agent fleet.
  */
 interface UIState {
   searchQuery: string;
@@ -18,8 +18,10 @@ interface UIState {
   setTenantId: (id: string | null) => void;
   domain: string | null;
   setDomain: (domain: string | null) => void;
+  language: 'es' | 'en';
+  setLanguage: (lang: 'es' | 'en') => void;
   
-  // Gestión centralizada de Agentes
+  // Centralized Agent Management
   agents: AIAgent[];
   setAgents: (agents: AIAgent[]) => void;
   updateAgentLocal: (agentId: string, updates: Partial<AIAgent>) => void;
@@ -38,8 +40,10 @@ export const useUIStore = create<UIState>()(
       setTenantId: (id) => set({ tenantId: id }),
       domain: null,
       setDomain: (domain) => set({ domain: domain }),
+      language: 'es',
+      setLanguage: (lang) => set({ language: lang }),
       
-      // Estado de Agentes
+      // Agents State
       agents: [],
       setAgents: (agents) => set({ agents }),
       updateAgentLocal: (agentId, updates) => set((state) => ({
@@ -49,11 +53,12 @@ export const useUIStore = create<UIState>()(
       })),
     }),
     {
-      name: 'aibot24-v3-config-v2',
+      name: 'aibot24-v3-config-v3',
       partialize: (state) => ({ 
         tenantId: state.tenantId, 
-        domain: state.domain 
-      }), // Solo persistimos el contexto del portal
+        domain: state.domain,
+        language: state.language
+      }),
     }
   )
 );

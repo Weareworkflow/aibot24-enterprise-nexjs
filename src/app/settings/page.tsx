@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useMemo, useState, useEffect } from "react";
@@ -29,13 +30,16 @@ import { BitrixInstallation } from "@/lib/types";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { useTheme } from "next-themes";
+import { translations } from "@/lib/translations";
 
 export default function SettingsPage() {
   const router = useRouter();
   const db = useFirestore();
   const { theme, setTheme } = useTheme();
-  const { tenantId, domain } = useUIStore();
+  const { tenantId, domain, language, setLanguage } = useUIStore();
   const { toast } = useToast();
+  
+  const t = translations[language].settings;
   
   const installationRef = useMemo(() => {
     if (!db || !tenantId) return null;
@@ -47,8 +51,7 @@ export default function SettingsPage() {
   const [formData, setFormData] = useState({
     clientId: "",
     clientSecret: "",
-    serviceWebhook: "",
-    language: "es"
+    serviceWebhook: ""
   });
 
   const [isSaving, setIsSaving] = useState(false);
@@ -58,8 +61,7 @@ export default function SettingsPage() {
       setFormData({
         clientId: installation.clientId || "",
         clientSecret: installation.clientSecret || "",
-        serviceWebhook: installation.serviceWebhook || "",
-        language: installation.language || "es"
+        serviceWebhook: installation.serviceWebhook || ""
       });
     }
   }, [installation]);
@@ -69,17 +71,18 @@ export default function SettingsPage() {
     setIsSaving(true);
     try {
       await updateDoc(installationRef, {
-        ...formData
+        ...formData,
+        language
       });
       toast({
-        title: "Protocolo Guardado",
-        description: "Los parámetros de configuración han sido actualizados."
+        title: t.saved_title,
+        description: t.saved_desc
       });
     } catch (error: any) {
       toast({
         variant: "destructive",
-        title: "Error de Guardado",
-        description: "No se pudieron actualizar los datos técnicos."
+        title: "Error",
+        description: "Error."
       });
     } finally {
       setIsSaving(false);
@@ -91,7 +94,7 @@ export default function SettingsPage() {
       <Navbar />
       <div className="flex-1 flex flex-col items-center justify-center gap-4">
         <Loader2 className="h-8 w-8 animate-spin text-secondary" />
-        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Sincronizando Consola...</p>
+        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">...</p>
       </div>
     </div>
   );
@@ -118,7 +121,7 @@ export default function SettingsPage() {
                 </h1>
                 <div className="flex items-center gap-1.5 px-2.5 py-0.5 bg-accent/10 rounded-full border border-accent/20">
                   <span className="h-1.5 w-1.5 bg-accent rounded-full animate-pulse" />
-                  <span className="text-[9px] font-black uppercase text-accent tracking-widest">Activo</span>
+                  <span className="text-[9px] font-black uppercase text-accent tracking-widest">{t.active}</span>
                 </div>
               </div>
               <p className="text-[11px] font-bold text-muted-foreground mt-1 tracking-tight">
@@ -129,7 +132,7 @@ export default function SettingsPage() {
           <div className="text-right hidden sm:block">
             <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest flex items-center gap-2 justify-end">
               <ShieldCheck className="h-3.5 w-3.5 text-secondary" />
-              Consola Operativa v3.1
+              {t.console_v}
             </p>
           </div>
         </div>
@@ -143,14 +146,14 @@ export default function SettingsPage() {
                   className="rounded-xl text-[10px] font-black uppercase tracking-widest data-[state=active]:bg-card data-[state=active]:shadow-sm data-[state=active]:text-secondary transition-all"
                 >
                   <CloudCog className="h-4 w-4 mr-2" />
-                  Conexión
+                  {t.tab_connection}
                 </TabsTrigger>
                 <TabsTrigger 
                   value="apariencia" 
                   className="rounded-xl text-[10px] font-black uppercase tracking-widest data-[state=active]:bg-card data-[state=active]:shadow-sm data-[state=active]:text-secondary transition-all"
                 >
                   <Palette className="h-4 w-4 mr-2" />
-                  Apariencia
+                  {t.tab_appearance}
                 </TabsTrigger>
               </TabsList>
 
@@ -158,12 +161,12 @@ export default function SettingsPage() {
                 <div className="space-y-6">
                   <div className="flex items-center gap-3 text-foreground px-1">
                     <Key className="h-4 w-4 text-secondary" />
-                    <h4 className="text-[11px] font-black uppercase tracking-widest opacity-80">Credenciales de Instalación Bitrix24</h4>
+                    <h4 className="text-[11px] font-black uppercase tracking-widest opacity-80">{t.credentials_title}</h4>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2.5">
-                      <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Cliente ID</Label>
+                      <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">{t.client_id}</Label>
                       <Input 
                         value={formData.clientId}
                         onChange={(e) => setFormData({...formData, clientId: e.target.value})}
@@ -172,7 +175,7 @@ export default function SettingsPage() {
                       />
                     </div>
                     <div className="space-y-2.5">
-                      <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Secret ID</Label>
+                      <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">{t.secret_id}</Label>
                       <Input 
                         type="password"
                         value={formData.clientSecret}
@@ -183,18 +186,18 @@ export default function SettingsPage() {
                     </div>
                   </div>
                   <p className="text-[9px] text-muted-foreground font-bold uppercase tracking-wider leading-relaxed px-1 max-w-2xl italic">
-                    Nota: El Client ID y Secret ID se localizan en la sección de configuración de instalación de aplicaciones locales de su portal Bitrix24.
+                    {t.credentials_note}
                   </p>
                 </div>
 
                 <div className="space-y-6 pt-4 border-t border-border/40">
                   <div className="flex items-center gap-3 text-foreground px-1">
                     <Link2 className="h-4 w-4 text-secondary" />
-                    <h4 className="text-[11px] font-black uppercase tracking-widest opacity-80">Canal de Comunicación AI</h4>
+                    <h4 className="text-[11px] font-black uppercase tracking-widest opacity-80">{t.communication_title}</h4>
                   </div>
 
                   <div className="space-y-2.5">
-                    <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Webhook del Agente AI</Label>
+                    <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">{t.webhook_label}</Label>
                     <Input 
                       value={formData.serviceWebhook}
                       onChange={(e) => setFormData({...formData, serviceWebhook: e.target.value})}
@@ -202,7 +205,7 @@ export default function SettingsPage() {
                       className="h-12 bg-muted/30 border-border rounded-xl px-4 text-[12px] focus:bg-background transition-all shadow-inner"
                     />
                     <p className="text-[9px] text-muted-foreground font-bold uppercase tracking-wider leading-relaxed px-1 italic">
-                      Nota: Este es el servicio del agente dedicado para este portal. Es el endpoint de enlace para procesar interacciones inteligentes.
+                      {t.webhook_note}
                     </p>
                   </div>
                 </div>
@@ -214,17 +217,17 @@ export default function SettingsPage() {
                   <div className="flex flex-col gap-2.5 px-1 text-foreground">
                     <div className="flex items-center gap-3">
                       <Sun className="h-4 w-4 text-secondary" />
-                      <h4 className="text-[11px] font-black uppercase tracking-widest opacity-80">Modo de Visualización</h4>
+                      <h4 className="text-[11px] font-black uppercase tracking-widest opacity-80">{t.display_mode}</h4>
                     </div>
                     <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider leading-relaxed px-1">
-                      Selecciona el tema visual para tu consola operativa.
+                      {t.display_note}
                     </p>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {[
-                      { id: 'light', label: 'Modo Claro', icon: Sun },
-                      { id: 'dark', label: 'Modo Oscuro', icon: Moon },
+                      { id: 'light', label: t.theme_light, icon: Sun },
+                      { id: 'dark', label: t.theme_dark, icon: Moon },
                     ].map((mode) => (
                       <button
                         key={mode.id}
@@ -258,10 +261,10 @@ export default function SettingsPage() {
                   <div className="flex flex-col gap-2.5 px-1 text-foreground">
                     <div className="flex items-center gap-3">
                       <Languages className="h-4 w-4 text-secondary" />
-                      <h4 className="text-[11px] font-black uppercase tracking-widest opacity-80">Idioma del Portal</h4>
+                      <h4 className="text-[11px] font-black uppercase tracking-widest opacity-80">{t.language_title}</h4>
                     </div>
                     <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider leading-relaxed px-1">
-                      Define el lenguaje predeterminado para la interfaz y los agentes.
+                      {t.language_note}
                     </p>
                   </div>
 
@@ -272,21 +275,21 @@ export default function SettingsPage() {
                     ].map((lang) => (
                       <button
                         key={lang.id}
-                        onClick={() => setFormData({...formData, language: lang.id})}
+                        onClick={() => setLanguage(lang.id as 'es' | 'en')}
                         className={cn(
                           "flex items-center justify-between p-6 rounded-2xl border-2 transition-all group",
-                          formData.language === lang.id 
+                          language === lang.id 
                             ? "border-secondary bg-secondary/5" 
                             : "border-border bg-muted/30 hover:border-muted-foreground/30"
                         )}
                       >
                         <span className={cn(
                           "text-[11px] font-black uppercase tracking-widest",
-                          formData.language === lang.id ? "text-secondary" : "text-muted-foreground"
+                          language === lang.id ? "text-secondary" : "text-muted-foreground"
                         )}>
                           {lang.label}
                         </span>
-                        {formData.language === lang.id && (
+                        {language === lang.id && (
                           <div className="h-6 w-6 rounded-full bg-secondary flex items-center justify-center">
                             <Check className="h-3 w-3 text-white" />
                           </div>
@@ -305,7 +308,7 @@ export default function SettingsPage() {
                 className="w-full h-14 rounded-2xl bg-secondary hover:bg-secondary/90 text-white font-black text-[11px] uppercase tracking-[0.2em] shadow-lg shadow-secondary/20 transition-all active:scale-95"
               >
                 {isSaving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
-                {isSaving ? "Sincronizando..." : "Guardar Protocolo de Configuración"}
+                {isSaving ? t.saving : t.save_btn}
               </Button>
             </div>
           </CardContent>
