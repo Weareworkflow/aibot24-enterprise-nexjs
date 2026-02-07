@@ -88,7 +88,7 @@ export default function SettingsPage() {
     </div>
   );
 
-  const portalName = domain ? domain.split('.')[0].toUpperCase() : "PORTAL ACTIVO";
+  const portalName = domain ? domain.split('.')[0].toUpperCase() : "WORKFLOWTEAMS";
 
   return (
     <div className="flex flex-col min-h-screen bg-[#F0F3F5]">
@@ -96,7 +96,6 @@ export default function SettingsPage() {
       <main className="container mx-auto px-4 py-8 max-w-4xl space-y-6">
         
         <Card className="border-none shadow-2xl rounded-[2.5rem] bg-white overflow-hidden high-volume">
-          {/* Header Compacto Integrado */}
           <CardHeader className="p-6 border-b border-slate-50 bg-slate-50/30 flex flex-row items-center justify-between">
             <div className="flex items-center gap-4">
               <Button 
@@ -122,7 +121,6 @@ export default function SettingsPage() {
           </CardHeader>
 
           <CardContent className="p-6 space-y-8">
-            {/* Perfil Horizontal Compacto (Diseño Refinado) */}
             <div className="bg-slate-900 rounded-[2rem] p-6 text-white flex items-center justify-between shadow-xl">
               <div className="flex items-center gap-5">
                 <div className="h-14 w-14 rounded-2xl bg-white/10 flex items-center justify-center border border-white/10 backdrop-blur-sm shadow-inner">
@@ -134,7 +132,7 @@ export default function SettingsPage() {
                     <span className="text-[8px] font-black uppercase text-slate-500 tracking-widest mb-0.5">Dominio Bitrix24</span>
                     <p className="text-[11px] text-slate-400 font-medium flex items-center gap-1.5">
                       <Globe className="h-3 w-3 text-secondary/60" />
-                      {domain || "bitrix24.enterprise"}
+                      {domain || "workflowteams.bitrix24.es"}
                     </p>
                   </div>
                 </div>
@@ -148,7 +146,6 @@ export default function SettingsPage() {
               </div>
             </div>
 
-            {/* Protocolos Técnicos */}
             <div className="space-y-6">
               <div className="flex items-center gap-3 px-1">
                 <Sparkles className="h-4 w-4 text-secondary" />
@@ -156,7 +153,6 @@ export default function SettingsPage() {
               </div>
 
               <div className="grid grid-cols-1 gap-6">
-                {/* Webhook */}
                 <div className="space-y-2.5">
                   <div className="flex items-center gap-2">
                     <Link2 className="h-3.5 w-3.5 text-secondary" />
@@ -170,7 +166,6 @@ export default function SettingsPage() {
                   />
                 </div>
 
-                {/* OAuth Fields */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2.5">
                     <div className="flex items-center gap-2">
@@ -201,7 +196,6 @@ export default function SettingsPage() {
               </div>
             </div>
 
-            {/* Acciones */}
             <div className="pt-2">
               <Button 
                 onClick={handleSave}
