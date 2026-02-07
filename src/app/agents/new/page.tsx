@@ -114,17 +114,19 @@ export default function NewAgentPage() {
   };
 
   const handleSave = async () => {
-    if (!db || !tenantId) {
-      toast({ variant: "destructive", title: "Error", description: "Contexto no válido." });
+    if (!db) {
+      toast({ variant: "destructive", title: "Error", description: "Base de datos no disponible." });
       return;
     }
 
+    const effectiveTenantId = tenantId || "anonymous";
     setIsSaving(true);
+
     try {
       const agentId = Date.now().toString();
       const newAgent: AIAgent = {
         id: agentId,
-        tenantId: tenantId,
+        tenantId: effectiveTenantId,
         name: config.name,
         type: 'text',
         role: config.role,
@@ -145,9 +147,12 @@ export default function NewAgentPage() {
       };
 
       await setDoc(doc(db, "agents", agentId), newAgent);
-      toast({ title: "Agente Activo", description: `${config.name} desplegado.` });
+      toast({ title: "Agente Activo", description: `${config.name} ha sido desplegado exitosamente.` });
+      
+      // Forzamos navegación a la página principal para ver la nueva tarjeta
       router.push("/");
     } catch (error: any) {
+      console.error("Error al guardar:", error);
       toast({ variant: "destructive", title: "Error al guardar", description: error.message });
     } finally {
       setIsSaving(false);
@@ -164,7 +169,7 @@ export default function NewAgentPage() {
           <div className="mb-4 flex items-center justify-between px-2">
             <h1 className="text-sm font-black uppercase tracking-[0.2em] text-slate-500 flex items-center gap-2">
               <Bot className="h-4 w-4 text-secondary" />
-              Nuevo Agente Chat
+              Diseño de Agente Chat
             </h1>
             <div className="flex gap-1">
               {[0,1,2,3].map(i => (
@@ -242,7 +247,7 @@ export default function NewAgentPage() {
               <CardFooter className="p-4 bg-white border-t">
                 <div className="flex items-center gap-2 w-full bg-slate-50 p-1.5 rounded-2xl border border-slate-100 shadow-inner group">
                   <Input 
-                    placeholder="Escribe aquí..." 
+                    placeholder="Responde aquí..." 
                     className="flex-1 bg-transparent border-none focus-visible:ring-0 h-10 text-[13px] px-3 font-medium"
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
