@@ -44,7 +44,6 @@ export function AiRefiner({ agent, db }: AiRefinerProps) {
     }]);
     
     try {
-      // Obtenemos lista de integraciones activas para dar contexto a la IA
       const activeIntegrations = Object.entries(agent.integrations || {})
         .filter(([_, active]) => active)
         .map(([name]) => name);
@@ -86,16 +85,16 @@ export function AiRefiner({ agent, db }: AiRefinerProps) {
   };
 
   return (
-    <div className="flex flex-col h-full bg-white">
+    <div className="flex flex-col h-full bg-card">
       <ScrollArea className="flex-1 p-6" ref={scrollRef}>
         <div className="space-y-4">
           {history.length === 0 && (
-            <div className="bg-slate-50 border border-slate-100 p-4 rounded-2xl text-[12px] text-slate-600 font-medium leading-relaxed mb-4">
+            <div className="bg-muted/30 border border-border/40 p-4 rounded-2xl text-[12px] text-muted-foreground font-medium leading-relaxed mb-4">
               <div className="flex items-center gap-2 mb-2 text-secondary">
                 <Sparkles className="h-3.5 w-3.5" />
                 <span className="text-[10px] font-black uppercase tracking-widest">Protocolo de Asistencia</span>
               </div>
-              Hola, soy el Arquitecto de IA. Ajustaré el comportamiento de <strong>{agent.name}</strong> según tus necesidades. 
+              Hola, soy el Arquitecto de IA. Ajustaré el comportamiento de <strong className="text-foreground">{agent.name}</strong> según tus necesidades. 
               Pídeme reglas específicas: "No des precios sin capturar el email", "Sé más breve", etc.
             </div>
           )}
@@ -113,7 +112,7 @@ export function AiRefiner({ agent, db }: AiRefinerProps) {
                   "px-4 py-2.5 rounded-2xl text-[13px] font-medium shadow-sm border", 
                   item.role === 'user' 
                     ? "bg-secondary text-white border-transparent rounded-tr-none" 
-                    : "bg-slate-50 text-slate-700 border-slate-100 rounded-tl-none"
+                    : "bg-muted/50 text-foreground border-border/40 rounded-tl-none"
                 )}
               >
                 {item.content}
@@ -122,19 +121,19 @@ export function AiRefiner({ agent, db }: AiRefinerProps) {
           ))}
           
           {isRefining && (
-            <div className="flex items-center gap-2 p-3 bg-slate-50 rounded-2xl border border-slate-100 w-fit animate-pulse">
+            <div className="flex items-center gap-2 p-3 bg-muted/30 rounded-2xl border border-border/40 w-fit animate-pulse">
               <Loader2 className="h-4 w-4 animate-spin text-secondary" />
-              <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Refinando comportamiento...</span>
+              <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Refinando comportamiento...</span>
             </div>
           )}
         </div>
       </ScrollArea>
 
-      <div className="p-4 border-t bg-slate-50/50">
-        <div className="flex items-center gap-2 bg-white p-1.5 rounded-2xl border border-slate-200 shadow-inner group">
+      <div className="p-4 border-t bg-muted/10">
+        <div className="flex items-center gap-2 bg-card p-1.5 rounded-2xl border border-border/60 shadow-inner group">
           <Input 
             placeholder="Instrucciones de comportamiento..." 
-            className="flex-1 border-none bg-transparent focus-visible:ring-0 h-10 text-[13px] px-3 font-medium" 
+            className="flex-1 border-none bg-transparent focus-visible:ring-0 h-10 text-[13px] px-3 font-medium text-foreground placeholder:text-muted-foreground" 
             value={feedbackInput} 
             onChange={(e) => setFeedbackInput(e.target.value)} 
             onKeyDown={(e) => e.key === 'Enter' && handleRefine()} 

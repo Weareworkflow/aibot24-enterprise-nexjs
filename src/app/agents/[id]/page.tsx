@@ -1,4 +1,3 @@
-
 "use client";
 
 import { use, useMemo } from "react";
@@ -28,7 +27,7 @@ export default function AgentConsolePage({ params }: { params: Promise<{ id: str
   const { data: agent, loading } = useDoc<AIAgent>(agentRef);
 
   if (loading) return (
-    <div className="flex flex-col min-h-screen bg-[#F0F3F5]">
+    <div className="flex flex-col min-h-screen bg-background">
       <Navbar />
       <div className="flex-1 flex flex-col items-center justify-center gap-4">
         <div className="relative">
@@ -41,10 +40,10 @@ export default function AgentConsolePage({ params }: { params: Promise<{ id: str
   );
 
   if (!agent) return (
-    <div className="flex flex-col min-h-screen bg-[#F0F3F5]">
+    <div className="flex flex-col min-h-screen bg-background">
       <Navbar />
       <div className="flex-1 flex items-center justify-center p-4">
-        <div className="p-12 text-center bg-white rounded-[3rem] shadow-xl border border-slate-100 max-w-md w-full">
+        <div className="p-12 text-center bg-card rounded-[3rem] shadow-xl border border-border max-w-md w-full">
           <div className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground animate-pulse">
             Protocolo de Error: Agente no localizado
           </div>
@@ -54,7 +53,7 @@ export default function AgentConsolePage({ params }: { params: Promise<{ id: str
   );
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#F0F3F5] lg:overflow-hidden">
+    <div className="flex flex-col min-h-screen bg-background lg:overflow-hidden">
       <Navbar />
       <main className="flex-1 w-full px-4 md:px-6 py-6 flex flex-col min-h-0">
         <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 min-h-0 mb-4">
@@ -65,15 +64,15 @@ export default function AgentConsolePage({ params }: { params: Promise<{ id: str
 
           {/* Columna Derecha: AiRefiner (Chat) */}
           <div className="lg:col-span-5 h-[600px] lg:h-[calc(100vh-120px)] flex flex-col min-h-0">
-            <div className="bg-white rounded-[2.5rem] high-volume overflow-hidden h-full flex flex-col border-none shadow-2xl">
-              <div className="p-6 border-b bg-slate-900 text-white flex items-center justify-between">
+            <div className="bg-card rounded-[2.5rem] high-volume overflow-hidden h-full flex flex-col border-none shadow-2xl">
+              <div className="p-6 border-b bg-primary text-primary-foreground flex items-center justify-between">
                 <div className="flex items-center gap-4">
                   <div className="h-10 w-10 rounded-2xl bg-secondary/20 flex items-center justify-center border border-white/10">
                     <Wand2 className="h-5 w-5 text-secondary" />
                   </div>
                   <div>
                     <h3 className="text-[11px] font-black uppercase tracking-[0.2em]">Arquitecto de Refinamiento</h3>
-                    <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">IA Co-Piloto Operativa</p>
+                    <p className="text-[9px] opacity-70 font-bold uppercase tracking-widest mt-0.5">IA Co-Piloto Operativa</p>
                   </div>
                 </div>
               </div>

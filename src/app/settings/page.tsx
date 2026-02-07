@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useMemo, useState, useEffect } from "react";
@@ -105,51 +104,52 @@ export default function SettingsPage() {
       <Navbar />
       <main className="container mx-auto px-4 py-8 max-w-4xl space-y-6">
         
-        <Card className="border-none shadow-2xl rounded-[2.5rem] bg-card text-card-foreground overflow-hidden high-volume transition-colors duration-300">
-          <CardHeader className="p-6 border-b border-border bg-muted/20 flex flex-row items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="h-10 w-10 flex items-center justify-center bg-background rounded-xl hover:bg-foreground hover:text-background transition-all shadow-sm border border-border"
-                onClick={() => router.back()}
-              >
-                <ArrowLeft className="h-5 w-5" />
-              </Button>
-              <div className="flex flex-col">
-                <div className="flex items-center gap-3">
-                  <CardTitle className="text-lg font-headline font-bold text-foreground leading-none">{portalName}</CardTitle>
-                  <div className="flex items-center gap-1.5 px-2 py-0.5 bg-accent/10 rounded-full border border-accent/20">
-                    <span className="h-1.5 w-1.5 bg-accent rounded-full animate-pulse" />
-                    <span className="text-[8px] font-black uppercase text-accent tracking-widest">Activo</span>
-                  </div>
+        {/* Cabecera de Ajustes - Integrada y Limpia */}
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-6 px-4 mb-4">
+          <div className="flex items-center gap-4 w-full sm:w-auto">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="h-10 w-10 flex items-center justify-center bg-card rounded-xl hover:bg-foreground hover:text-background transition-all shadow-sm border border-border"
+              onClick={() => router.back()}
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <div className="flex flex-col">
+              <div className="flex items-center gap-3">
+                <h1 className="text-xl font-headline font-bold text-foreground leading-none">{portalName}</h1>
+                <div className="flex items-center gap-1.5 px-2 py-0.5 bg-accent/10 rounded-full border border-accent/20">
+                  <span className="h-1.5 w-1.5 bg-accent rounded-full animate-pulse" />
+                  <span className="text-[8px] font-black uppercase text-accent tracking-widest">Activo</span>
                 </div>
-                <p className="text-[10px] font-medium text-muted-foreground mt-1 lowercase tracking-tight">
-                  {domain || "workflowteams.bitrix24.es"}
-                </p>
               </div>
-            </div>
-            <div className="text-right hidden sm:block">
-              <p className="text-[9px] font-black uppercase text-muted-foreground tracking-widest flex items-center gap-1.5 justify-end">
-                <ShieldCheck className="h-3 w-3 text-secondary" />
-                Enterprise Protocol
+              <p className="text-[10px] font-medium text-muted-foreground mt-1 lowercase tracking-tight">
+                {domain || "workflowteams.bitrix24.es"}
               </p>
             </div>
-          </CardHeader>
+          </div>
+          <div className="text-right hidden sm:block">
+            <p className="text-[9px] font-black uppercase text-muted-foreground tracking-widest flex items-center gap-1.5 justify-end">
+              <ShieldCheck className="h-3 w-3 text-secondary" />
+              Enterprise Protocol
+            </p>
+          </div>
+        </div>
 
-          <CardContent className="p-6 space-y-8">
+        <Card className="border-none shadow-2xl rounded-[2.5rem] bg-card text-card-foreground overflow-hidden high-volume transition-colors duration-300">
+          <CardContent className="p-8 space-y-8">
             <Tabs defaultValue="conexion" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 h-12 bg-muted rounded-2xl p-1 mb-8">
+              <TabsList className="grid w-full grid-cols-2 h-12 bg-muted/50 rounded-2xl p-1 mb-8">
                 <TabsTrigger 
                   value="conexion" 
-                  className="rounded-xl text-[10px] font-black uppercase tracking-widest data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:text-secondary transition-all"
+                  className="rounded-xl text-[10px] font-black uppercase tracking-widest data-[state=active]:bg-card data-[state=active]:shadow-sm data-[state=active]:text-secondary transition-all"
                 >
                   <CloudCog className="h-3.5 w-3.5 mr-2" />
                   Conexión
                 </TabsTrigger>
                 <TabsTrigger 
                   value="apariencia" 
-                  className="rounded-xl text-[10px] font-black uppercase tracking-widest data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:text-secondary transition-all"
+                  className="rounded-xl text-[10px] font-black uppercase tracking-widest data-[state=active]:bg-card data-[state=active]:shadow-sm data-[state=active]:text-secondary transition-all"
                 >
                   <Palette className="h-3.5 w-3.5 mr-2" />
                   Apariencia
@@ -163,7 +163,7 @@ export default function SettingsPage() {
                       <Key className="h-4 w-4 text-secondary" />
                       <h4 className="text-[11px] font-black uppercase tracking-widest opacity-80">Credenciales de Instalación Bitrix24</h4>
                     </div>
-                    <div className="flex items-start gap-2 bg-blue-50/50 dark:bg-blue-900/10 p-3 rounded-xl border border-blue-100/50 dark:border-blue-800/50">
+                    <div className="flex items-start gap-2 bg-blue-50/10 dark:bg-blue-900/10 p-4 rounded-xl border border-blue-100/20 dark:border-blue-800/20">
                       <Info className="h-3.5 w-3.5 text-blue-500 mt-0.5 flex-shrink-0" />
                       <p className="text-[9px] text-muted-foreground font-bold uppercase tracking-wider leading-relaxed">
                         El Client ID y Secret ID se localizan en la sección de configuración de instalación de aplicaciones locales de su portal Bitrix24.
@@ -194,13 +194,13 @@ export default function SettingsPage() {
                   </div>
                 </div>
 
-                <div className="space-y-6 pt-4 border-t border-border">
+                <div className="space-y-6 pt-4 border-t border-border/40">
                   <div className="flex flex-col gap-2.5 px-1">
                     <div className="flex items-center gap-3 text-foreground">
                       <Link2 className="h-4 w-4 text-secondary" />
                       <h4 className="text-[11px] font-black uppercase tracking-widest opacity-80">Canal de Comunicación AI</h4>
                     </div>
-                    <div className="flex items-start gap-2 bg-muted/30 p-3 rounded-xl border border-border">
+                    <div className="flex items-start gap-2 bg-muted/30 p-4 rounded-xl border border-border/40">
                       <Sparkles className="h-3.5 w-3.5 text-secondary mt-0.5 flex-shrink-0" />
                       <p className="text-[9px] text-muted-foreground font-bold uppercase tracking-wider leading-relaxed">
                         Este es el servicio del agente dedicado para este portal. Es el endpoint de enlace para procesar interacciones inteligentes.
@@ -234,24 +234,24 @@ export default function SettingsPage() {
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {[
-                      { id: 'light', label: 'Claro', icon: Sun },
-                      { id: 'dark', label: 'Oscuro', icon: Moon },
+                      { id: 'light', label: 'Modo Claro', icon: Sun },
+                      { id: 'dark', label: 'Modo Oscuro', icon: Moon },
                     ].map((mode) => (
                       <button
                         key={mode.id}
                         onClick={() => setTheme(mode.id)}
                         className={cn(
-                          "flex flex-col items-center gap-3 p-6 rounded-2xl border-2 transition-all group",
+                          "flex flex-col items-center gap-3 p-8 rounded-2xl border-2 transition-all group",
                           theme === mode.id 
                             ? "border-secondary bg-secondary/5" 
                             : "border-border bg-muted/30 hover:border-muted-foreground/30"
                         )}
                       >
                         <div className={cn(
-                          "h-10 w-10 rounded-full flex items-center justify-center transition-colors",
-                          theme === mode.id ? "bg-secondary text-white" : "bg-card text-muted-foreground group-hover:text-foreground"
+                          "h-12 w-12 rounded-full flex items-center justify-center transition-all",
+                          theme === mode.id ? "bg-secondary text-white scale-110" : "bg-card text-muted-foreground group-hover:text-foreground"
                         )}>
-                          <mode.icon className="h-5 w-5" />
+                          <mode.icon className="h-6 w-6" />
                         </div>
                         <span className={cn(
                           "text-[10px] font-black uppercase tracking-widest",
@@ -264,14 +264,14 @@ export default function SettingsPage() {
                   </div>
                 </div>
 
-                <div className="space-y-6 pt-4 border-t border-border">
+                <div className="space-y-6 pt-4 border-t border-border/40">
                   <div className="flex flex-col gap-2.5 px-1 text-foreground">
                     <div className="flex items-center gap-3">
                       <Palette className="h-4 w-4 text-secondary" />
                       <h4 className="text-[11px] font-black uppercase tracking-widest opacity-80">Identidad Visual del Portal</h4>
                     </div>
                     <p className="text-[9px] text-muted-foreground font-bold uppercase tracking-wider leading-relaxed px-1">
-                      Personaliza cómo se visualiza la plataforma para los operadores de este portal.
+                      Personaliza los colores de marca para este portal específico.
                     </p>
                   </div>
 
@@ -307,7 +307,7 @@ export default function SettingsPage() {
               <Button 
                 onClick={handleSave}
                 disabled={isSaving}
-                className="w-full h-12 rounded-2xl bg-secondary hover:bg-secondary/90 text-secondary-foreground font-black text-[10px] uppercase tracking-[0.2em] shadow-lg transition-all active:scale-95"
+                className="w-full h-14 rounded-2xl bg-secondary hover:bg-secondary/90 text-white font-black text-[11px] uppercase tracking-[0.2em] shadow-lg shadow-secondary/20 transition-all active:scale-95"
               >
                 {isSaving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
                 {isSaving ? "Sincronizando..." : "Guardar Protocolo de Configuración"}

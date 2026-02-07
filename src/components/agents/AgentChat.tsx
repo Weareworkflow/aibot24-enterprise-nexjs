@@ -62,21 +62,21 @@ export function AgentChat({ agent }: AgentChatProps) {
   };
 
   return (
-    <div className="flex flex-col h-full bg-white rounded-[2.5rem] overflow-hidden shadow-2xl border-none high-volume">
+    <div className="flex flex-col h-full bg-card rounded-[2.5rem] overflow-hidden shadow-2xl border-none high-volume">
       {/* Header Integrado Nítido */}
-      <div className="p-6 border-b bg-white flex items-center justify-between">
+      <div className="p-6 border-b bg-card flex items-center justify-between">
         <div className="flex items-center gap-5">
           <Button 
             variant="ghost" 
             size="icon" 
-            className="h-11 w-11 flex items-center justify-center bg-slate-50 rounded-2xl hover:bg-slate-900 hover:text-white transition-all shadow-sm border border-slate-100"
+            className="h-11 w-11 flex items-center justify-center bg-muted/50 rounded-2xl hover:bg-foreground hover:text-background transition-all shadow-sm border border-border"
             onClick={() => router.push('/')}
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>
             <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-headline font-bold text-slate-900">{agent.name}</h1>
+              <h1 className="text-2xl font-headline font-bold text-foreground">{agent.name}</h1>
               <Badge className="border-none text-[9px] font-black h-5 uppercase bg-accent/10 text-accent px-3 tracking-widest">
                 UNIDAD ACTIVA
               </Badge>
@@ -92,9 +92,9 @@ export function AgentChat({ agent }: AgentChatProps) {
         <div className="flex flex-col p-4">
           <Accordion type="single" collapsible className="w-full">
             <AccordionItem value="identidad" className="border-b-0 px-4">
-              <AccordionTrigger className="hover:no-underline py-8 group border-b border-slate-50">
+              <AccordionTrigger className="hover:no-underline py-8 group border-b border-border/40">
                 <div className="flex items-center gap-5 text-[13px] font-black uppercase tracking-[0.2em] text-secondary transition-colors">
-                  <div className="h-12 w-12 rounded-[1.2rem] bg-slate-50 flex items-center justify-center group-data-[state=open]:bg-secondary group-data-[state=open]:text-white transition-all shadow-sm border border-slate-100">
+                  <div className="h-12 w-12 rounded-[1.2rem] bg-muted/50 flex items-center justify-center group-data-[state=open]:bg-secondary group-data-[state=open]:text-white transition-all shadow-sm border border-border/40">
                     <Settings2 className="h-6 w-6" />
                   </div>
                   Identidad
@@ -108,7 +108,7 @@ export function AgentChat({ agent }: AgentChatProps) {
             <AccordionItem value="integraciones" className="border-b-0 px-4">
               <AccordionTrigger className="hover:no-underline py-8 group">
                 <div className="flex items-center gap-5 text-[13px] font-black uppercase tracking-[0.2em] text-secondary transition-colors">
-                  <div className="h-12 w-12 rounded-[1.2rem] bg-slate-50 flex items-center justify-center group-data-[state=open]:bg-secondary group-data-[state=open]:text-white transition-all shadow-sm border border-slate-100">
+                  <div className="h-12 w-12 rounded-[1.2rem] bg-muted/50 flex items-center justify-center group-data-[state=open]:bg-secondary group-data-[state=open]:text-white transition-all shadow-sm border border-border/40">
                     <Share2 className="h-6 w-6" />
                   </div>
                   Integraciones
