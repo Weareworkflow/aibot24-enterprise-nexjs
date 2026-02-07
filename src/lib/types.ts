@@ -44,6 +44,10 @@ export interface BitrixInstallation {
   expiresAt?: number;
   status: 'active' | 'suspended';
   createdAt: string;
+  // Nuevos campos técnicos
+  clientId?: string;
+  clientSecret?: string;
+  serviceWebhook?: string;
 }
 
 export interface ChatMessage {

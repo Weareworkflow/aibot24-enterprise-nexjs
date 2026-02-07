@@ -47,7 +47,7 @@ export function PortalMenu() {
         <DropdownMenuGroup className="p-1">
           <DropdownMenuItem 
             className="h-12 px-4 rounded-2xl gap-3 cursor-pointer focus:bg-slate-50 group"
-            onClick={() => router.push('/')}
+            onClick={() => router.push('/settings')}
           >
             <div className="h-8 w-8 rounded-xl bg-slate-50 flex items-center justify-center group-focus:bg-white transition-colors">
               <Settings className="h-4 w-4 text-slate-500" />
