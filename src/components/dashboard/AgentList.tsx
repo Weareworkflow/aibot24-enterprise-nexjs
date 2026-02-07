@@ -60,7 +60,7 @@ export function AgentList({ agents, loading, error, tenantId }: AgentListProps) 
 
   if (!agents || agents.length === 0) {
     return (
-      <div className="col-span-full py-24 text-center space-y-8 flex flex-col items-center border-2 border-dashed border-slate-200 rounded-[3rem] bg-white shadow-sm w-full max-w-4xl mx-auto animate-in fade-in zoom-in duration-700">
+      <div className="col-span-full py-24 text-center space-y-8 flex flex-col items-center border-2 border-dashed border-border rounded-[3rem] bg-card shadow-sm w-full max-w-4xl mx-auto animate-in fade-in zoom-in duration-700">
         <div className="relative">
           <div className="absolute inset-0 bg-secondary/10 rounded-full blur-2xl animate-pulse" />
           <div className="relative h-20 w-20 rounded-full bg-secondary/10 flex items-center justify-center">
@@ -68,7 +68,7 @@ export function AgentList({ agents, loading, error, tenantId }: AgentListProps) 
           </div>
         </div>
         <div className="space-y-2 max-w-md p-4">
-          <h2 className="text-xl font-headline font-bold">Sin Flota Activa</h2>
+          <h2 className="text-xl font-headline font-bold text-foreground">Sin Flota Activa</h2>
           <p className="text-[11px] text-muted-foreground uppercase font-black tracking-widest leading-relaxed">
             Tu portal Bitrix24 aún no cuenta con agentes de chat inteligentes. Inicia el protocolo para automatizar tu atención.
           </p>
@@ -85,7 +85,7 @@ export function AgentList({ agents, loading, error, tenantId }: AgentListProps) 
 
   if (filteredAgents.length === 0) {
     return (
-      <div className="col-span-full py-32 text-center space-y-4 flex flex-col items-center border-2 border-dashed border-slate-200 rounded-[3rem] bg-white/50">
+      <div className="col-span-full py-32 text-center space-y-4 flex flex-col items-center border-2 border-dashed border-border rounded-[3rem] bg-card/50">
         <SearchX className="h-10 w-10 text-muted-foreground/30" />
         <div className="space-y-1">
           <p className="text-muted-foreground font-black uppercase tracking-widest text-[10px]">No hay agentes que coincidan con "{searchQuery}"</p>

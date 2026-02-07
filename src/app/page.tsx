@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Navbar } from "@/components/layout/Navbar";
@@ -39,8 +40,8 @@ export default function HomePage() {
       <main className="container mx-auto px-4 py-8 space-y-8">
         
         {!tenantId && (
-          <div className="max-w-6xl mx-auto mb-6 bg-secondary/5 border border-secondary/20 p-6 rounded-3xl flex items-center justify-between gap-4">
-            <div className="flex items-center gap-4">
+          <div className="max-w-6xl mx-auto mb-6 bg-secondary/5 border border-secondary/20 p-6 rounded-3xl flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-4 text-center md:text-left">
               <Info className="h-6 w-6 text-secondary flex-shrink-0" />
               <div>
                 <p className="text-sm font-bold text-foreground">No se ha detectado el portal de Bitrix24</p>
@@ -48,7 +49,7 @@ export default function HomePage() {
               </div>
             </div>
             <Link href="/install">
-              <Button variant="default" className="pill-rounded bg-secondary text-secondary-foreground text-[10px] font-black uppercase tracking-widest px-6">
+              <Button variant="default" className="pill-rounded bg-secondary text-white text-[10px] font-black uppercase tracking-widest px-6 h-10">
                 Enlazar Portal →
               </Button>
             </Link>
