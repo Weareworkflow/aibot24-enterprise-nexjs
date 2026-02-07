@@ -5,7 +5,6 @@ import { AIAgent } from "@/lib/types";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { 
   Settings2,
-  Code2,
   Share2,
   Wand2,
   ChevronDown,
@@ -30,7 +29,6 @@ import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { IntegrationModals } from "./IntegrationModals";
 import { IdentitySection } from "./AgentChat/IdentitySection";
-import { InstructionsSection } from "./AgentChat/InstructionsSection";
 import { IntegrationsSection } from "./AgentChat/IntegrationsSection";
 import { AiRefiner } from "./AgentChat/AiRefiner";
 
@@ -64,36 +62,36 @@ export function AgentChat({ agent }: AgentChatProps) {
   };
 
   return (
-    <div className="flex flex-col h-full glass-card rounded-[3rem] overflow-hidden transition-all duration-700 animate-in fade-in slide-in-from-bottom-8">
+    <div className="flex flex-col h-full glass-card rounded-[2.5rem] overflow-hidden transition-all duration-700 animate-in fade-in slide-in-from-bottom-8 shadow-2xl border-none">
       <ScrollArea className="flex-1 modern-scroll" ref={scrollRef}>
         <div className="flex flex-col min-h-full">
           {/* Dashboard de Estado Sutil */}
-          <div className="bg-slate-50/50 p-6 flex items-center justify-between border-b">
+          <div className="bg-slate-50/50 p-6 flex items-center justify-between border-b border-slate-100">
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-2xl bg-white shadow-sm flex items-center justify-center">
+              <div className="h-10 w-10 rounded-2xl bg-white shadow-sm flex items-center justify-center border border-slate-100">
                 <Activity className="h-5 w-5 text-secondary animate-pulse" />
               </div>
               <div>
                 <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Protocolo de Configuración</p>
-                <h2 className="text-sm font-bold">Consola Operativa v2.5</h2>
+                <h2 className="text-sm font-bold">Consola Operativa v3.0</h2>
               </div>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 items-center">
                <div className="h-2 w-2 rounded-full bg-accent animate-ping" />
-               <span className="text-[8px] font-black uppercase tracking-widest text-accent">En Línea</span>
+               <span className="text-[8px] font-black uppercase tracking-widest text-accent">Sincronizado</span>
             </div>
           </div>
 
           <Accordion type="single" collapsible defaultValue="identidad" className="w-full">
             
-            {/* 1. IDENTIDAD */}
+            {/* 1. IDENTIDAD (Incluye Objetivo y Tono) */}
             <AccordionItem value="identidad" className="border-b-0 px-8">
               <AccordionTrigger className="hover:no-underline py-8 group">
-                <div className="flex items-center gap-4 text-[13px] font-black uppercase tracking-[0.2em] text-slate-600 group-hover:text-secondary transition-colors">
+                <div className="flex items-center gap-4 text-[12px] font-black uppercase tracking-[0.2em] text-slate-600 group-hover:text-secondary transition-colors">
                   <div className="h-8 w-8 rounded-xl bg-slate-100 flex items-center justify-center group-data-[state=open]:bg-secondary group-data-[state=open]:text-white transition-all">
                     <Settings2 className="h-4 w-4" />
                   </div>
-                  Identidad
+                  Identidad y Estrategia
                 </div>
               </AccordionTrigger>
               <AccordionContent className="pb-10 pt-2 animate-in fade-in slide-in-from-top-2">
@@ -101,29 +99,14 @@ export function AgentChat({ agent }: AgentChatProps) {
               </AccordionContent>
             </AccordionItem>
 
-            {/* 2. INSTRUCCIONES */}
-            <AccordionItem value="instrucciones" className="border-b-0 px-8">
-              <AccordionTrigger className="hover:no-underline py-8 group">
-                <div className="flex items-center gap-4 text-[13px] font-black uppercase tracking-[0.2em] text-slate-600 group-hover:text-secondary transition-colors">
-                  <div className="h-8 w-8 rounded-xl bg-slate-100 flex items-center justify-center group-data-[state=open]:bg-secondary group-data-[state=open]:text-white transition-all">
-                    <Code2 className="h-4 w-4" />
-                  </div>
-                  Instrucciones
-                </div>
-              </AccordionTrigger>
-              <AccordionContent className="pb-10 pt-2 animate-in fade-in slide-in-from-top-2">
-                <InstructionsSection agent={agent} onUpdate={handleManualUpdate} />
-              </AccordionContent>
-            </AccordionItem>
-
-            {/* 3. INTEGRACIONES */}
+            {/* 2. INTEGRACIONES */}
             <AccordionItem value="integraciones" className="border-b-0 px-8">
               <AccordionTrigger className="hover:no-underline py-8 group">
-                <div className="flex items-center gap-4 text-[13px] font-black uppercase tracking-[0.2em] text-slate-600 group-hover:text-secondary transition-colors">
+                <div className="flex items-center gap-4 text-[12px] font-black uppercase tracking-[0.2em] text-slate-600 group-hover:text-secondary transition-colors">
                   <div className="h-8 w-8 rounded-xl bg-slate-100 flex items-center justify-center group-data-[state=open]:bg-secondary group-data-[state=open]:text-white transition-all">
                     <Share2 className="h-4 w-4" />
                   </div>
-                  Integraciones
+                  Canales y Servicios
                 </div>
               </AccordionTrigger>
               <AccordionContent className="pb-10 pt-2 animate-in fade-in slide-in-from-top-2">
@@ -136,12 +119,12 @@ export function AgentChat({ agent }: AgentChatProps) {
             </AccordionItem>
           </Accordion>
 
-          {/* Refinador de IA Estilo Float */}
+          {/* Refinador de IA */}
           <div className="mt-8 px-8 pb-10">
             <Collapsible open={isChatOpen} onOpenChange={setIsChatOpen} className="w-full">
               <CollapsibleTrigger asChild>
-                <button className="flex items-center justify-between p-6 w-full rounded-[2rem] bg-slate-900 text-white shadow-2xl hover:bg-slate-800 transition-all group">
-                  <div className="flex items-center gap-4 text-[13px] font-black uppercase tracking-[0.2em]">
+                <button className="flex items-center justify-between p-6 w-full rounded-[2rem] bg-slate-900 text-white shadow-xl hover:bg-slate-800 transition-all group">
+                  <div className="flex items-center gap-4 text-[12px] font-black uppercase tracking-[0.2em]">
                     <div className="h-10 w-10 rounded-2xl bg-secondary/20 flex items-center justify-center group-hover:scale-110 transition-transform">
                       <Wand2 className="h-5 w-5 text-secondary" />
                     </div>
