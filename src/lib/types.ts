@@ -9,13 +9,6 @@ export interface APIEndpoint {
   body?: string;
 }
 
-export interface KnowledgeFile {
-  name: string;
-  type: string;
-  size: string;
-  uploadedAt: string;
-}
-
 export interface AIAgent {
   id: string;
   tenantId: string; // ID del portal (member_id)
@@ -25,8 +18,7 @@ export interface AIAgent {
   company: string;
   objective: string;
   tone: string;
-  knowledge: string;
-  knowledgeFiles?: KnowledgeFile[];
+  knowledge: string; // Protocolo de comportamiento refinado por IA
   color?: string;
   createdAt: string;
   isActive?: boolean;
@@ -35,13 +27,12 @@ export interface AIAgent {
   metrics: {
     usageCount: number;
     performanceRating: number;
-    totalInteractionMetric: number; // mensajes para texto
+    totalInteractionMetric: number;
     latency?: string;
     tokens?: string;
     transfers?: number;
     abandoned?: number;
   };
-  feedback?: string[];
 }
 
 export interface BitrixInstallation {
@@ -50,7 +41,7 @@ export interface BitrixInstallation {
   accessToken?: string;
   refreshToken?: string;
   expiresIn?: number;
-  expiresAt?: number; // Timestamp Unix de expiración
+  expiresAt?: number;
   status: 'active' | 'suspended';
   createdAt: string;
 }

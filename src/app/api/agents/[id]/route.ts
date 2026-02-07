@@ -1,11 +1,12 @@
+
 import { NextRequest, NextResponse } from 'next/server';
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getFirestore, doc, getDoc } from 'firebase/firestore';
 import { firebaseConfig } from '@/firebase/config';
 
 /**
- * API oficial para consumir la configuración de un agente.
- * Construye un "Compiled Prompt" concatenando Identidad, Integraciones y Comportamiento.
+ * API oficial de AIBot24 para el motor de ejecución.
+ * Entrega el prompt compilado jerárquico.
  */
 export async function GET(
   request: NextRequest,
@@ -21,53 +22,49 @@ export async function GET(
     const agentSnap = await getDoc(agentRef);
 
     if (!agentSnap.exists()) {
-      return NextResponse.json({ error: 'Agente no encontrado' }, { status: 404 });
+      return NextResponse.json({ error: 'Unidad no localizada' }, { status: 404 });
     }
 
     const data = agentSnap.data();
 
-    // 1. Bloque de Identidad
+    // 1. Capa de Identidad (Core)
     const identityBlock = `
-# IDENTIDAD OPERATIVA
+# IDENTIDAD DEL AGENTE
 - Nombre: ${data.name}
 - Rol: ${data.role}
 - Organización: ${data.company}
+- Tono Requerido: ${data.tone}
 - Objetivo Crítico: ${data.objective}
-- ADN de Comunicación: ${data.tone}
     `.trim();
 
-    // 2. Bloque de Integraciones (Capacidades)
+    // 2. Capa de Capacidades (Integraciones)
     const activeIntegrations = Object.entries(data.integrations || {})
       .filter(([_, active]) => active)
-      .map(([name]) => `- ${name}: Funcionalidad activa en el canal.`);
+      .map(([name]) => `- ${name}`);
     
-    const integrationsBlock = activeIntegrations.length > 0 
-      ? `\n# CAPACIDADES TÉCNICAS ACTIVAS\n${activeIntegrations.join('\n')}` 
+    const capabilitiesBlock = activeIntegrations.length > 0 
+      ? `\n# CAPACIDADES Y HERRAMIENTAS ACTIVAS\n${activeIntegrations.join('\n')}` 
       : '';
 
-    // 3. Bloque de Comportamiento (Refinado por chat)
-    const behaviorBlock = data.knowledge 
-      ? `\n# PROTOCOLO DE COMPORTAMIENTO Y REGLAS\n${data.knowledge}` 
-      : '';
+    // 3. Capa de Comportamiento (Refinado por Chat)
+    const protocolBlock = data.knowledge 
+      ? `\n# PROTOCOLO DE COMPORTAMIENTO (MANUAL TÉCNICO)\n${data.knowledge}` 
+      : '\n# PROTOCOLO DE COMPORTAMIENTO\nActúa de forma profesional según tu rol y objetivo.';
 
-    // Concatenación Maestra
-    const compiledInstructions = `${identityBlock}${integrationsBlock}${behaviorBlock}`;
+    // Compilación Final
+    const promptMaster = `${identityBlock}${capabilitiesBlock}${protocolBlock}`;
 
     return NextResponse.json({
-      id: data.id,
-      name: data.name,
-      compiledInstructions,
-      rawConfig: {
-        role: data.role,
-        company: data.company,
-        objective: data.objective,
-        tone: data.tone,
-        behavioralManual: data.knowledge
-      },
-      isActive: data.isActive,
-      type: data.type
+      success: true,
+      agentId: data.id,
+      promptMaster,
+      config: {
+        isActive: data.isActive,
+        color: data.color,
+        createdAt: data.createdAt
+      }
     });
   } catch (error: any) {
-    return NextResponse.json({ error: 'Internal Error', message: error.message }, { status: 500 });
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }

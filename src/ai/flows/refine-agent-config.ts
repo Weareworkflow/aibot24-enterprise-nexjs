@@ -1,9 +1,8 @@
+
 'use server';
 
 /**
- * @fileOverview Flujo de IA para refinar el protocolo de comportamiento de un agente.
- * 
- * - refineAgentConfig - Analiza feedback y optimiza la capa de comportamiento técnico.
+ * @fileOverview IA Architect specialized in refining conversation protocols.
  */
 
 import { ai } from '@/ai/genkit';
@@ -16,14 +15,14 @@ const RefineAgentConfigInputSchema = z.object({
     company: z.string(),
     objective: z.string(),
     tone: z.string(),
-    knowledge: z.string().describe('El manual de comportamiento actual.'),
+    knowledge: z.string().describe('El protocolo de comportamiento actual.'),
     activeIntegrations: z.array(z.string()).describe('Lista de integraciones activas.'),
   }),
-  feedback: z.string().describe('El feedback del usuario sobre el comportamiento.'),
+  feedback: z.string().describe('Instrucciones o feedback del usuario.'),
 });
 
 const RefineAgentConfigOutputSchema = z.object({
-  knowledge: z.string().describe('Manual de comportamiento actualizado y optimizado.'),
+  knowledge: z.string().describe('Protocolo de comportamiento actualizado y optimizado.'),
   explanation: z.string().describe('Breve explicación técnica del ajuste realizado.'),
 });
 
@@ -38,34 +37,34 @@ const prompt = ai.definePrompt({
   name: 'refineAgentConfigPrompt',
   input: { schema: RefineAgentConfigInputSchema },
   output: { schema: RefineAgentConfigOutputSchema },
-  prompt: `Actúa como un Arquitecto de IA Senior especializado en Prompt Engineering.
-Tu misión es optimizar exclusivamente el PROTOCOLO DE COMPORTAMIENTO (knowledge) de un agente.
+  prompt: `Actúa como un Senior Prompt Engineer para Bitrix24.
+Tu misión es optimizar el PROTOCOLO DE COMPORTAMIENTO (knowledge) de un agente de IA.
 
-CONTEXTO DE IDENTIDAD (No editable por ti, solo para referencia):
+CONTEXTO DE IDENTIDAD (Inmutable):
 - Nombre: {{{currentConfig.name}}}
 - Rol: {{{currentConfig.role}}}
 - Empresa: {{{currentConfig.company}}}
-- Objetivo: {{{currentConfig.objective}}}
 - Tono: {{{currentConfig.tone}}}
+- Objetivo: {{{currentConfig.objective}}}
 
-CAPACIDADES TÉCNICAS (Integraciones activas):
+CAPACIDADES TÉCNICAS ACTIVAS:
 {{#each currentConfig.activeIntegrations}}
 - {{{this}}}
 {{/each}}
 
-PROTOCOLO ACTUAL:
+PROTOCOLO ACTUAL A REFINAR:
 """
 {{{currentConfig.knowledge}}}
 """
 
-FEEDBACK DEL USUARIO:
+NUEVAS INSTRUCCIONES DEL USUARIO:
 "{{{feedback}}}"
 
 TAREA:
-1. Basado en el feedback, redacta un protocolo de comportamiento técnico robusto.
-2. No repitas la identidad (nombre, rol, etc) ya que se anexa automáticamente.
-3. Enfócate en reglas de decisión, manejo de objeciones y flujo de conversación.
-4. Asegúrate de que el protocolo sea compatible con las integraciones activas.
+1. Analiza el feedback del usuario y re-escribe el protocolo de comportamiento.
+2. Crea un manual técnico robusto enfocado en reglas de negocio, manejo de excepciones y flujo de chat.
+3. Asegúrate de que las reglas aprovechen las integraciones activas mencionadas.
+4. El resultado debe ser un texto profesional que servirá como 'System Prompt' adicional.
 
 Responde solo con el objeto JSON solicitado.`,
 });
@@ -78,7 +77,7 @@ const refineAgentConfigFlow = ai.defineFlow(
   },
   async (input) => {
     const { output } = await prompt(input);
-    if (!output) throw new Error("Error generando el refinamiento de comportamiento");
+    if (!output) throw new Error("Error en el motor de refinamiento Gemini");
     return output;
   }
 );
