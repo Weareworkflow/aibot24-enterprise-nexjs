@@ -53,8 +53,8 @@ export function Logo({ className, showText = true }: LogoProps) {
         </svg>
       </div>
       {showText && (
-        <span className="font-headline text-2xl font-bold text-primary tracking-tighter flex items-center">
-          AI<span className="text-secondary italic">Bot</span>24 <span className="text-secondary font-black uppercase text-[11px] tracking-[0.25em] ml-3 border-l-2 pl-3 border-slate-300 h-6 flex items-center self-center">Enterprise</span>
+        <span className="font-headline text-2xl font-bold text-foreground tracking-tighter flex items-center">
+          AI<span className="text-secondary italic">Bot</span>24 <span className="text-secondary font-black uppercase text-[11px] tracking-[0.25em] ml-3 border-l-2 pl-3 border-border h-6 flex items-center self-center">Enterprise</span>
         </span>
       )}
     </div>

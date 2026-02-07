@@ -52,10 +52,10 @@ export default function RootLayout({
           />
         )}
       </head>
-      <body className="font-body antialiased min-h-screen bg-background">
+      <body className="font-body antialiased min-h-screen bg-background text-foreground transition-colors duration-300">
         <ThemeProvider
           attribute="class"
-          defaultTheme="light"
+          defaultTheme="system"
           enableSystem
           disableTransitionOnChange
         >
