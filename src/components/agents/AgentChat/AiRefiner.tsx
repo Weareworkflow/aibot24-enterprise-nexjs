@@ -10,6 +10,7 @@ import { Send, Loader2, Sparkles, Wand2 } from "lucide-react";
 import { refineAgentConfig } from "@/ai/flows/refine-agent-config";
 import { doc, updateDoc, Firestore } from "firebase/firestore";
 import { errorEmitter } from '@/firebase/error-emitter';
+import { useToast } from "@/hooks/use-toast";
 
 interface AiRefinerProps {
   agent: AIAgent;
@@ -21,6 +22,7 @@ export function AiRefiner({ agent, db }: AiRefinerProps) {
   const [isRefining, setIsRefining] = useState(false);
   const [history, setHistory] = useState<{role: 'user' | 'assistant', content: string, id: string}[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -74,11 +76,22 @@ export function AiRefiner({ agent, db }: AiRefinerProps) {
 
     } catch (error: any) {
       console.error("Refinement Error:", error);
-      errorEmitter.emit('permission-error', error);
+      
+      // Solo reportar como error de permisos si realmente lo es
+      if (error?.code === 'permission-denied' || error?.message?.includes('permission')) {
+        errorEmitter.emit('permission-error', error);
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Error de Protocolo",
+          description: "No se pudo sincronizar con el Arquitecto de IA. Reintente en unos instantes."
+        });
+      }
+
       setHistory(prev => [...prev, { 
         id: Date.now().toString(),
         role: 'assistant', 
-        content: "Error de sincronización con el motor de IA. Reintente en unos momentos."
+        content: "Error de comunicación con el motor de IA. He preservado tu configuración actual."
       }]);
     } finally {
       setIsRefining(false);

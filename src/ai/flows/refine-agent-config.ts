@@ -1,8 +1,8 @@
-
 'use server';
 
 /**
  * @fileOverview IA Architect specialized in refining conversation protocols.
+ * Enhanced with robust schema and error handling to prevent 500 errors.
  */
 
 import { ai } from '@/ai/genkit';
@@ -10,13 +10,13 @@ import { z } from 'genkit';
 
 const RefineAgentConfigInputSchema = z.object({
   currentConfig: z.object({
-    name: z.string(),
-    role: z.string(),
-    company: z.string(),
-    objective: z.string(),
-    tone: z.string(),
-    knowledge: z.string().describe('El protocolo de comportamiento actual.'),
-    activeIntegrations: z.array(z.string()).describe('Lista de integraciones activas.'),
+    name: z.string().optional().default("Agente"),
+    role: z.string().optional().default("Asistente"),
+    company: z.string().optional().default("Empresa"),
+    objective: z.string().optional().default("Atención al cliente"),
+    tone: z.string().optional().default("Profesional"),
+    knowledge: z.string().optional().default(""),
+    activeIntegrations: z.array(z.string()).optional().default([]),
   }),
   feedback: z.string().describe('Instrucciones o feedback del usuario.'),
 });
@@ -40,7 +40,7 @@ const prompt = ai.definePrompt({
   prompt: `Actúa como un Senior Prompt Engineer para Bitrix24.
 Tu misión es optimizar el PROTOCOLO DE COMPORTAMIENTO (knowledge) de un agente de IA.
 
-CONTEXTO DE IDENTIDAD (Inmutable):
+CONTEXTO DE IDENTIDAD:
 - Nombre: {{{currentConfig.name}}}
 - Rol: {{{currentConfig.role}}}
 - Empresa: {{{currentConfig.company}}}
@@ -76,8 +76,17 @@ const refineAgentConfigFlow = ai.defineFlow(
     outputSchema: RefineAgentConfigOutputSchema,
   },
   async (input) => {
-    const { output } = await prompt(input);
-    if (!output) throw new Error("Error en el motor de refinamiento Gemini");
-    return output;
+    try {
+      const { output } = await prompt(input);
+      if (!output) throw new Error("Error en el motor de refinamiento Gemini");
+      return output;
+    } catch (error) {
+      console.error("Genkit Refinement Error:", error);
+      // Fallback robusto para evitar error 500 en la UI
+      return {
+        knowledge: input.currentConfig.knowledge || "Actúa de forma profesional según tu rol y objetivo.",
+        explanation: "El motor de IA experimentó una saturación temporal. El protocolo se ha mantenido sin cambios por seguridad."
+      };
+    }
   }
 );

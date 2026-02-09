@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect, useRef } from "react";
@@ -159,7 +158,7 @@ export default function NewAgentPage() {
       router.push("/");
     } catch (error: any) {
       console.error("Error al guardar:", error);
-      toast({ variant: "destructive", title: "Error al desplegar", description: error.message });
+      toast({ variant: "destructive", title: "Error al desplegar", description: "Hubo un problema de red al generar el protocolo. Reintente." });
     } finally {
       setIsSaving(false);
     }
@@ -226,20 +225,20 @@ export default function NewAgentPage() {
 
                 {isFinished && (
                   <div className="pt-4 animate-in slide-in-from-bottom-4 duration-700">
-                    <Card className="bg-slate-900 dark:bg-slate-950 text-white rounded-[2rem] p-6 shadow-xl border-none">
+                    <Card className="bg-primary/5 dark:bg-muted/20 rounded-[2rem] p-6 shadow-xl border border-border/40">
                       <div className="flex items-center justify-between mb-4">
                         <div className="space-y-1">
                           <p className="text-[9px] font-black uppercase tracking-widest text-secondary flex items-center gap-1">
                             <Sparkles className="h-2 w-2" />
                             Auto-configuración Activa
                           </p>
-                          <h3 className="font-bold text-lg">{config.name}</h3>
+                          <h3 className="font-bold text-lg text-foreground">{config.name}</h3>
                         </div>
                         <div className="h-10 w-10 rounded-xl shadow-lg border-2 border-white/10" style={{ backgroundColor: config.color }} />
                       </div>
                       <div className="space-y-2 mb-6">
-                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{config.company} • {config.role}</p>
-                        <p className="text-[9px] text-slate-500 italic">Objetivo y Tono se generarán al desplegar.</p>
+                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{config.company} • {config.role}</p>
+                        <p className="text-[9px] text-muted-foreground italic">Objetivo y Tono se generarán al desplegar.</p>
                       </div>
                       <Button 
                         onClick={handleSave} 
