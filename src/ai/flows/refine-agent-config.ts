@@ -36,9 +36,9 @@ const prompt = ai.definePrompt({
   name: 'refineAgentConfigPrompt',
   input: { schema: RefineAgentConfigInputSchema },
   output: { schema: RefineAgentConfigOutputSchema },
-  prompt: `Eres un Arquitecto de Agentes Senior para Bitrix24. Tu tarea es redactar o actualizar el MANUAL TÉCNICO DE COMPORTAMIENTO (system prompt) de un agente.
+  prompt: `Eres el Arquitecto Senior de IA de AIBot24. Tu misión es redactar el MANUAL TÉCNICO DE COMPORTAMIENTO (system prompt) más avanzado para un agente integrado en Bitrix24.
 
-CONTEXTO ACTUAL:
+DATOS DEL AGENTE:
 - Nombre: {{{currentConfig.name}}}
 - Rol: {{{currentConfig.role}}}
 - Empresa: {{{currentConfig.company}}}
@@ -50,7 +50,7 @@ CAPACIDADES TECNOLÓGICAS (Integraciones activas):
 - {{{this}}}
 {{/each}}
 
-MANUAL ACTUAL (Si existe):
+MANUAL ACTUAL:
 """
 {{{currentConfig.knowledge}}}
 """
@@ -58,13 +58,14 @@ MANUAL ACTUAL (Si existe):
 NUEVAS INDICACIONES DEL USUARIO:
 "{{{feedback}}}"
 
-TAREA:
-1. Integra las nuevas indicaciones en el manual técnico.
-2. Redacta el manual en formato profesional, estructurado con secciones (Ej: Flujo de Saludo, Reglas de Negocio, Manejo de Objeciones, Finalización).
-3. Asegúrate de que el agente sepa cómo usar las integraciones mencionadas (ej: si CRM está activo, debe intentar capturar datos).
-4. El lenguaje del manual debe ser directo y normativo (ej: "Debes...", "Nunca...", "Siempre...").
+DIRECTRICES DE REDACCIÓN:
+1. Sé extremadamente profesional y directo. No uses frases como "Aquí tienes el manual".
+2. Organiza el conocimiento en secciones claras: # FLUJO OPERATIVO, # REGLAS DE NEGOCIO, # MANEJO DE INTEGRACIONES.
+3. Integra las nuevas indicaciones del usuario con prioridad absoluta.
+4. Si hay integraciones activas, redacta comandos específicos sobre cómo debe actuar el bot (ej: "Si CRM está activo, captura siempre el lead").
+5. El resultado final debe ser un 'knowledge' que actúe como la biblia de comportamiento del bot.
 
-Genera una respuesta en JSON que incluya el nuevo 'knowledge' (el manual completo) y una 'explanation' técnica de los cambios.`,
+Genera el JSON con el nuevo 'knowledge' y una 'explanation' técnica de las mejoras aplicadas.`,
 });
 
 const refineAgentConfigFlow = ai.defineFlow(
@@ -78,9 +79,9 @@ const refineAgentConfigFlow = ai.defineFlow(
       const { output } = await prompt(input);
       if (!output) throw new Error("No se recibió respuesta del arquitecto de IA.");
       return output;
-    } catch (error) {
+    } catch (error: any) {
       console.error("Genkit Flow Error:", error);
-      throw new Error("Error en la arquitectura de IA. Verifica tu conexión o API Key.");
+      throw new Error(`Fallo en el motor Gemini: ${error.message}`);
     }
   }
 );
