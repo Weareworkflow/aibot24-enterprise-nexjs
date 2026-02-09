@@ -1,4 +1,3 @@
-
 import { db } from './firebase-server';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { BitrixInstallation } from './types';
