@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useState, Suspense } from "react";
@@ -28,9 +27,6 @@ function InstallContent() {
         const BX24 = (window as any).BX24;
 
         BX24.init(async () => {
-          console.log("Protocolo Bitrix24 Activado");
-          
-          // Intentamos obtener auth del SDK si no viene en URL
           const auth = BX24.getAuth();
           const memberId = searchParams.get('member_id') || auth?.member_id;
           const domain = searchParams.get('DOMAIN') || auth?.domain;
@@ -50,32 +46,20 @@ function InstallContent() {
 
             try {
               await setDoc(installRef, installationRecord);
-              
               setTenantId(memberId);
               if (domain) setDomain(domain);
-              
               setStatus('success');
-
-              // Finalizamos el protocolo y forzamos navegación
               setTimeout(() => {
                 BX24.installFinish();
                 router.push('/');
               }, 1500);
-
             } catch (error: any) {
-              console.error("Firestore Error:", error);
               errorEmitter.emit('permission-error', new FirestorePermissionError({
                 path: installRef.path,
                 operation: 'create',
                 requestResourceData: installationRecord
               }));
               setStatus('error');
-            }
-          } else {
-            console.warn("Contexto no encontrado aún, reintentando...");
-            // Si no hay memberId, esperamos un poco más antes de dar error
-            if (status !== 'success') {
-              setTimeout(initializeBX24, 2000);
             }
           }
         });
@@ -98,7 +82,7 @@ function InstallContent() {
         <div className="flex flex-col items-center gap-4 py-6">
           <Loader2 className="h-8 w-8 animate-spin text-secondary" />
           <div className="text-center">
-            <p className="text-xs font-bold text-slate-600 uppercase tracking-widest">Sincronizando con Bitrix24...</p>
+            <p className="text-xs font-bold text-foreground uppercase tracking-widest">Sincronizando con Bitrix24...</p>
             <p className="text-[9px] text-muted-foreground uppercase font-black tracking-[0.2em] mt-2">Protocolo de Enlace en Curso</p>
           </div>
         </div>
@@ -108,7 +92,7 @@ function InstallContent() {
         <div className="flex flex-col items-center gap-6 py-4 animate-in fade-in zoom-in duration-500">
           <CheckCircle2 className="h-12 w-12 text-accent" />
           <div className="text-center space-y-4">
-            <h3 className="font-bold text-lg text-slate-800">¡Enlace Exitoso!</h3>
+            <h3 className="font-bold text-lg text-foreground">¡Enlace Exitoso!</h3>
             <p className="text-[10px] font-black uppercase text-accent tracking-widest">Iniciando Panel Operativo...</p>
             <Button 
               onClick={() => router.push('/')}
@@ -125,7 +109,6 @@ function InstallContent() {
         <div className="text-center py-6 space-y-4">
           <Database className="h-10 w-10 text-destructive mx-auto mb-2 opacity-20" />
           <div className="text-destructive font-black uppercase tracking-widest text-xs">Error de Protocolo</div>
-          <p className="text-[10px] text-muted-foreground px-4">No se pudo capturar el contexto del portal. Por favor, reintenta desde el panel de aplicaciones de Bitrix24.</p>
           <Button onClick={() => window.location.reload()} variant="link" className="text-[10px] uppercase font-black">Reintentar</Button>
         </div>
       )}
@@ -135,30 +118,24 @@ function InstallContent() {
 
 export default function InstallPage() {
   return (
-    <div className="min-h-screen bg-[#F0F3F5] flex flex-col items-center justify-center p-4">
-      <Script 
-        src="https://api.bitrix24.com/api/v1/" 
-        strategy="afterInteractive"
-      />
-
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 transition-colors duration-300">
+      <Script src="https://api.bitrix24.com/api/v1/" strategy="afterInteractive" />
       <div className="mb-8 scale-110">
         <Logo showText={true} />
       </div>
-
-      <Card className="w-full max-w-md border-none shadow-2xl card-rounded bg-white overflow-hidden">
-        <CardHeader className="bg-primary p-8 text-white text-center">
+      <Card className="w-full max-w-md border-none shadow-2xl card-rounded bg-card overflow-hidden high-volume">
+        <CardHeader className="bg-primary p-8 text-primary-foreground text-center">
           <div className="flex justify-center mb-4">
             <ShieldCheck className="h-12 w-12 text-secondary" />
           </div>
           <CardTitle className="font-headline text-xl font-bold">Instalación de Aplicación</CardTitle>
           <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-70 mt-2">Protocolo de Enlace Seguro</p>
         </CardHeader>
-
         <CardContent className="p-8">
           <Suspense fallback={
             <div className="flex flex-col items-center gap-4 py-6">
               <Loader2 className="h-8 w-8 animate-spin text-secondary" />
-              <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Cargando SDK...</p>
+              <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Cargando SDK...</p>
             </div>
           }>
             <InstallContent />

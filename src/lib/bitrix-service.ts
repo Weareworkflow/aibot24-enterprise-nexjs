@@ -4,7 +4,7 @@ import { BitrixInstallation } from './types';
 
 /**
  * Servicio para gestionar la comunicación con Bitrix24 desde el servidor.
- * Maneja el refresco automático de tokens utilizando las credenciales oficiales.
+ * Utiliza los secretos oficiales proporcionados por el usuario.
  */
 export async function getBitrixClient(memberId: string) {
   const installationRef = doc(db, 'installations', memberId);
@@ -17,13 +17,10 @@ export async function getBitrixClient(memberId: string) {
   const data = installationSnap.data() as BitrixInstallation;
   const now = Math.floor(Date.now() / 1000);
   
-  // Calculamos la expiración (5 min de margen)
   const expiresAt = data.expiresAt || (Math.floor(new Date(data.createdAt).getTime() / 1000) + (data.expiresIn || 3600));
   const isExpired = now >= (expiresAt - 300);
 
   if (isExpired && data.refreshToken) {
-    console.log(`Token expirado para ${memberId}. Iniciando protocolo de refresco OAuth...`);
-    
     const params = new URLSearchParams({
       grant_type: 'refresh_token',
       client_id: process.env.BITRIX_CLIENT_ID || 'local.6982e6f2b88070.20311787',
@@ -64,9 +61,6 @@ export async function getBitrixClient(memberId: string) {
   };
 }
 
-/**
- * Realiza una llamada REST a Bitrix24 directamente desde el servidor (Node.js).
- */
 export async function callBitrixMethod(memberId: string, method: string, params: any = {}) {
   const client = await getBitrixClient(memberId);
   
@@ -84,16 +78,12 @@ export async function callBitrixMethod(memberId: string, method: string, params:
   return await response.json();
 }
 
-/**
- * Registra un Bot de tipo 'O' (Open Lines) en Bitrix24.
- */
 export async function registerBitrixBot(memberId: string, agentData: { name: string, role: string, color: string, agentId: string }) {
-  // Fallback para URL de aplicación si no está en env
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || `https://${process.env.NEXT_PUBLIC_VERCEL_URL || 'aibot24-voice.web.app'}`;
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || `https://aibot24-voice.web.app`;
   
   const params = {
     CODE: `bot_${agentData.agentId}`,
-    TYPE: 'O', // TIPO O PARA OPEN LINES
+    TYPE: 'O',
     EVENT_MESSAGE_ADD: `${appUrl}/api/bitrix/webhook`,
     EVENT_WELCOME_MESSAGE: `${appUrl}/api/bitrix/webhook`,
     PROPERTIES: {
@@ -103,6 +93,5 @@ export async function registerBitrixBot(memberId: string, agentData: { name: str
     }
   };
 
-  const response = await callBitrixMethod(memberId, 'imbot.register', params);
-  return response;
+  return await callBitrixMethod(memberId, 'imbot.register', params);
 }
