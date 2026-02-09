@@ -1,8 +1,7 @@
 'use server';
 
 /**
- * @fileOverview IA Architect specialized in refining conversation protocols.
- * Enhanced with robust schema and error handling to prevent 500 errors.
+ * @fileOverview Arquitecto de IA especializado en la redacción de protocolos de comportamiento para Bitrix24.
  */
 
 import { ai } from '@/ai/genkit';
@@ -18,12 +17,12 @@ const RefineAgentConfigInputSchema = z.object({
     knowledge: z.string().optional().default(""),
     activeIntegrations: z.array(z.string()).optional().default([]),
   }),
-  feedback: z.string().describe('Instrucciones o feedback del usuario.'),
+  feedback: z.string().describe('Instrucciones o feedback del usuario para el agente.'),
 });
 
 const RefineAgentConfigOutputSchema = z.object({
-  knowledge: z.string().describe('Protocolo de comportamiento actualizado y optimizado.'),
-  explanation: z.string().describe('Breve explicación técnica del ajuste realizado.'),
+  knowledge: z.string().describe('El manual técnico de comportamiento completo y actualizado.'),
+  explanation: z.string().describe('Breve descripción de qué se ha mejorado en el protocolo.'),
 });
 
 export type RefineAgentConfigInput = z.infer<typeof RefineAgentConfigInputSchema>;
@@ -37,36 +36,35 @@ const prompt = ai.definePrompt({
   name: 'refineAgentConfigPrompt',
   input: { schema: RefineAgentConfigInputSchema },
   output: { schema: RefineAgentConfigOutputSchema },
-  prompt: `Actúa como un Senior Prompt Engineer para Bitrix24.
-Tu misión es optimizar el PROTOCOLO DE COMPORTAMIENTO (knowledge) de un agente de IA.
+  prompt: `Eres un Arquitecto de Agentes Senior para Bitrix24. Tu tarea es redactar o actualizar el MANUAL TÉCNICO DE COMPORTAMIENTO (system prompt) de un agente.
 
-CONTEXTO DE IDENTIDAD:
+CONTEXTO ACTUAL:
 - Nombre: {{{currentConfig.name}}}
 - Rol: {{{currentConfig.role}}}
 - Empresa: {{{currentConfig.company}}}
 - Tono: {{{currentConfig.tone}}}
 - Objetivo: {{{currentConfig.objective}}}
 
-CAPACIDADES TÉCNICAS ACTIVAS:
+CAPACIDADES TECNOLÓGICAS (Integraciones activas):
 {{#each currentConfig.activeIntegrations}}
 - {{{this}}}
 {{/each}}
 
-PROTOCOLO ACTUAL A REFINAR:
+MANUAL ACTUAL (Si existe):
 """
 {{{currentConfig.knowledge}}}
 """
 
-NUEVAS INSTRUCCIONES DEL USUARIO:
+NUEVAS INDICACIONES DEL USUARIO:
 "{{{feedback}}}"
 
 TAREA:
-1. Analiza el feedback del usuario y re-escribe el protocolo de comportamiento.
-2. Crea un manual técnico robusto enfocado en reglas de negocio, manejo de excepciones y flujo de chat.
-3. Asegúrate de que las reglas aprovechen las integraciones activas mencionadas.
-4. El resultado debe ser un texto profesional que servirá como 'System Prompt' adicional.
+1. Integra las nuevas indicaciones en el manual técnico.
+2. Redacta el manual en formato profesional, estructurado con secciones (Ej: Flujo de Saludo, Reglas de Negocio, Manejo de Objeciones, Finalización).
+3. Asegúrate de que el agente sepa cómo usar las integraciones mencionadas (ej: si CRM está activo, debe intentar capturar datos).
+4. El lenguaje del manual debe ser directo y normativo (ej: "Debes...", "Nunca...", "Siempre...").
 
-Responde solo con el objeto JSON solicitado.`,
+Genera una respuesta en JSON que incluya el nuevo 'knowledge' (el manual completo) y una 'explanation' técnica de los cambios.`,
 });
 
 const refineAgentConfigFlow = ai.defineFlow(
@@ -78,15 +76,11 @@ const refineAgentConfigFlow = ai.defineFlow(
   async (input) => {
     try {
       const { output } = await prompt(input);
-      if (!output) throw new Error("Error en el motor de refinamiento Gemini");
+      if (!output) throw new Error("No se recibió respuesta del arquitecto de IA.");
       return output;
     } catch (error) {
-      console.error("Genkit Refinement Error:", error);
-      // Fallback robusto para evitar error 500 en la UI
-      return {
-        knowledge: input.currentConfig.knowledge || "Actúa de forma profesional según tu rol y objetivo.",
-        explanation: "El motor de IA experimentó una saturación temporal. El protocolo se ha mantenido sin cambios por seguridad."
-      };
+      console.error("Genkit Flow Error:", error);
+      throw new Error("Error en la arquitectura de IA. Verifica tu conexión o API Key.");
     }
   }
 );

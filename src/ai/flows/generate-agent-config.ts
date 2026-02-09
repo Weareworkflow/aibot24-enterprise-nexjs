@@ -1,25 +1,24 @@
 'use server';
 
 /**
- * @fileOverview Generates agent configuration using Genkit.
- * Fields are optional to avoid validation errors during partial refinements.
+ * @fileOverview Genera la configuración inicial estratégica del agente.
  */
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
 const GenerateAgentConfigInputSchema = z.object({
-  prompt: z.string().describe('A prompt describing the desired AI agent.'),
+  prompt: z.string().describe('Descripción breve del agente deseado.'),
 });
 export type GenerateAgentConfigInput = z.infer<typeof GenerateAgentConfigInputSchema>;
 
 const GenerateAgentConfigOutputSchema = z.object({
-  name: z.string().optional().describe('The name of the AI agent.'),
-  role: z.string().optional().describe('The specific role or job title of the agent.'),
-  company: z.string().optional().describe('The company the agent represents.'),
-  objective: z.string().optional().describe('The main objective or goal of the agent.'),
-  tone: z.string().optional().describe('The tone of voice and communication style.'),
-  knowledge: z.string().optional().describe('Extensive knowledge base and guidelines for the agent.'),
+  name: z.string().optional(),
+  role: z.string().optional(),
+  company: z.string().optional(),
+  objective: z.string().describe('Misión crítica del agente.'),
+  tone: z.string().describe('Estilo de comunicación detallado.'),
+  knowledge: z.string().optional().describe('Borrador inicial del manual técnico.'),
 });
 export type GenerateAgentConfigOutput = z.infer<typeof GenerateAgentConfigOutputSchema>;
 
@@ -31,20 +30,15 @@ const prompt = ai.definePrompt({
   name: 'generateAgentConfigPrompt',
   input: {schema: GenerateAgentConfigInputSchema},
   output: {schema: GenerateAgentConfigOutputSchema},
-  prompt: `You are an expert AI Agent Architect for Bitrix24.
-Based on the user's prompt, generate a professional configuration for their AI agent.
+  prompt: `Actúa como un Consultor Estratégico de IA para Bitrix24.
+Basado en: "{{{prompt}}}", diseña la base operativa de un agente de chat.
 
-User Prompt: {{{prompt}}}
+Genera:
+- objective: Una misión de alto impacto enfocada en resultados.
+- tone: Un estilo de voz profesional que encaje con Bitrix24.
+- knowledge: Un manual técnico inicial de 3-4 puntos clave.
 
-Generate values for:
-- name: A professional name.
-- role: A specific job title.
-- company: Company name.
-- objective: Primary goal.
-- tone: Communication style.
-- knowledge: Business rules and protocols.
-
-If the prompt only asks for specific fields, focus on those. Output only the JSON object.`,
+Si se proporcionan nombre, rol o empresa, inclúyelos. Si no, invéntalos profesionalmente.`,
 });
 
 const generateAgentConfigFlow = ai.defineFlow(
@@ -56,12 +50,13 @@ const generateAgentConfigFlow = ai.defineFlow(
   async input => {
     try {
       const {output} = await prompt(input);
-      return output || {};
+      return output!;
     } catch (error) {
-      console.error("Genkit Flow Error:", error);
+      console.error("Genkit Generation Error:", error);
       return {
-        objective: "Atención al cliente inteligente y proactiva.",
-        tone: "Profesional, cordial y resolutivo."
+        objective: "Atención al cliente de alto nivel y resolución de consultas técnicas.",
+        tone: "Profesional, resolutivo y siempre amable siguiendo los estándares corporativos.",
+        knowledge: "1. Saluda cordialmente. 2. Identifica la necesidad del cliente. 3. Proporciona soluciones basadas en los servicios de la empresa."
       };
     }
   }

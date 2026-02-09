@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { AIAgent } from "@/lib/types";
 import { cn } from "@/lib/utils";
-import { Send, Loader2, Sparkles, Wand2 } from "lucide-react";
+import { Send, Loader2, Sparkles, Wand2, AlertTriangle } from "lucide-react";
 import { refineAgentConfig } from "@/ai/flows/refine-agent-config";
 import { doc, updateDoc, Firestore } from "firebase/firestore";
 import { errorEmitter } from '@/firebase/error-emitter';
@@ -20,7 +20,7 @@ interface AiRefinerProps {
 export function AiRefiner({ agent, db }: AiRefinerProps) {
   const [feedbackInput, setFeedbackInput] = useState("");
   const [isRefining, setIsRefining] = useState(false);
-  const [history, setHistory] = useState<{role: 'user' | 'assistant', content: string, id: string}[]>([]);
+  const [history, setHistory] = useState<{role: 'user' | 'assistant' | 'error', content: string, id: string}[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
@@ -71,28 +71,23 @@ export function AiRefiner({ agent, db }: AiRefinerProps) {
       setHistory(prev => [...prev, { 
         id: (Date.now() + 1).toString(),
         role: 'assistant', 
-        content: `Protocolo actualizado con éxito. He ajustado el manual técnico para incluir: "${suggestion.explanation}".`
+        content: `Manual actualizado: ${suggestion.explanation}`
       }]);
 
     } catch (error: any) {
       console.error("Refinement Error:", error);
       
-      // Solo reportar como error de permisos si realmente lo es
-      if (error?.code === 'permission-denied' || error?.message?.includes('permission')) {
-        errorEmitter.emit('permission-error', error);
-      } else {
-        toast({
-          variant: "destructive",
-          title: "Error de Protocolo",
-          description: "No se pudo sincronizar con el Arquitecto de IA. Reintente en unos instantes."
-        });
-      }
-
       setHistory(prev => [...prev, { 
         id: Date.now().toString(),
-        role: 'assistant', 
-        content: "Error de comunicación con el motor de IA. He preservado tu configuración actual."
+        role: 'error', 
+        content: "No se pudo generar el protocolo. Verifica que tu clave de API de Gemini esté configurada correctamente en el servidor."
       }]);
+
+      toast({
+        variant: "destructive",
+        title: "Fallo en el Arquitecto",
+        description: "El motor de IA no pudo procesar la solicitud."
+      });
     } finally {
       setIsRefining(false);
     }
@@ -110,7 +105,7 @@ export function AiRefiner({ agent, db }: AiRefinerProps) {
               </div>
               Hola, soy tu Co-Piloto de IA. Mi función es redactar el **Manual Técnico de Comportamiento** para <strong className="text-foreground">{agent.name}</strong>. 
               <br /><br />
-              Dime qué reglas quieres implementar (ej: "No hables de precios", "Pide el correo siempre") y yo generaré el protocolo profesional automáticamente.
+              Dime qué reglas quieres implementar y yo generaré el protocolo profesional automáticamente.
             </div>
           )}
 
@@ -127,9 +122,12 @@ export function AiRefiner({ agent, db }: AiRefinerProps) {
                   "px-5 py-3 rounded-2xl text-[13px] font-medium shadow-sm border", 
                   item.role === 'user' 
                     ? "bg-secondary text-white border-transparent rounded-tr-none" 
-                    : "bg-muted/40 text-foreground border-border/40 rounded-tl-none"
+                    : item.role === 'error'
+                      ? "bg-destructive/10 text-destructive border-destructive/20 flex items-center gap-2"
+                      : "bg-muted/40 text-foreground border-border/40 rounded-tl-none"
                 )}
               >
+                {item.role === 'error' && <AlertTriangle className="h-3 w-3" />}
                 {item.content}
               </div>
             </div>
@@ -138,7 +136,7 @@ export function AiRefiner({ agent, db }: AiRefinerProps) {
           {isRefining && (
             <div className="flex items-center gap-3 p-4 bg-secondary/5 rounded-2xl border border-secondary/20 w-fit animate-pulse">
               <Loader2 className="h-4 w-4 animate-spin text-secondary" />
-              <span className="text-[10px] font-black uppercase tracking-widest text-secondary">Redactando protocolo técnico...</span>
+              <span className="text-[10px] font-black uppercase tracking-widest text-secondary">Gemini redactando protocolo...</span>
             </div>
           )}
         </div>
