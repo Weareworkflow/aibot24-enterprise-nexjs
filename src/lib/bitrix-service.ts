@@ -1,11 +1,16 @@
+
 import { db } from './firebase-server';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { BitrixInstallation } from './types';
 
 /**
- * Servicio para gestionar la comunicación con Bitrix24 desde el servidor.
- * Utiliza los secretos oficiales proporcionados por el usuario.
+ * Servicio central para gestionar la comunicación con Bitrix24.
+ * Utiliza los secretos actualizados proporcionados por el usuario para OAuth y Registro.
  */
+
+const CLIENT_ID_DEFAULT = 'local.6982e6f2b88070.20311787';
+const CLIENT_SECRET_DEFAULT = '42QiydgDFfjI35jA0BZYSsHinhw6m30zAw6pkHXeV9t87rC6RZ';
+
 export async function getBitrixClient(memberId: string) {
   const installationRef = doc(db, 'installations', memberId);
   const installationSnap = await getDoc(installationRef);
@@ -17,14 +22,15 @@ export async function getBitrixClient(memberId: string) {
   const data = installationSnap.data() as BitrixInstallation;
   const now = Math.floor(Date.now() / 1000);
   
+  // Calculamos expiración si no existe el campo explícito
   const expiresAt = data.expiresAt || (Math.floor(new Date(data.createdAt).getTime() / 1000) + (data.expiresIn || 3600));
-  const isExpired = now >= (expiresAt - 300);
+  const isExpired = now >= (expiresAt - 300); // 5 minutos de margen
 
   if (isExpired && data.refreshToken) {
     const params = new URLSearchParams({
       grant_type: 'refresh_token',
-      client_id: process.env.BITRIX_CLIENT_ID || 'local.6982e6f2b88070.20311787',
-      client_secret: process.env.BITRIX_CLIENT_SECRET || '42QiydgDFfjI35jA0BZYSsHinhw6m30zAw6pkHXeV9t87rC6RZ',
+      client_id: process.env.BITRIX_CLIENT_ID || CLIENT_ID_DEFAULT,
+      client_secret: process.env.BITRIX_CLIENT_SECRET || CLIENT_SECRET_DEFAULT,
       refresh_token: data.refreshToken,
     });
 

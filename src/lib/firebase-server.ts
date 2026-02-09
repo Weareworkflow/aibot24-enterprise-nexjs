@@ -6,7 +6,7 @@ import { firebaseConfig } from '@/firebase/config';
 
 /**
  * Inicializa Firebase utilizando el SDK estándar para uso en Server Components y API Routes.
- * Esto evita el error de "Missing credentials" de firebase-admin en localhost.
+ * Unifica el acceso a la base de datos en todo el backend para evitar errores de inicialización.
  */
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 

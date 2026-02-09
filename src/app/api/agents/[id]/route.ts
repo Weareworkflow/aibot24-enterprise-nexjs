@@ -1,12 +1,11 @@
 
 import { NextRequest, NextResponse } from 'next/server';
-import { initializeApp, getApps, getApp } from 'firebase/app';
-import { getFirestore, doc, getDoc } from 'firebase/firestore';
-import { firebaseConfig } from '@/firebase/config';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '@/lib/firebase-server';
 
 /**
  * API oficial de AIBot24 para el motor de ejecución.
- * Entrega el prompt compilado jerárquico.
+ * Entrega el prompt compilado jerárquico utilizando el singleton del servidor.
  */
 export async function GET(
   request: NextRequest,
@@ -14,9 +13,6 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-
-    const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-    const db = getFirestore(app);
 
     const agentRef = doc(db, 'agents', id);
     const agentSnap = await getDoc(agentRef);
