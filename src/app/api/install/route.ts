@@ -5,11 +5,13 @@ import { db } from '@/lib/firebase-server';
 
 /**
  * Endpoint de Instalación Vía API para Bitrix24.
- * Registra la instalación utilizando el motor unificado de base de datos.
+ * Este es el "Install URL" que Bitrix24 llama mediante POST al instalar la app.
  */
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
+    
+    // Captura de datos del POST de Bitrix24
     const memberId = formData.get('member_id') as string;
     const domain = formData.get('DOMAIN') as string;
     const accessToken = formData.get('AUTH_ID') as string;
@@ -17,6 +19,7 @@ export async function POST(request: NextRequest) {
     const expiresIn = parseInt(formData.get('AUTH_EXPIRES') as string || '3600');
 
     if (!memberId) {
+      console.error("Instalación fallida: Falta member_id");
       return NextResponse.json({ error: 'Missing member_id' }, { status: 400 });
     }
 
@@ -27,35 +30,73 @@ export async function POST(request: NextRequest) {
       refreshToken: refreshToken || "",
       expiresIn,
       status: 'active',
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
+      expiresAt: Math.floor(Date.now() / 1000) + expiresIn
     };
 
-    // Registro de la instalación en Firestore
-    await setDoc(doc(db, 'installations', memberId), installationData);
+    // Registro persistente en Firestore
+    await setDoc(doc(db, 'installations', memberId), installationData, { merge: true });
 
-    // Retornamos HTML que llama al SDK de Bitrix para finalizar la instalación en el UI
+    // HTML de finalización: Carga el SDK y notifica a Bitrix que la instalación terminó
     const html = `
       <!DOCTYPE html>
-      <html>
+      <html lang="es">
         <head>
+          <meta charset="UTF-8">
           <script src="//api.bitrix24.com/api/v1/"></script>
+          <style>
+            body { 
+              margin: 0; 
+              background: #060e1f; 
+              color: #fff; 
+              font-family: 'Inter', sans-serif; 
+              display: flex; 
+              align-items: center; 
+              justify-content: center; 
+              height: 100vh; 
+              overflow: hidden;
+            }
+            .card {
+              background: #0c1830;
+              padding: 3rem;
+              border-radius: 2.5rem;
+              box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+              text-align: center;
+              max-width: 420px;
+              width: 90%;
+              border: 1px solid rgba(47, 198, 246, 0.2);
+              animation: fadeIn 0.6s ease-out;
+            }
+            @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+            .icon { color: #2FC6F6; margin-bottom: 1.5rem; }
+            h2 { margin: 0 0 0.5rem 0; font-size: 20px; font-weight: 800; letter-spacing: -0.5px; }
+            .status { color: #2FC6F6; font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 3px; margin-bottom: 2rem; }
+            .loader { 
+              width: 40px; height: 40px; border: 3px solid rgba(47, 198, 246, 0.1); 
+              border-top-color: #2FC6F6; border-radius: 50%; 
+              animation: spin 1s linear infinite; margin: 0 auto 1.5rem;
+            }
+            @keyframes spin { to { transform: rotate(360deg); } }
+            .footer { color: #64748b; font-size: 11px; margin-top: 1rem; }
+          </style>
         </head>
-        <body style="font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; background: #060e1f; color: #fff; margin: 0;">
-          <div style="text-align: center; background: #0c1830; padding: 2.5rem; border-radius: 2rem; box-shadow: 0 20px 50px rgba(0,0,0,0.3); max-width: 400px; width: 90%; border: 1px solid rgba(255,255,255,0.1);">
-            <div style="color: #2FC6F6; margin-bottom: 1rem;">
-               <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        <body>
+          <div class="card">
+            <div class="icon">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
             </div>
-            <h2 style="margin: 0 0 1rem 0; font-size: 18px; font-weight: 800; letter-spacing: -0.5px;">AIBot24 Enterprise</h2>
-            <p style="color: #2FC6F6; font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 2px;">Enlace Exitoso</p>
-            <div style="margin: 1.5rem 0; font-family: monospace; font-size: 11px; color: #94a3b8; background: rgba(0,0,0,0.2); padding: 1rem; border-radius: 1rem;">ID: ${memberId}</div>
-            <p style="color: #64748b; font-size: 10px;">Finalizando protocolo de instalación...</p>
+            <div class="loader"></div>
+            <h2>AIBot24 Enterprise</h2>
+            <div class="status">Sincronizando Protocolo</div>
+            <p class="footer">Finalizando enlace seguro con Bitrix24...</p>
           </div>
           <script>
             BX24.init(function() {
               console.log("Instalación completada para: ${memberId}");
+              // Crucial: BX24.installFinish() cierra el flujo de instalación y redirige al App URL
               setTimeout(function() {
                 BX24.installFinish();
-              }, 1500);
+              }, 1000);
             });
           </script>
         </body>
@@ -66,10 +107,11 @@ export async function POST(request: NextRequest) {
       headers: { 'Content-Type': 'text/html' },
     });
   } catch (error: any) {
+    console.error("Error en POST /api/install:", error);
     return NextResponse.json({ error: 'Internal Error', message: error.message }, { status: 500 });
   }
 }
 
 export async function GET() {
-  return new NextResponse('API Endpoint Active', { status: 200 });
+  return new NextResponse('Endpoint Operativo - Esperando POST de Bitrix24', { status: 200 });
 }

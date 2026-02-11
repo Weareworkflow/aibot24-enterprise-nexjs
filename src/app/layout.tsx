@@ -28,22 +28,28 @@ export default function RootLayout({
           <script
             dangerouslySetInnerHTML={{
               __html: `
-                if (!window.BX24) {
+                if (typeof window !== 'undefined' && !window.BX24) {
                   window.BX24 = {
                     init: (callback) => {
                       console.log("[DEV MOCK] BX24.init simulado para localhost");
-                      if (callback) callback();
+                      if (callback) setTimeout(callback, 100);
                     },
                     installFinish: () => {
-                      console.log("[DEV MOCK] BX24.installFinish simulado");
+                      console.log("[DEV MOCK] BX24.installFinish simulado - Instalación completada");
                     },
                     getAuth: () => {
                       console.log("[DEV MOCK] BX24.getAuth simulado");
-                      return null;
+                      return {
+                        member_id: "dev_member_local",
+                        domain: "dev-portal.bitrix24.es",
+                        access_token: "dev_access_token",
+                        refresh_token: "dev_refresh_token",
+                        expires_in: 3600
+                      };
                     },
                     callMethod: (method, params, callback) => {
                       console.log("[DEV MOCK] BX24.callMethod simulado:", method, params);
-                      if (callback) callback({ error: "SDK simulado en modo desarrollo" });
+                      if (callback) setTimeout(() => callback({ result: "OK", error: null }), 300);
                     }
                   };
                 }
@@ -55,8 +61,8 @@ export default function RootLayout({
       <body className="font-body antialiased min-h-screen bg-background text-foreground transition-colors duration-300">
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
-          enableSystem
+          defaultTheme="dark"
+          enableSystem={false}
           disableTransitionOnChange
         >
           <FirebaseClientProvider>
