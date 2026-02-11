@@ -1,4 +1,3 @@
-
 export const translations = {
   es: {
     nav: {
@@ -41,11 +40,12 @@ export const translations = {
       tab_appearance: "Apariencia",
       credentials_title: "Credenciales de Instalación Bitrix24",
       client_id: "Cliente ID",
+      client_id_note: "El Client ID se localiza en la configuración de la aplicación local de su portal.",
       secret_id: "Secret ID",
-      credentials_note: "Nota: El Client ID y Secret ID se localizan en la sección de configuración de instalación de aplicaciones locales de su portal Bitrix24.",
+      secret_id_note: "El Secret ID se localiza en la configuración de la aplicación local de su portal.",
       communication_title: "Canal de Comunicación AI",
       webhook_label: "Webhook del Agente AI",
-      webhook_note: "Nota: Este es el servicio del agente dedicado para este portal. Es el endpoint de enlace para procesar interacciones inteligentes.",
+      webhook_note: "Este es el servicio del agente dedicado para este portal. Es el endpoint de enlace para procesar interacciones inteligentes.",
       display_mode: "Modo de Visualización",
       display_note: "Selecciona el tema visual para tu consola operativa.",
       theme_light: "Modo Claro",
@@ -113,11 +113,12 @@ export const translations = {
       tab_appearance: "Appearance",
       credentials_title: "Bitrix24 Installation Credentials",
       client_id: "Client ID",
+      client_id_note: "The Client ID is located in the local application settings of your portal.",
       secret_id: "Secret ID",
-      credentials_note: "Note: Client ID and Secret ID are located in the local application installation settings of your Bitrix24 portal.",
+      secret_id_note: "The Secret ID is located in the local application settings of your portal.",
       communication_title: "AI Communication Channel",
       webhook_label: "AI Agent Webhook",
-      webhook_note: "Note: This is the dedicated agent service for this portal. It's the connection endpoint to process intelligent interactions.",
+      webhook_note: "This is the dedicated agent service for this portal. It's the connection endpoint to process intelligent interactions.",
       display_mode: "Display Mode",
       display_note: "Select the visual theme for your operations console.",
       theme_light: "Light Mode",

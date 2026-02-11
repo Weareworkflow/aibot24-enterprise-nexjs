@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useMemo, useState, useEffect } from "react";
@@ -20,7 +19,9 @@ import {
   Moon,
   ShieldCheck,
   Languages,
-  Check
+  Check,
+  ShieldAlert,
+  ExternalLink
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useUIStore } from "@/lib/store";
@@ -31,6 +32,7 @@ import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { useTheme } from "next-themes";
 import { translations } from "@/lib/translations";
+import { getBitrixAuthUrl } from "@/lib/bitrix-service";
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -72,7 +74,6 @@ export default function SettingsPage() {
     try {
       await updateDoc(installationRef, {
         ...formData,
-        language
       });
       toast({
         title: t.saved_title,
@@ -82,19 +83,32 @@ export default function SettingsPage() {
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Error."
+        description: "No se pudieron guardar los cambios."
       });
     } finally {
       setIsSaving(false);
     }
   };
 
+  const handleReauthorize = () => {
+    if (!domain) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "No hay un dominio de Bitrix24 vinculado."
+      });
+      return;
+    }
+    const authUrl = getBitrixAuthUrl(domain, formData.clientId);
+    window.open(authUrl, '_blank');
+  };
+
   if (loading) return (
-    <div className="flex flex-col min-h-screen bg-background">
+    <div className="flex flex-col min-h-screen bg-background transition-colors duration-300">
       <Navbar />
       <div className="flex-1 flex flex-col items-center justify-center gap-4">
         <Loader2 className="h-8 w-8 animate-spin text-secondary" />
-        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">...</p>
+        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Sincronizando Consola...</p>
       </div>
     </div>
   );
@@ -117,7 +131,7 @@ export default function SettingsPage() {
             <div className="flex flex-col">
               <div className="flex items-center gap-3">
                 <h1 className="text-2xl font-headline font-bold text-foreground leading-none">
-                  {domain ? domain.split('.')[0].toUpperCase() : "WORKFLOWTEAMS"}
+                  {domain ? domain.split('.')[0].toUpperCase() : "PORTAL"}
                 </h1>
                 <div className="flex items-center gap-1.5 px-2.5 py-0.5 bg-accent/10 rounded-full border border-accent/20">
                   <span className="h-1.5 w-1.5 bg-accent rounded-full animate-pulse" />
@@ -125,7 +139,7 @@ export default function SettingsPage() {
                 </div>
               </div>
               <p className="text-[11px] font-bold text-muted-foreground mt-1 tracking-tight">
-                {domain || "workflowteams.bitrix24.es"}
+                {domain || "bitrix24.enterprise"}
               </p>
             </div>
           </div>
@@ -173,6 +187,9 @@ export default function SettingsPage() {
                         placeholder="local.65..." 
                         className="h-12 bg-muted/30 border-border rounded-xl px-4 font-mono text-[11px] focus:bg-background transition-all shadow-inner"
                       />
+                      <p className="text-[9px] text-muted-foreground font-bold uppercase tracking-wider leading-relaxed px-1 italic">
+                        {t.client_id_note}
+                      </p>
                     </div>
                     <div className="space-y-2.5">
                       <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">{t.secret_id}</Label>
@@ -183,11 +200,34 @@ export default function SettingsPage() {
                         placeholder="••••••••••••••••" 
                         className="h-12 bg-muted/30 border-border rounded-xl px-4 font-mono text-[11px] focus:bg-background transition-all shadow-inner"
                       />
+                      <p className="text-[9px] text-muted-foreground font-bold uppercase tracking-wider leading-relaxed px-1 italic">
+                        {t.secret_id_note}
+                      </p>
                     </div>
                   </div>
-                  <p className="text-[9px] text-muted-foreground font-bold uppercase tracking-wider leading-relaxed px-1 max-w-2xl italic">
-                    {t.credentials_note}
-                  </p>
+                </div>
+
+                <div className="space-y-6 pt-4 border-t border-border/40">
+                  <div className="flex items-center justify-between text-foreground px-1">
+                    <div className="flex items-center gap-3">
+                      <ShieldAlert className="h-4 w-4 text-secondary" />
+                      <h4 className="text-[11px] font-black uppercase tracking-widest opacity-80">Permisos y Autorización</h4>
+                    </div>
+                  </div>
+                  <div className="p-6 bg-secondary/5 rounded-2xl border border-secondary/10 flex flex-col md:flex-row items-center justify-between gap-4">
+                    <div className="space-y-1">
+                      <p className="text-[11px] font-bold text-foreground uppercase tracking-tight">Sincronizar Alcance (Scopes)</p>
+                      <p className="text-[9px] text-muted-foreground font-medium max-w-sm">Si tu app tiene errores de acceso, pulsa para re-autorizar con todos los permisos (CRM, IM, Drive, Tareas, etc).</p>
+                    </div>
+                    <Button 
+                      onClick={handleReauthorize}
+                      variant="outline" 
+                      className="pill-rounded h-10 border-secondary text-secondary hover:bg-secondary hover:text-white font-black text-[9px] uppercase tracking-widest gap-2 flex-shrink-0"
+                    >
+                      <ExternalLink className="h-3 w-3" />
+                      Autorizar Scopes
+                    </Button>
+                  </div>
                 </div>
 
                 <div className="space-y-6 pt-4 border-t border-border/40">
