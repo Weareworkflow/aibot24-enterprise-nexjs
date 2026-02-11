@@ -10,7 +10,7 @@ import { BitrixInstallation } from './types';
 const CLIENT_ID_DEFAULT = 'local.6982e6f2b88070.20311787';
 const CLIENT_SECRET_DEFAULT = '42QiydgDFfjI35jA0BZYSsHinhw6m30zAw6pkHXeV9t87rC6RZ';
 
-// Alcance completo de permisos solicitados
+// Alcance completo de permisos solicitados según requerimiento del usuario
 export const BITRIX_SCOPES = [
   'crm',
   'im',
@@ -29,6 +29,7 @@ export const BITRIX_SCOPES = [
 
 export function getBitrixAuthUrl(domain: string, clientId?: string) {
   const effectiveClientId = clientId || CLIENT_ID_DEFAULT;
+  // Es vital incluir el parámetro scope para que Bitrix otorgue los permisos correctos
   return `https://${domain}/oauth/authorize/?client_id=${effectiveClientId}&response_type=code&scope=${BITRIX_SCOPES}`;
 }
 

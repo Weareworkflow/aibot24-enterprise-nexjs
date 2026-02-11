@@ -49,7 +49,7 @@ export function AiRefiner({ agent, db }: AiRefinerProps) {
         .filter(([_, active]) => active)
         .map(([name]) => name);
 
-      // 1. Generación con Gemini 1.5 Flash
+      // 1. Generación con Gemini
       const suggestion = await refineAgentConfig({
         currentConfig: {
           name: agent.name,
@@ -63,7 +63,7 @@ export function AiRefiner({ agent, db }: AiRefinerProps) {
         feedback: userFeedback
       });
 
-      // 2. Guardado inmediato en la base de datos
+      // 2. Guardado inmediato en la base de datos para asegurar persistencia
       const agentRef = doc(db, "agents", agent.id);
       await updateDoc(agentRef, {
         knowledge: suggestion.knowledge
@@ -96,7 +96,7 @@ export function AiRefiner({ agent, db }: AiRefinerProps) {
       toast({
         variant: "destructive",
         title: "Fallo en la Arquitectura",
-        description: "Revisa la consola o la clave de API de Gemini."
+        description: "Hubo un problema de comunicación con el servidor. Reintente."
       });
     } finally {
       setIsRefining(false);

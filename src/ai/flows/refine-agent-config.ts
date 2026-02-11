@@ -60,9 +60,9 @@ NUEVAS INDICACIONES DEL USUARIO:
 
 DIRECTRICES DE REDACCIÓN:
 1. Sé extremadamente profesional y directo. No uses frases como "Aquí tienes el manual".
-2. Organiza el conocimiento en secciones claras: # FLUJO OPERATIVO, # REGLAS DE NEGOCIO, # MANEJO DE INTEGRACIONES.
+2. Organiza el conocimiento en secciones claras usando Markdown: # FLUJO OPERATIVO, # REGLAS DE NEGOCIO, # MANEJO DE INTEGRACIONES.
 3. Integra las nuevas indicaciones del usuario con prioridad absoluta.
-4. Si hay integraciones activas, redacta comandos específicos sobre cómo debe actuar el bot (ej: "Si CRM está activo, captura siempre el lead").
+4. Redacta comandos específicos sobre cómo debe actuar el bot ante las integraciones activas.
 5. El resultado final debe ser un 'knowledge' que actúe como la biblia de comportamiento del bot.
 
 Genera el JSON con el nuevo 'knowledge' y una 'explanation' técnica de las mejoras aplicadas.`,
@@ -81,7 +81,11 @@ const refineAgentConfigFlow = ai.defineFlow(
       return output;
     } catch (error: any) {
       console.error("Genkit Flow Error:", error);
-      throw new Error(`Fallo en el motor Gemini: ${error.message}`);
+      // Fallback para evitar error 500 y devolver un mensaje útil
+      return {
+        knowledge: input.currentConfig.knowledge || "Error procesando el manual. Reintente.",
+        explanation: `Error crítico en motor Gemini: ${error.message}`
+      };
     }
   }
 );
