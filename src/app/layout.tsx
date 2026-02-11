@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { FirebaseClientProvider } from "@/firebase";
 import { FirebaseErrorListener } from "@/components/firebase/FirebaseErrorListener";
 import { ThemeProvider } from "@/components/layout/ThemeProvider";
+import Script from "next/script";
 
 export const metadata: Metadata = {
   title: 'AIBot24 - Intelligent Voice Agents',
@@ -24,6 +25,11 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+        {/* Cargamos el SDK de Bitrix24 aquí para que esté disponible en toda la app */}
+        <Script 
+          src="https://api.bitrix24.com/api/v1/" 
+          strategy="beforeInteractive"
+        />
         {isDev && (
           <script
             dangerouslySetInnerHTML={{

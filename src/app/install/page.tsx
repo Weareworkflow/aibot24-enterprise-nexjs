@@ -2,21 +2,18 @@
 "use client";
 
 import { useEffect, useState, Suspense } from "react";
-import Script from "next/script";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, ShieldCheck, CheckCircle2, Database, LayoutDashboard, AlertCircle } from "lucide-react";
+import { Loader2, ShieldCheck, CheckCircle2, Database, AlertCircle } from "lucide-react";
 import { Logo } from "@/components/layout/Logo";
 import { useUIStore } from "@/lib/store";
 import { useFirestore } from "@/firebase";
 import { doc, setDoc } from "firebase/firestore";
 import { BitrixInstallation } from "@/lib/types";
-import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError } from '@/firebase/errors';
 import { Button } from "@/components/ui/button";
 
 function InstallContent() {
-  const [status, setStatus] = useState<'loading' | 'ready' | 'success' | 'error'>('loading');
+  const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [errorMsg, setErrorMsg] = useState("");
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -26,9 +23,13 @@ function InstallContent() {
   useEffect(() => {
     let isSubscribed = true;
 
-    const initializeBX24 = async () => {
+    const tryInitialize = () => {
       const BX24 = (window as any).BX24;
-      if (!BX24) return;
+      
+      if (!BX24) {
+        console.warn("BX24 SDK no encontrado aún...");
+        return false;
+      }
 
       BX24.init(async () => {
         if (!isSubscribed) return;
@@ -36,15 +37,15 @@ function InstallContent() {
         try {
           const auth = BX24.getAuth();
           
-          // Intentamos obtener el contexto de todas las fuentes posibles
+          // Captura jerárquica: Prioridad al Auth del SDK, luego a URL params
           const memberId = auth?.member_id || searchParams.get('member_id');
           const domain = auth?.domain || searchParams.get('DOMAIN');
 
           if (!memberId || !db) {
-            console.warn("Contexto incompleto:", { memberId, dbAvailable: !!db });
-            if (!memberId) {
+            console.error("Contexto insuficiente:", { memberId, dbAvailable: !!db });
+            if (isSubscribed) {
               setStatus('error');
-              setErrorMsg("No se detectó el Member ID del portal.");
+              setErrorMsg("No se pudo identificar el portal. Asegúrate de estar dentro de Bitrix24.");
             }
             return;
           }
@@ -60,7 +61,6 @@ function InstallContent() {
           };
 
           const installRef = doc(db, "installations", memberId);
-
           await setDoc(installRef, installationRecord, { merge: true });
           
           if (isSubscribed) {
@@ -68,41 +68,52 @@ function InstallContent() {
             if (domain) setDomain(domain);
             setStatus('success');
             
-            // Si estamos en el flujo de instalación, finalizamos
+            // Notificar a Bitrix que el proceso de frontend terminó
             BX24.installFinish();
             
-            // Redirigimos al dashboard tras una breve pausa
+            // Redirigir al dashboard tras confirmación visual
             setTimeout(() => {
               if (isSubscribed) router.push('/');
             }, 1500);
           }
         } catch (error: any) {
-          console.error("Error capturando contexto BX24:", error);
+          console.error("Fallo crítico en sincronización:", error);
           if (isSubscribed) {
             setStatus('error');
-            setErrorMsg(error.message || "Error al sincronizar con Firestore.");
-            errorEmitter.emit('permission-error', new FirestorePermissionError({
-              path: `installations/${searchParams.get('member_id')}`,
-              operation: 'create'
-            }));
+            setErrorMsg(error.message || "Error al sincronizar con la base de datos.");
           }
         }
       });
+      return true;
     };
 
-    // Esperar a que el SDK esté disponible en el objeto window
-    const checkInterval = setInterval(() => {
-      if ((window as any).BX24) {
-        initializeBX24();
+    // Intentar inicializar inmediatamente
+    if (!tryInitialize()) {
+      // Si falla (ej: el script aún no carga), intentamos en un intervalo corto
+      const checkInterval = setInterval(() => {
+        if (tryInitialize()) {
+          clearInterval(checkInterval);
+        }
+      }, 100);
+
+      // Timeout de seguridad de 10 segundos
+      const timeout = setTimeout(() => {
+        if (status === 'loading') {
+          clearInterval(checkInterval);
+          setStatus('error');
+          setErrorMsg("Tiempo de espera agotado. El SDK de Bitrix24 no responde.");
+        }
+      }, 10000);
+
+      return () => {
+        isSubscribed = false;
         clearInterval(checkInterval);
-      }
-    }, 200);
+        clearTimeout(timeout);
+      };
+    }
 
-    return () => {
-      isSubscribed = false;
-      clearInterval(checkInterval);
-    };
-  }, [searchParams, db, setTenantId, setDomain, router]);
+    return () => { isSubscribed = false; };
+  }, [searchParams, db, setTenantId, setDomain, router, status]);
 
   return (
     <div className="space-y-6">
@@ -138,7 +149,7 @@ function InstallContent() {
           </div>
           <div className="space-y-2">
             <div className="text-destructive font-black uppercase tracking-[0.2em] text-[10px]">Fallo en la Sincronización</div>
-            <p className="text-[11px] text-muted-foreground font-medium max-w-[240px] mx-auto">{errorMsg || "No se pudo establecer el enlace con el SDK de Bitrix24."}</p>
+            <p className="text-[11px] text-muted-foreground font-medium max-w-[240px] mx-auto leading-relaxed">{errorMsg}</p>
           </div>
           <Button onClick={() => window.location.reload()} variant="outline" className="pill-rounded h-11 px-8 text-[10px] uppercase font-black tracking-widest border-border hover:bg-muted">
             Reiniciar Protocolo
@@ -152,7 +163,6 @@ function InstallContent() {
 export default function InstallPage() {
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 transition-colors duration-300">
-      <Script src="https://api.bitrix24.com/api/v1/" strategy="beforeInteractive" />
       <div className="mb-10 scale-125">
         <Logo showText={true} />
       </div>
