@@ -77,6 +77,7 @@ export interface AIConfig {
   temperature: number;
   maxTokens: number;
   provider?: 'openai' | 'anthropic' | 'google';
+  updatedAt?: string; // ISO Date
 }
 
 export type SessionStatus = 'active' | 'closed' | 'paused';

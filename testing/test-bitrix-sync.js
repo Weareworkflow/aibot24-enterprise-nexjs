@@ -35,6 +35,7 @@ async function testBitrixSync() {
 
     if (!memberId) {
         console.error("❌ Missing BITRIX_LOCAL_MEMBER_ID in .env.local");
+        console.error("   (Required to identify which tenant to test against)");
         process.exit(1);
     }
 

@@ -2,26 +2,41 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Permitir acceso público total para la integración embebida (Iframe)
-    // El aislamiento de datos se maneja a nivel de aplicación mediante el tenantId (member_id de Bitrix)
-    match /agents/{agentId} {
-      allow read, write: if true;
+    // --- PRODUCTION COLLECTIONS ---
+    match /agents/{agentId} { allow read, write: if true; }
+    match /installations/{memberId} { allow read, write: if true; }
+    match /config-secrets/{document} { allow read: if true; allow write: if false; }
+    match /config-app/{document} { allow read, write: if true; }
+    match /config-architect/{document} {
+       allow read, write: if true;
+       match /ai/config { allow read, write: if true; }
     }
-    
-    // Permitir el registro y verificación de instalaciones de portales Bitrix24
-    match /installations/{memberId} {
-      allow read, write: if true;
+    match /config-ai/{document} { allow read, write: if true; }
+    match /audit_logs/{logId} { allow read, write: if true; }
+    match /sessions/{sessionId} {
+       allow read, write: if true;
+       match /messages/{msgId} { allow read, write: if true; }
     }
-    
-    // Configuración global de secretos (Bitrix, etc)
-    match /config-secrets/{document} {
-      allow read: if true; // Permitir lectura a la aplicación
-      allow write: if false; // Solo escritura manual o admin
+
+    // --- TEST ENVIRONMENT COLLECTIONS (Prefix: test_) ---
+    match /test_agents/{agentId} { allow read, write: if true; }
+    match /test_installations/{memberId} { allow read, write: if true; }
+    match /test_config-secrets/{document} { allow read: if true; allow write: if false; }
+    match /test_config-app/{document} { allow read, write: if true; }
+    match /test_config-architect/{document} {
+       allow read, write: if true;
+       match /ai/config { allow read, write: if true; }
+    }
+    match /test_config-ai/{document} { allow read, write: if true; }
+    match /test_audit_logs/{logId} { allow read, write: if true; }
+    match /test_sessions/{sessionId} {
+       allow read, write: if true;
+       match /messages/{msgId} { allow read, write: if true; }
     }
     
     // Bloquear el acceso al resto de las colecciones por seguridad
     match /{document=**} {
-      allow read, write: if true;
+      allow read, write: if false;
     }
   }
 }

@@ -1,3 +1,5 @@
+"use client";
+
 import { Navbar } from "@/components/layout/Navbar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -23,6 +25,7 @@ import { useFirestore, useDoc } from "@/firebase";
 import { doc, setDoc, serverTimestamp } from "firebase/firestore";
 import { useMemo, useEffect, useState } from "react";
 import { AppConfig, ArchitectConfiguration, AIConfig } from "@/lib/types";
+import { COLLECTIONS, getCollections, getSubCollections } from "@/lib/db-schema";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -39,7 +42,7 @@ export default function SettingsPage() {
   // --- 1. GENERAL APP CONFIG ---
   const configRef = useMemo(() => {
     if (!db || !tenantId) return null;
-    return doc(db, "config-app", tenantId);
+    return doc(getCollections(db).appConfig, tenantId);
   }, [db, tenantId]);
 
   const { data: remoteConfig } = useDoc<AppConfig>(configRef);
@@ -61,9 +64,13 @@ export default function SettingsPage() {
     if (newLang) setLanguage(newLang);
 
     try {
+      // Cast to specific type to satisfy Firestore converter
+      const themeVal = (newTheme || theme) as AppConfig['theme'];
+      const langVal = (newLang || language) as AppConfig['language'];
+
       await setDoc(configRef, {
-        theme: newTheme || theme,
-        language: newLang || language,
+        theme: themeVal,
+        language: langVal,
         updatedAt: serverTimestamp()
       }, { merge: true });
     } catch (err) {
@@ -74,12 +81,12 @@ export default function SettingsPage() {
   // --- 2. ARCHITECT CONFIG ---
   const archRef = useMemo(() => {
     if (!db || !tenantId) return null;
-    return doc(db, "config-architect", tenantId);
+    return doc(getCollections(db).architectConfig, tenantId);
   }, [db, tenantId]);
 
   const archAiRef = useMemo(() => {
     if (!db || !tenantId) return null;
-    return doc(db, "config-architect", tenantId, "ai", "config");
+    return doc(getSubCollections(db).architectAi(tenantId), "config");
   }, [db, tenantId]);
 
   const { data: remoteArch } = useDoc<ArchitectConfiguration>(archRef);
