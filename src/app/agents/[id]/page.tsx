@@ -1,29 +1,50 @@
 "use client";
 
-import { use, useMemo } from "react";
+import { use, useMemo, useState, useEffect } from "react";
 import { Navbar } from "@/components/layout/Navbar";
 import { AIAgent } from "@/lib/types";
 import { AgentChat } from "@/components/agents/AgentChat";
 import { AiRefiner } from "@/components/agents/AgentChat/AiRefiner";
-import { 
+import {
   Loader2,
   Wand2,
-  Sparkles
+  Sparkles,
+  Settings2
 } from "lucide-react";
 import { useDoc, useFirestore } from "@/firebase";
 import { doc } from "firebase/firestore";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { useUIStore } from "@/lib/store";
 
 export default function AgentConsolePage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
   const agentId = resolvedParams.id;
   const db = useFirestore();
 
+  const [showRefinerSettings, setShowRefinerSettings] = useState(false);
+  const [metaSystemPrompt, setMetaSystemPrompt] = useState("");
+
+  const { agents, setAgent } = useUIStore();
+
+  // Real-time synchronization with Firestore
   const agentRef = useMemo(() => {
     if (!db || !agentId) return null;
     return doc(db, "agents", agentId);
   }, [db, agentId]);
 
-  const { data: agent, loading } = useDoc<AIAgent>(agentRef);
+  const { data: firestoreAgent, loading: firestoreLoading } = useDoc<AIAgent>(agentRef);
+
+  // Sync state: Firestore -> Zustand
+  useEffect(() => {
+    if (firestoreAgent) {
+      setAgent(firestoreAgent);
+    }
+  }, [firestoreAgent, setAgent]);
+
+  // Derive agent from global store for instant UI updates
+  const agent = agents.find(a => a.id === agentId) || firestoreAgent;
+  const loading = firestoreLoading && !agent;
 
   if (loading) return (
     <div className="flex flex-col min-h-screen bg-background transition-colors duration-300">
@@ -56,7 +77,7 @@ export default function AgentConsolePage({ params }: { params: Promise<{ id: str
       <Navbar />
       <main className="flex-1 w-full px-4 md:px-6 py-6 flex flex-col min-h-0">
         <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 min-h-0 mb-4">
-          
+
           {/* Columna Izquierda: Configuración y Datos del Agente */}
           <div className="lg:col-span-7 h-auto lg:h-[calc(100vh-120px)] flex flex-col min-h-0">
             <AgentChat agent={agent} />
@@ -71,16 +92,35 @@ export default function AgentConsolePage({ params }: { params: Promise<{ id: str
                     <Wand2 className="h-5 w-5 text-secondary" />
                   </div>
                   <div>
-                    <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-foreground">Arquitecto de Protocolos</h3>
+                    <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-foreground">Aibot</h3>
                     <p className="text-[9px] text-muted-foreground font-bold uppercase tracking-widest mt-1 flex items-center gap-2">
                       <Sparkles className="h-2 w-2 text-secondary animate-pulse" />
                       IA Co-Piloto Operativa
                     </p>
                   </div>
                 </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setShowRefinerSettings(!showRefinerSettings)}
+                  className={cn(
+                    "h-8 w-8 rounded-full hover:bg-secondary/10 transition-all",
+                    showRefinerSettings ? "bg-secondary/20 text-secondary" : "text-muted-foreground hover:text-secondary"
+                  )}
+                  title="Modificar Instrucciones"
+                >
+                  <Settings2 className="h-4 w-4" />
+                </Button>
               </div>
               <div className="flex-1 min-h-0">
-                <AiRefiner agent={agent} db={db} />
+                <AiRefiner
+                  agent={agent}
+                  db={db}
+                  showSettings={showRefinerSettings}
+                  onToggleSettings={() => setShowRefinerSettings(!showRefinerSettings)}
+                  metaSystemPrompt={metaSystemPrompt}
+                  setMetaSystemPrompt={setMetaSystemPrompt}
+                />
               </div>
             </div>
           </div>

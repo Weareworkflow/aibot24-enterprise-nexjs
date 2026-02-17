@@ -55,7 +55,19 @@ export const translations = {
       save_btn: "Guardar Protocolo de Configuración",
       saving: "Sincronizando...",
       saved_title: "Protocolo Guardado",
-      saved_desc: "Los parámetros de configuración han sido actualizados."
+      saved_desc: "Los parámetros de configuración han sido actualizados.",
+      tab_architect: "Agente Arquitecto",
+      architect_title: "Configuración del Arquitecto (Aibot)",
+      identity_title: "Identidad y Misión",
+      ai_title: "Parámetros de Inteligencia (Ail)",
+      name_label: "Nombre del Arquitecto",
+      role_label: "Rol Operativo",
+      prompt_label: "Protocolo Base (System Prompt)",
+      model_label: "Modelo de Lenguaje",
+      temp_label: "Temperatura / Creatividad",
+      api_key_label: "OpenAI API Key (Exclusiva)",
+      api_key_placeholder: "sk-...",
+      save_architect: "Actualizar Arquitecto"
     },
     help: {
       title: "Centro de Operaciones y Ayuda",
@@ -128,7 +140,19 @@ export const translations = {
       save_btn: "Save Configuration Protocol",
       saving: "Syncing...",
       saved_title: "Protocol Saved",
-      saved_desc: "Configuration parameters have been updated."
+      saved_desc: "Configuration parameters have been updated.",
+      tab_architect: "Architect Agent",
+      architect_title: "Architect Configuration (Aibot)",
+      identity_title: "Identity & Mission",
+      ai_title: "Intelligence Parameters (Ail)",
+      name_label: "Architect Name",
+      role_label: "Operational Role",
+      prompt_label: "Base Protocol (System Prompt)",
+      model_label: "Language Model",
+      temp_label: "Temperature / Creativity",
+      api_key_label: "OpenAI API Key (Exclusive)",
+      api_key_placeholder: "sk-...",
+      save_architect: "Update Architect"
     },
     help: {
       title: "Operations & Help Center",

@@ -1,24 +1,26 @@
 
 "use client";
 
-import { AIAgent } from "@/lib/types";
+import { AIAgent, AgentMetrics } from "@/lib/types";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { 
-  Power, 
-  Trash2, 
-  Database, 
-  MessageSquareText, 
-  MessageCircle, 
+import {
+  Power,
+  Trash2,
+  Database,
+  MessageSquareText,
+  MessageCircle,
   Building2,
   Briefcase,
   Zap,
-  ArrowRight
+  ArrowRight,
+  Calendar,
+  ArrowRightLeft
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { useFirestore } from "@/firebase";
-import { doc, updateDoc, deleteDoc } from "firebase/firestore";
+import { useFirestore, useDoc } from "@/firebase";
+import { doc, updateDoc, deleteDoc, DocumentReference } from "firebase/firestore";
 import { useToast } from "@/hooks/use-toast";
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
@@ -33,6 +35,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface AgentCardProps {
   agent: AIAgent;
@@ -44,6 +47,11 @@ export function AgentCard({ agent }: AgentCardProps) {
   const { toast } = useToast();
   const isActive = agent.isActive !== false;
 
+  // Real-time metrics subscription
+  const { data: metrics } = useDoc<AgentMetrics>(
+    db ? (doc(db, "metrics", agent.id) as DocumentReference<AgentMetrics>) : null
+  );
+
   const handleCardClick = () => {
     router.push(`/agents/${agent.id}`);
   };
@@ -51,10 +59,10 @@ export function AgentCard({ agent }: AgentCardProps) {
   const handleToggleActive = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (!db) return;
-    
+
     const agentRef = doc(db, "agents", agent.id);
     const nextState = !isActive;
-    
+
     updateDoc(agentRef, { isActive: nextState })
       .then(() => {
         toast({
@@ -74,7 +82,7 @@ export function AgentCard({ agent }: AgentCardProps) {
   const handleDelete = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (!db) return;
-    
+
     const agentRef = doc(db, "agents", agent.id);
     deleteDoc(agentRef)
       .then(() => {
@@ -92,7 +100,7 @@ export function AgentCard({ agent }: AgentCardProps) {
   };
 
   return (
-    <Card 
+    <Card
       onClick={handleCardClick}
       className={cn(
         "group relative border border-border/80 bg-card text-card-foreground rounded-[2.5rem] p-7 transition-all duration-500 hover:shadow-2xl hover:-translate-y-2 cursor-pointer overflow-hidden high-volume",
@@ -105,7 +113,7 @@ export function AgentCard({ agent }: AgentCardProps) {
             <div className="flex items-center gap-2">
               <div className={cn(
                 "flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border transition-colors",
-                isActive 
+                isActive
                   ? "bg-accent/10 text-accent border-accent/20"
                   : "bg-muted text-muted-foreground border-border"
               )}>
@@ -119,11 +127,20 @@ export function AgentCard({ agent }: AgentCardProps) {
                 </div>
               )}
             </div>
-            
-            <h3 className="text-2xl font-headline font-bold text-foreground group-hover:text-secondary transition-colors truncate">
-              {agent.name}
-            </h3>
-            
+
+
+            <div className="flex items-center gap-4 mb-2">
+              <Avatar className="h-12 w-12 border-2 border-border/50 shadow-sm">
+                <AvatarImage src={agent.avatar} className="object-cover" />
+                <AvatarFallback className="bg-muted text-muted-foreground font-bold">
+                  {agent.name.charAt(0).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <h3 className="text-2xl font-headline font-bold text-foreground group-hover:text-secondary transition-colors truncate">
+                {agent.name}
+              </h3>
+            </div>
+
             <div className="space-y-1.5">
               <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
                 <Briefcase className="h-3.5 w-3.5" />
@@ -137,9 +154,9 @@ export function AgentCard({ agent }: AgentCardProps) {
           </div>
 
           <div className="flex flex-col gap-2" onClick={(e) => e.stopPropagation()}>
-            <Button 
-              variant="ghost" 
-              size="icon" 
+            <Button
+              variant="ghost"
+              size="icon"
               className={cn(
                 "h-10 w-10 rounded-2xl shadow-sm transition-all border border-border/50",
                 isActive ? "bg-muted hover:bg-foreground hover:text-background" : "bg-muted text-muted-foreground"
@@ -151,9 +168,9 @@ export function AgentCard({ agent }: AgentCardProps) {
 
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
+                <Button
+                  variant="ghost"
+                  size="icon"
                   className="h-10 w-10 rounded-2xl bg-muted border border-border/50 hover:bg-destructive hover:text-destructive-foreground transition-all shadow-sm"
                   onClick={(e) => e.stopPropagation()}
                 >
@@ -169,7 +186,7 @@ export function AgentCard({ agent }: AgentCardProps) {
                 </AlertDialogHeader>
                 <AlertDialogFooter className="mt-8 flex gap-4 sm:justify-center">
                   <AlertDialogCancel className="rounded-full text-[10px] font-black uppercase h-14 flex-1">Cancelar</AlertDialogCancel>
-                  <AlertDialogAction 
+                  <AlertDialogAction
                     onClick={handleDelete}
                     className="bg-destructive hover:bg-destructive/90 text-destructive-foreground rounded-full text-[10px] font-black uppercase h-14 flex-1 shadow-lg shadow-destructive/20"
                   >
@@ -181,23 +198,33 @@ export function AgentCard({ agent }: AgentCardProps) {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-3 mb-6">
-          <div className="bg-muted/30 p-4 rounded-[1.8rem] border border-border/50 flex flex-col items-center justify-center text-center gap-1.5 transition-all hover:bg-card hover:shadow-md hover:border-border h-24">
-            <div className={cn("h-7 w-7 rounded-lg flex items-center justify-center shadow-sm", isActive ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground")}>
-              <MessageCircle className="h-3.5 w-3.5" />
+
+        <div className="grid grid-cols-3 gap-2 mb-6">
+          <div className="bg-muted/30 p-2.5 rounded-[1.2rem] border border-border/50 flex flex-col items-center justify-center text-center gap-1 transition-all hover:bg-card hover:shadow-md hover:border-border h-20">
+            <div className={cn("h-6 w-6 rounded-md flex items-center justify-center shadow-sm", isActive ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground")}>
+              <MessageCircle className="h-3 w-3" />
             </div>
             <div>
-              <p className="text-[7px] font-black uppercase tracking-widest text-muted-foreground">Mensajes</p>
-              <p className="text-lg font-headline font-bold text-foreground leading-none">{agent.metrics.totalInteractionMetric || 0}</p>
+              <p className="text-[6px] font-black uppercase tracking-widest text-muted-foreground">Messages</p>
+              <p className="text-sm font-headline font-bold text-foreground leading-none">{metrics?.totalInteractionMetric || 0}</p>
             </div>
           </div>
-          <div className="bg-muted/30 p-4 rounded-[1.8rem] border border-border/50 flex flex-col items-center justify-center text-center gap-1.5 transition-all hover:bg-card hover:shadow-md hover:border-border h-24">
-            <div className={cn("h-7 w-7 rounded-lg flex items-center justify-center shadow-sm", isActive ? "bg-secondary text-secondary-foreground" : "bg-muted text-muted-foreground")}>
-              <Database className="h-3.5 w-3.5" />
+          <div className="bg-muted/30 p-2.5 rounded-[1.2rem] border border-border/50 flex flex-col items-center justify-center text-center gap-1 transition-all hover:bg-card hover:shadow-md hover:border-border h-20">
+            <div className={cn("h-6 w-6 rounded-md flex items-center justify-center shadow-sm", isActive ? "bg-secondary text-secondary-foreground" : "bg-muted text-muted-foreground")}>
+              <Calendar className="h-3 w-3" />
             </div>
             <div>
-              <p className="text-[7px] font-black uppercase tracking-widest text-muted-foreground">Tokens</p>
-              <p className="text-lg font-headline font-bold text-foreground leading-none">{agent.metrics.tokens || 0}</p>
+              <p className="text-[6px] font-black uppercase tracking-widest text-muted-foreground">Meet</p>
+              <p className="text-sm font-headline font-bold text-foreground leading-none">{metrics?.meetings || 0}</p>
+            </div>
+          </div>
+          <div className="bg-muted/30 p-2.5 rounded-[1.2rem] border border-border/50 flex flex-col items-center justify-center text-center gap-1 transition-all hover:bg-card hover:shadow-md hover:border-border h-20">
+            <div className={cn("h-6 w-6 rounded-md flex items-center justify-center shadow-sm", isActive ? "bg-accent text-accent-foreground" : "bg-muted text-muted-foreground")}>
+              <ArrowRightLeft className="h-3 w-3" />
+            </div>
+            <div>
+              <p className="text-[6px] font-black uppercase tracking-widest text-muted-foreground">Transfer</p>
+              <p className="text-sm font-headline font-bold text-foreground leading-none">{metrics?.transfers || 0}</p>
             </div>
           </div>
         </div>
@@ -206,11 +233,7 @@ export function AgentCard({ agent }: AgentCardProps) {
           <div className="flex gap-4">
             <div className="text-center">
               <span className="block text-[7px] font-black uppercase text-muted-foreground mb-0.5">Rating</span>
-              <span className="text-xs font-bold text-foreground">{agent.metrics.performanceRating}%</span>
-            </div>
-            <div className="text-center">
-              <span className="block text-[7px] font-black uppercase text-muted-foreground mb-0.5">Transf.</span>
-              <span className="text-xs font-bold text-secondary">{agent.metrics.transfers || 0}</span>
+              <span className="text-xs font-bold text-foreground">{metrics?.performanceRating || 0}%</span>
             </div>
           </div>
           <div className="flex items-center gap-1.5 text-[9px] font-black uppercase text-secondary group-hover:translate-x-1 transition-transform">

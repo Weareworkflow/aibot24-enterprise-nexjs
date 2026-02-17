@@ -4,7 +4,7 @@
 import { Navbar } from "@/components/layout/Navbar";
 import { AgentList } from "@/components/dashboard/AgentList";
 import { useCollection, useFirestore } from "@/firebase";
-import { collection, query, where } from "firebase/firestore";
+import { collection, query, where, doc, getDoc } from "firebase/firestore";
 import { AIAgent } from "@/lib/types";
 import { useMemo, useEffect } from "react";
 import { Info } from "lucide-react";
@@ -15,19 +15,43 @@ import { useUIStore } from "@/lib/store";
 export default function HomePage() {
   const db = useFirestore();
   const { tenantId } = useUIStore();
-  
+
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const memberId = params.get('member_id');
-    if (memberId && !tenantId) {
-      useUIStore.getState().setTenantId(memberId);
+    const memberIdParam = params.get('member_id');
+    const localMemberId = process.env.NEXT_PUBLIC_BITRIX_LOCAL_MODE === 'true' ? process.env.NEXT_PUBLIC_BITRIX_LOCAL_MEMBER_ID : null;
+
+    const targetMemberId = memberIdParam || localMemberId;
+
+    if (targetMemberId) {
+      if (!tenantId) {
+        useUIStore.getState().setTenantId(targetMemberId);
+      }
+
+      if (db && !useUIStore.getState().domain) {
+        const fetchDomain = async () => {
+          try {
+            const docRef = doc(db, "installations", targetMemberId);
+            const docSnap = await getDoc(docRef);
+            if (docSnap.exists()) {
+              const data = docSnap.data();
+              if (data?.domain) {
+                useUIStore.getState().setDomain(data.domain);
+              }
+            }
+          } catch (e) {
+            console.error("Error fetching domain:", e);
+          }
+        };
+        fetchDomain();
+      }
     }
-  }, [tenantId]);
+  }, [tenantId, db]);
 
   const agentsQuery = useMemo(() => {
     if (!db || !tenantId) return null;
     return query(
-      collection(db, "agents"), 
+      collection(db, "agents"),
       where("tenantId", "==", tenantId)
     );
   }, [db, tenantId]);
@@ -38,7 +62,7 @@ export default function HomePage() {
     <div className="flex flex-col min-h-screen bg-background transition-colors duration-300">
       <Navbar />
       <main className="container mx-auto px-4 py-8 space-y-8">
-        
+
         {!tenantId && (
           <div className="max-w-6xl mx-auto mb-6 bg-secondary/5 border border-secondary/20 p-6 rounded-3xl flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-4 text-center md:text-left">
@@ -56,11 +80,11 @@ export default function HomePage() {
           </div>
         )}
 
-        <AgentList 
-          agents={agents} 
-          loading={loading} 
-          error={error} 
-          tenantId={tenantId} 
+        <AgentList
+          agents={agents}
+          loading={loading}
+          error={error}
+          tenantId={tenantId}
         />
       </main>
     </div>

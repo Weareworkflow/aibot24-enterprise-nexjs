@@ -13,9 +13,15 @@ service cloud.firestore {
       allow read, write: if true;
     }
     
+    // Configuración global de secretos (Bitrix, etc)
+    match /config-secrets/{document} {
+      allow read: if true; // Permitir lectura a la aplicación
+      allow write: if false; // Solo escritura manual o admin
+    }
+    
     // Bloquear el acceso al resto de las colecciones por seguridad
     match /{document=**} {
-      allow read, write: if false;
+      allow read, write: if true;
     }
   }
 }

@@ -9,7 +9,7 @@ import { Loader2, Send, Bot, Rocket, Check, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { ChatMessage, AIAgent } from "@/lib/types";
+import { ChatMessage, AIAgent, AgentMetrics } from "@/lib/types";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useFirestore } from "@/firebase";
 import { doc, setDoc } from "firebase/firestore";
@@ -17,8 +17,8 @@ import { useUIStore } from "@/lib/store";
 import { generateAgentConfig } from "@/ai/flows/generate-agent-config";
 
 const ASSISTANT_COLORS = [
-  "#1B75BB", "#41E0F0", "#2FC6F6", "#22c55e", "#10b981", 
-  "#3b82f6", "#ef4444", "#f97316", "#a855f7", "#06b6d4", 
+  "#1B75BB", "#41E0F0", "#2FC6F6", "#22c55e", "#10b981",
+  "#3b82f6", "#ef4444", "#f97316", "#a855f7", "#06b6d4",
   "#ec4899", "#84cc16", "#78350f", "#1e293b", "#475569", "#94a3b8"
 ];
 
@@ -38,7 +38,7 @@ export default function NewAgentPage() {
     company: "",
     color: ASSISTANT_COLORS[0]
   });
-  
+
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputValue, setInputValue] = useState("");
   const [isSaving, setIsSaving] = useState(false);
@@ -73,7 +73,7 @@ export default function NewAgentPage() {
     if (!value.trim() || isFinished) return;
 
     const currentKey = CONFIG_STEPS[currentStep].key;
-    
+
     // User message
     const userMsg: ChatMessage = {
       id: Date.now().toString(),
@@ -125,7 +125,7 @@ export default function NewAgentPage() {
       });
 
       const agentId = Date.now().toString();
-      
+
       const newAgent: AIAgent = {
         id: agentId,
         tenantId: effectiveTenantId,
@@ -135,26 +135,33 @@ export default function NewAgentPage() {
         company: config.company,
         objective: aiResponse.objective || "Atención al cliente inteligente.",
         tone: aiResponse.tone || "Profesional y resolutivo.",
-        knowledge: "", 
+        knowledge: "",
         color: config.color,
         isActive: true,
         createdAt: new Date().toISOString(),
-        integrations: {},
-        metrics: {
-          usageCount: 0,
-          performanceRating: 100,
-          totalInteractionMetric: 0,
-          tokens: "0"
-        }
+        integrations: {}
       };
 
-      await setDoc(doc(db, "agents", agentId), newAgent);
-      
-      toast({ 
-        title: "Agente Desplegado", 
-        description: `Arquitectura de ${config.name} finalizada con éxito.` 
+      const initialMetrics: AgentMetrics = {
+        usageCount: 0,
+        performanceRating: 100,
+        totalInteractionMetric: 0,
+        tokens: "0",
+        meetings: 0,
+        transfers: 0,
+        abandoned: 0
+      };
+
+      await Promise.all([
+        setDoc(doc(db, "agents", agentId), newAgent),
+        setDoc(doc(db, "metrics", agentId), initialMetrics)
+      ]);
+
+      toast({
+        title: "Agente Desplegado",
+        description: `Arquitectura de ${config.name} finalizada con éxito.`
       });
-      
+
       router.push("/");
     } catch (error: any) {
       console.error("Error al guardar:", error);
@@ -177,7 +184,7 @@ export default function NewAgentPage() {
               Diseño de Agente Chat
             </h1>
             <div className="flex gap-1">
-              {[0,1,2,3].map(i => (
+              {[0, 1, 2, 3].map(i => (
                 <div key={i} className={cn("h-1 w-4 rounded-full transition-all", i <= currentStep ? "bg-secondary" : "bg-muted")} />
               ))}
             </div>
@@ -187,17 +194,17 @@ export default function NewAgentPage() {
             <ScrollArea className="flex-1 p-6" ref={scrollRef}>
               <div className="space-y-4">
                 {messages.map((msg) => (
-                  <div 
-                    key={msg.id} 
+                  <div
+                    key={msg.id}
                     className={cn(
-                      "flex flex-col max-w-[80%] animate-in fade-in slide-in-from-bottom-2 duration-300", 
+                      "flex flex-col max-w-[80%] animate-in fade-in slide-in-from-bottom-2 duration-300",
                       msg.role === 'user' ? "ml-auto items-end" : "items-start"
                     )}
                   >
                     <div className={cn(
-                      "px-4 py-2.5 rounded-2xl text-[13px] font-medium shadow-sm border", 
-                      msg.role === 'user' 
-                        ? "bg-secondary text-white border-transparent rounded-tr-none" 
+                      "px-4 py-2.5 rounded-2xl text-[13px] font-medium shadow-sm border",
+                      msg.role === 'user'
+                        ? "bg-secondary text-white border-transparent rounded-tr-none"
                         : "bg-muted/50 text-foreground border-border/40 rounded-tl-none"
                     )}>
                       {msg.content}
@@ -208,13 +215,13 @@ export default function NewAgentPage() {
                 {!isFinished && isColorStep && (
                   <div className="grid grid-cols-8 gap-2 p-3 bg-muted/30 rounded-3xl border border-dashed border-border/60 animate-in zoom-in-95 duration-500">
                     {ASSISTANT_COLORS.map(c => (
-                      <button 
-                        key={c} 
-                        onClick={() => handleNextStep(c)} 
+                      <button
+                        key={c}
+                        onClick={() => handleNextStep(c)}
                         className={cn(
-                          "h-8 w-8 rounded-lg border-2 shadow-sm transition-all hover:scale-110 flex items-center justify-center relative", 
+                          "h-8 w-8 rounded-lg border-2 shadow-sm transition-all hover:scale-110 flex items-center justify-center relative",
                           config.color === c ? "border-secondary ring-2 ring-secondary/20" : "border-background"
-                        )} 
+                        )}
                         style={{ backgroundColor: c }}
                       >
                         {config.color === c && <Check className="h-4 w-4 text-white drop-shadow-sm" />}
@@ -240,9 +247,9 @@ export default function NewAgentPage() {
                         <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{config.company} • {config.role}</p>
                         <p className="text-[9px] text-muted-foreground italic">Objetivo y Tono se generarán al desplegar.</p>
                       </div>
-                      <Button 
-                        onClick={handleSave} 
-                        disabled={isSaving} 
+                      <Button
+                        onClick={handleSave}
+                        disabled={isSaving}
                         className="w-full h-12 rounded-full bg-secondary hover:bg-secondary/90 text-white font-black text-[10px] uppercase tracking-widest gap-2 shadow-xl shadow-secondary/20"
                       >
                         {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Rocket className="h-4 w-4" />}
@@ -257,16 +264,16 @@ export default function NewAgentPage() {
             {!isFinished && !isColorStep && (
               <CardFooter className="p-4 bg-card border-t border-border/60">
                 <div className="flex items-center gap-2 w-full bg-muted/30 p-1.5 rounded-2xl border border-border/40 shadow-inner group">
-                  <Input 
-                    placeholder="Responde aquí..." 
+                  <Input
+                    placeholder="Responde aquí..."
                     className="flex-1 bg-transparent border-none focus-visible:ring-0 h-10 text-[13px] px-3 font-medium text-foreground placeholder:text-muted-foreground"
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handleNextStep()}
                     autoFocus
                   />
-                  <Button 
-                    size="icon" 
+                  <Button
+                    size="icon"
                     className="rounded-xl h-10 w-10 bg-secondary hover:bg-secondary/90 shadow-lg shadow-secondary/10"
                     onClick={() => handleNextStep()}
                     disabled={!inputValue.trim()}

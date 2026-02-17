@@ -5,22 +5,119 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { AIAgent } from "@/lib/types";
 import { cn } from "@/lib/utils";
-import { Check, User, Briefcase, Building2, Palette, Sparkles } from "lucide-react";
+import { Check, User, Briefcase, Building2, Palette, Sparkles, Save, Camera, Upload, X } from "lucide-react";
+import { useState, useEffect, useRef, ChangeEvent } from "react";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface IdentitySectionProps {
   agent: AIAgent;
-  onUpdate: (field: string, value: any, title?: string) => void;
+  onUpdate: (updates: Partial<AIAgent>, title?: string) => void;
 }
 
 const ASSISTANT_COLORS = [
-  "#1B75BB", "#41E0F0", "#2FC6F6", "#22c55e", "#10b981", 
-  "#3b82f6", "#ef4444", "#f97316", "#a855f7", "#06b6d4", 
+  "#1B75BB", "#41E0F0", "#2FC6F6", "#22c55e", "#10b981",
+  "#3b82f6", "#ef4444", "#f97316", "#a855f7", "#06b6d4",
   "#ec4899", "#84cc16", "#78350f", "#1e293b", "#475569", "#94a3b8"
 ];
 
 export function IdentitySection({ agent, onUpdate }: IdentitySectionProps) {
+  const [name, setName] = useState(agent.name);
+  const [role, setRole] = useState(agent.role);
+  const [company, setCompany] = useState(agent.company);
+  const [color, setColor] = useState(agent.color);
+  const [avatar, setAvatar] = useState(agent.avatar);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Sync local state when agent changes from external sources (e.g. initial load or refiner)
+  useEffect(() => {
+    setName(agent.name);
+    setRole(agent.role);
+    setCompany(agent.company);
+    setColor(agent.color);
+    setAvatar(agent.avatar);
+  }, [agent]);
+
+  const handleImageUpload = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 1024 * 1024) { // 1MB limit
+      alert("La imagen no debe superar 1MB");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setAvatar(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleRemoveAvatar = () => {
+    setAvatar(undefined);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  const handleSave = () => {
+    onUpdate({
+      name,
+      role,
+      company,
+      color,
+      avatar
+    }, "Identidad del Agente");
+  };
+
+  const hasChanges = name !== agent.name || role !== agent.role || company !== agent.company || color !== agent.color || avatar !== agent.avatar;
+
   return (
     <div className="space-y-8">
+      {/* Avatar Upload */}
+      <div className="flex flex-col items-center gap-4 py-4">
+        <div className="relative group">
+          <Avatar className="h-24 w-24 border-2 border-border/50 shadow-lg transition-transform hover:scale-105">
+            <AvatarImage src={avatar} className="object-cover" />
+            <AvatarFallback className="bg-muted text-muted-foreground text-2xl font-bold">
+              {name.charAt(0).toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
+
+          <div className="absolute -bottom-2 -right-2 flex gap-1">
+            <Button
+              size="icon"
+              variant="outline"
+              className="h-8 w-8 rounded-full bg-background border-border shadow-sm hover:bg-secondary hover:text-white transition-colors"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <Camera className="h-4 w-4" />
+            </Button>
+            {avatar && (
+              <Button
+                size="icon"
+                variant="outline"
+                className="h-8 w-8 rounded-full bg-background border-border shadow-sm hover:bg-destructive hover:text-white transition-colors"
+                onClick={handleRemoveAvatar}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+          <input
+            type="file"
+            ref={fileInputRef}
+            className="hidden"
+            accept="image/*"
+            onChange={handleImageUpload}
+          />
+        </div>
+        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+          Foto de Perfil
+        </p>
+      </div>
+
       {/* Datos Básicos */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-3">
@@ -30,10 +127,10 @@ export function IdentitySection({ agent, onUpdate }: IdentitySectionProps) {
             </div>
             <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-[0.2em]">Nombre Operativo</Label>
           </div>
-          <Input 
-            value={agent.name} 
-            onChange={(e) => onUpdate('name', e.target.value)} 
-            className="h-12 text-sm font-bold bg-muted/30 border-border rounded-[1.2rem] focus-visible:ring-1 focus-visible:ring-secondary/20 px-6 transition-all hover:bg-card" 
+          <Input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="h-12 text-sm font-bold bg-muted/30 border-border rounded-[1.2rem] focus-visible:ring-1 focus-visible:ring-secondary/20 px-6 transition-all hover:bg-card"
           />
         </div>
         <div className="space-y-3">
@@ -43,10 +140,10 @@ export function IdentitySection({ agent, onUpdate }: IdentitySectionProps) {
             </div>
             <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-[0.2em]">Rol / Especialidad</Label>
           </div>
-          <Input 
-            value={agent.role} 
-            onChange={(e) => onUpdate('role', e.target.value)} 
-            className="h-12 text-sm font-bold bg-muted/30 border-border rounded-[1.2rem] focus-visible:ring-1 focus-visible:ring-secondary/20 px-6 transition-all hover:bg-card" 
+          <Input
+            value={role}
+            onChange={(e) => setRole(e.target.value)}
+            className="h-12 text-sm font-bold bg-muted/30 border-border rounded-[1.2rem] focus-visible:ring-1 focus-visible:ring-secondary/20 px-6 transition-all hover:bg-card"
           />
         </div>
         <div className="space-y-3 md:col-span-2">
@@ -56,10 +153,10 @@ export function IdentitySection({ agent, onUpdate }: IdentitySectionProps) {
             </div>
             <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-[0.2em]">Organización Representada</Label>
           </div>
-          <Input 
-            value={agent.company} 
-            onChange={(e) => onUpdate('company', e.target.value)} 
-            className="h-12 text-sm font-bold bg-muted/30 border-border rounded-[1.2rem] focus-visible:ring-1 focus-visible:ring-secondary/20 px-6 transition-all hover:bg-card" 
+          <Input
+            value={company}
+            onChange={(e) => setCompany(e.target.value)}
+            className="h-12 text-sm font-bold bg-muted/30 border-border rounded-[1.2rem] focus-visible:ring-1 focus-visible:ring-secondary/20 px-6 transition-all hover:bg-card"
           />
         </div>
       </div>
@@ -77,19 +174,30 @@ export function IdentitySection({ agent, onUpdate }: IdentitySectionProps) {
         </div>
         <div className="flex flex-wrap gap-3">
           {ASSISTANT_COLORS.map(c => (
-            <button 
-              key={c} 
-              onClick={() => onUpdate('color', c)} 
+            <button
+              key={c}
+              onClick={() => setColor(c)}
               className={cn(
-                "h-9 w-9 rounded-[0.8rem] border-2 shadow-sm transition-all hover:scale-110 flex items-center justify-center relative", 
-                agent.color === c ? "border-secondary ring-4 ring-secondary/10" : "border-background"
-              )} 
+                "h-9 w-9 rounded-[0.8rem] border-2 shadow-sm transition-all hover:scale-110 flex items-center justify-center relative",
+                color === c ? "border-secondary ring-4 ring-secondary/10" : "border-background"
+              )}
               style={{ backgroundColor: c }}
             >
-              {agent.color === c && <Check className="h-4 w-4 text-white drop-shadow-sm" />}
+              {color === c && <Check className="h-4 w-4 text-white drop-shadow-sm" />}
             </button>
           ))}
         </div>
+      </div>
+
+      <div className="flex justify-end pt-4 border-t border-border/40">
+        <Button
+          onClick={handleSave}
+          disabled={!hasChanges}
+          className="gap-2 bg-secondary text-white hover:bg-secondary/90 shadow-lg shadow-secondary/20"
+        >
+          <Save className="h-4 w-4" />
+          Guardar Cambios
+        </Button>
       </div>
     </div>
   );

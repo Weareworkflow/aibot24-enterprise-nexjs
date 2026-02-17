@@ -1,128 +1,134 @@
-"use client";
-
-import { useMemo, useState, useEffect } from "react";
 import { Navbar } from "@/components/layout/Navbar";
 import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { 
-  Link2, 
-  Key, 
+import {
   ArrowLeft,
-  Loader2,
-  Save,
-  Palette,
-  CloudCog,
   Sun,
   Moon,
   ShieldCheck,
   Languages,
   Check,
-  ShieldAlert,
-  ExternalLink
+  BrainCircuit,
+  Settings2,
+  Wand2,
+  Save,
+  Loader2
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useUIStore } from "@/lib/store";
-import { useDoc, useFirestore } from "@/firebase";
-import { doc, updateDoc } from "firebase/firestore";
-import { BitrixInstallation } from "@/lib/types";
-import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { useTheme } from "next-themes";
 import { translations } from "@/lib/translations";
-import { getBitrixAuthUrl } from "@/lib/bitrix-service";
+import { useFirestore, useDoc } from "@/firebase";
+import { doc, setDoc, serverTimestamp } from "firebase/firestore";
+import { useMemo, useEffect, useState } from "react";
+import { AppConfig, ArchitectConfiguration, AIConfig } from "@/lib/types";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 
 export default function SettingsPage() {
   const router = useRouter();
-  const db = useFirestore();
   const { theme, setTheme } = useTheme();
   const { tenantId, domain, language, setLanguage } = useUIStore();
-  const { toast } = useToast();
-  
+  const db = useFirestore();
+
   const t = translations[language].settings;
-  
-  const installationRef = useMemo(() => {
+
+  // --- 1. GENERAL APP CONFIG ---
+  const configRef = useMemo(() => {
     if (!db || !tenantId) return null;
-    return doc(db, "installations", tenantId);
+    return doc(db, "config-app", tenantId);
   }, [db, tenantId]);
 
-  const { data: installation, loading } = useDoc<BitrixInstallation>(installationRef);
-  
-  const [formData, setFormData] = useState({
-    clientId: "",
-    clientSecret: "",
-    serviceWebhook: ""
-  });
-
-  const [isSaving, setIsSaving] = useState(false);
+  const { data: remoteConfig } = useDoc<AppConfig>(configRef);
 
   useEffect(() => {
-    if (installation) {
-      setFormData({
-        clientId: installation.clientId || "",
-        clientSecret: installation.clientSecret || "",
-        serviceWebhook: installation.serviceWebhook || ""
-      });
+    if (remoteConfig) {
+      if (remoteConfig.theme && remoteConfig.theme !== theme) {
+        setTheme(remoteConfig.theme);
+      }
+      if (remoteConfig.language && remoteConfig.language !== language) {
+        setLanguage(remoteConfig.language);
+      }
     }
-  }, [installation]);
+  }, [remoteConfig, setTheme, setLanguage]);
 
-  const handleSave = async () => {
-    if (!installationRef) return;
-    setIsSaving(true);
+  const saveSettings = async (newTheme?: string, newLang?: 'es' | 'en') => {
+    if (!configRef) return;
+    if (newTheme) setTheme(newTheme);
+    if (newLang) setLanguage(newLang);
+
     try {
-      await updateDoc(installationRef, {
-        ...formData,
-      });
-      toast({
-        title: t.saved_title,
-        description: t.saved_desc
-      });
-    } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "No se pudieron guardar los cambios."
-      });
+      await setDoc(configRef, {
+        theme: newTheme || theme,
+        language: newLang || language,
+        updatedAt: serverTimestamp()
+      }, { merge: true });
+    } catch (err) {
+      console.error("Failed to save settings:", err);
+    }
+  };
+
+  // --- 2. ARCHITECT CONFIG ---
+  const archRef = useMemo(() => {
+    if (!db || !tenantId) return null;
+    return doc(db, "config-architect", tenantId);
+  }, [db, tenantId]);
+
+  const archAiRef = useMemo(() => {
+    if (!db || !tenantId) return null;
+    return doc(db, "config-architect", tenantId, "ai", "config");
+  }, [db, tenantId]);
+
+  const { data: remoteArch } = useDoc<ArchitectConfiguration>(archRef);
+  const { data: remoteArchAi } = useDoc<AIConfig>(archAiRef);
+
+  const [archIdentity, setArchIdentity] = useState<Partial<ArchitectConfiguration>>({});
+  const [archAi, setArchAi] = useState<Partial<AIConfig>>({});
+  const [isSavingArch, setIsSavingArch] = useState(false);
+
+  useEffect(() => {
+    if (remoteArch) setArchIdentity(remoteArch);
+    if (remoteArchAi) setArchAi(remoteArchAi);
+  }, [remoteArch, remoteArchAi]);
+
+  const handleSaveArchitect = async () => {
+    if (!archRef || !archAiRef) return;
+    setIsSavingArch(true);
+    try {
+      // 1. Save Identity to root doc
+      await setDoc(archRef, {
+        ...archIdentity,
+        updatedAt: new Date().toISOString()
+      }, { merge: false }); // Wipe old fields like 'model'
+
+      // 2. Save AI to sub-collection doc
+      await setDoc(archAiRef, {
+        ...archAi,
+        updatedAt: new Date().toISOString()
+      }, { merge: true });
+
+      alert(t.saved_title);
+    } catch (err) {
+      console.error("Failed to save Architect:", err);
     } finally {
-      setIsSaving(false);
+      setIsSavingArch(false);
     }
   };
-
-  const handleReauthorize = () => {
-    if (!domain) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "No hay un dominio de Bitrix24 vinculado."
-      });
-      return;
-    }
-    const authUrl = getBitrixAuthUrl(domain, formData.clientId);
-    window.open(authUrl, '_blank');
-  };
-
-  if (loading) return (
-    <div className="flex flex-col min-h-screen bg-background transition-colors duration-300">
-      <Navbar />
-      <div className="flex-1 flex flex-col items-center justify-center gap-4">
-        <Loader2 className="h-8 w-8 animate-spin text-secondary" />
-        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Sincronizando Consola...</p>
-      </div>
-    </div>
-  );
 
   return (
     <div className="flex flex-col min-h-screen bg-background transition-colors duration-300">
       <Navbar />
       <main className="container mx-auto px-4 py-8 max-w-4xl space-y-6">
-        
+
+        {/* HEADER */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-6 px-4 mb-2">
           <div className="flex items-center gap-5 w-full sm:w-auto">
-            <Button 
-              variant="ghost" 
-              size="icon" 
+            <Button
+              variant="ghost"
+              size="icon"
               className="h-11 w-11 flex items-center justify-center bg-card rounded-2xl hover:bg-foreground hover:text-background transition-all shadow-sm border border-border"
               onClick={() => router.back()}
             >
@@ -151,107 +157,21 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        <Card className="border-none shadow-2xl rounded-[2.5rem] bg-card text-card-foreground overflow-hidden high-volume transition-colors duration-300">
-          <CardContent className="p-8 space-y-8">
-            <Tabs defaultValue="conexion" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 h-14 bg-muted/50 rounded-2xl p-1.5 mb-8">
-                <TabsTrigger 
-                  value="conexion" 
-                  className="rounded-xl text-[10px] font-black uppercase tracking-widest data-[state=active]:bg-card data-[state=active]:shadow-sm data-[state=active]:text-secondary transition-all"
-                >
-                  <CloudCog className="h-4 w-4 mr-2" />
-                  {t.tab_connection}
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="apariencia" 
-                  className="rounded-xl text-[10px] font-black uppercase tracking-widest data-[state=active]:bg-card data-[state=active]:shadow-sm data-[state=active]:text-secondary transition-all"
-                >
-                  <Palette className="h-4 w-4 mr-2" />
-                  {t.tab_appearance}
-                </TabsTrigger>
-              </TabsList>
+        <Tabs defaultValue="appearance" className="w-full">
+          <TabsList className="grid w-full grid-cols-2 h-14 p-1.5 bg-card/50 backdrop-blur-xl border border-border/40 rounded-[1.5rem] shadow-sm mb-6">
+            <TabsTrigger value="appearance" className="rounded-xl gap-2 font-black uppercase text-[10px] tracking-widest data-[state=active]:bg-background data-[state=active]:shadow-lg">
+              <Settings2 className="h-4 w-4" />
+              {t.tab_appearance}
+            </TabsTrigger>
+            <TabsTrigger value="architect" className="rounded-xl gap-2 font-black uppercase text-[10px] tracking-widest data-[state=active]:bg-background data-[state=active]:shadow-lg">
+              <BrainCircuit className="h-4 w-4" />
+              {t.tab_architect}
+            </TabsTrigger>
+          </TabsList>
 
-              <TabsContent value="conexion" className="space-y-10 focus-visible:outline-none">
-                <div className="space-y-6">
-                  <div className="flex items-center gap-3 text-foreground px-1">
-                    <Key className="h-4 w-4 text-secondary" />
-                    <h4 className="text-[11px] font-black uppercase tracking-widest opacity-80">{t.credentials_title}</h4>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2.5">
-                      <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">{t.client_id}</Label>
-                      <Input 
-                        value={formData.clientId}
-                        onChange={(e) => setFormData({...formData, clientId: e.target.value})}
-                        placeholder="local.65..." 
-                        className="h-12 bg-muted/30 border-border rounded-xl px-4 font-mono text-[11px] focus:bg-background transition-all shadow-inner"
-                      />
-                      <p className="text-[9px] text-muted-foreground font-bold uppercase tracking-wider leading-relaxed px-1 italic">
-                        {t.client_id_note}
-                      </p>
-                    </div>
-                    <div className="space-y-2.5">
-                      <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">{t.secret_id}</Label>
-                      <Input 
-                        type="password"
-                        value={formData.clientSecret}
-                        onChange={(e) => setFormData({...formData, clientSecret: e.target.value})}
-                        placeholder="••••••••••••••••" 
-                        className="h-12 bg-muted/30 border-border rounded-xl px-4 font-mono text-[11px] focus:bg-background transition-all shadow-inner"
-                      />
-                      <p className="text-[9px] text-muted-foreground font-bold uppercase tracking-wider leading-relaxed px-1 italic">
-                        {t.secret_id_note}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-6 pt-4 border-t border-border/40">
-                  <div className="flex items-center justify-between text-foreground px-1">
-                    <div className="flex items-center gap-3">
-                      <ShieldAlert className="h-4 w-4 text-secondary" />
-                      <h4 className="text-[11px] font-black uppercase tracking-widest opacity-80">Permisos y Autorización</h4>
-                    </div>
-                  </div>
-                  <div className="p-6 bg-secondary/5 rounded-2xl border border-secondary/10 flex flex-col md:flex-row items-center justify-between gap-4">
-                    <div className="space-y-1">
-                      <p className="text-[11px] font-bold text-foreground uppercase tracking-tight">Sincronizar Alcance (Scopes)</p>
-                      <p className="text-[9px] text-muted-foreground font-medium max-w-sm">Si tu app tiene errores de acceso, pulsa para re-autorizar con todos los permisos (CRM, IM, Drive, Tareas, etc).</p>
-                    </div>
-                    <Button 
-                      onClick={handleReauthorize}
-                      variant="outline" 
-                      className="pill-rounded h-10 border-secondary text-secondary hover:bg-secondary hover:text-white font-black text-[9px] uppercase tracking-widest gap-2 flex-shrink-0"
-                    >
-                      <ExternalLink className="h-3 w-3" />
-                      Autorizar Scopes
-                    </Button>
-                  </div>
-                </div>
-
-                <div className="space-y-6 pt-4 border-t border-border/40">
-                  <div className="flex items-center gap-3 text-foreground px-1">
-                    <Link2 className="h-4 w-4 text-secondary" />
-                    <h4 className="text-[11px] font-black uppercase tracking-widest opacity-80">{t.communication_title}</h4>
-                  </div>
-
-                  <div className="space-y-2.5">
-                    <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">{t.webhook_label}</Label>
-                    <Input 
-                      value={formData.serviceWebhook}
-                      onChange={(e) => setFormData({...formData, serviceWebhook: e.target.value})}
-                      placeholder="https://agent-service-abc.a.run.app" 
-                      className="h-12 bg-muted/30 border-border rounded-xl px-4 text-[12px] focus:bg-background transition-all shadow-inner"
-                    />
-                    <p className="text-[9px] text-muted-foreground font-bold uppercase tracking-wider leading-relaxed px-1 italic">
-                      {t.webhook_note}
-                    </p>
-                  </div>
-                </div>
-              </TabsContent>
-
-              <TabsContent value="apariencia" className="space-y-10 focus-visible:outline-none">
+          <TabsContent value="appearance">
+            <Card className="border-none shadow-2xl rounded-[2.5rem] bg-card text-card-foreground overflow-hidden">
+              <CardContent className="p-8 space-y-10">
                 {/* TEMA VISUAL */}
                 <div className="space-y-6">
                   <div className="flex flex-col gap-2.5 px-1 text-foreground">
@@ -259,11 +179,7 @@ export default function SettingsPage() {
                       <Sun className="h-4 w-4 text-secondary" />
                       <h4 className="text-[11px] font-black uppercase tracking-widest opacity-80">{t.display_mode}</h4>
                     </div>
-                    <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider leading-relaxed px-1">
-                      {t.display_note}
-                    </p>
                   </div>
-
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {[
                       { id: 'light', label: t.theme_light, icon: Sun },
@@ -271,26 +187,16 @@ export default function SettingsPage() {
                     ].map((mode) => (
                       <button
                         key={mode.id}
-                        onClick={() => setTheme(mode.id)}
+                        onClick={() => saveSettings(mode.id)}
                         className={cn(
-                          "flex flex-col items-center gap-4 p-10 rounded-[2rem] border-2 transition-all group",
-                          theme === mode.id 
-                            ? "border-secondary bg-secondary/5" 
-                            : "border-border bg-muted/30 hover:border-muted-foreground/30"
+                          "flex flex-col items-center gap-4 p-8 rounded-[2rem] border-2 transition-all",
+                          theme === mode.id ? "border-secondary bg-secondary/5" : "border-border bg-muted/30"
                         )}
                       >
-                        <div className={cn(
-                          "h-14 w-14 rounded-full flex items-center justify-center transition-all",
-                          theme === mode.id ? "bg-secondary text-white scale-110" : "bg-card text-muted-foreground group-hover:text-foreground"
-                        )}>
-                          <mode.icon className="h-7 w-7" />
+                        <div className={cn("h-12 w-12 rounded-full flex items-center justify-center", theme === mode.id ? "bg-secondary text-white" : "bg-card text-muted-foreground")}>
+                          <mode.icon className="h-6 w-6" />
                         </div>
-                        <span className={cn(
-                          "text-[11px] font-black uppercase tracking-widest",
-                          theme === mode.id ? "text-secondary" : "text-muted-foreground"
-                        )}>
-                          {mode.label}
-                        </span>
+                        <span className="text-[11px] font-black uppercase tracking-widest">{mode.label}</span>
                       </button>
                     ))}
                   </div>
@@ -303,11 +209,7 @@ export default function SettingsPage() {
                       <Languages className="h-4 w-4 text-secondary" />
                       <h4 className="text-[11px] font-black uppercase tracking-widest opacity-80">{t.language_title}</h4>
                     </div>
-                    <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider leading-relaxed px-1">
-                      {t.language_note}
-                    </p>
                   </div>
-
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {[
                       { id: 'es', label: 'Español' },
@@ -315,45 +217,110 @@ export default function SettingsPage() {
                     ].map((lang) => (
                       <button
                         key={lang.id}
-                        onClick={() => setLanguage(lang.id as 'es' | 'en')}
-                        className={cn(
-                          "flex items-center justify-between p-6 rounded-2xl border-2 transition-all group",
-                          language === lang.id 
-                            ? "border-secondary bg-secondary/5" 
-                            : "border-border bg-muted/30 hover:border-muted-foreground/30"
-                        )}
+                        onClick={() => saveSettings(undefined, lang.id as 'es' | 'en')}
+                        className={cn("flex items-center justify-between p-6 rounded-2xl border-2 transition-all", language === lang.id ? "border-secondary bg-secondary/5" : "border-border bg-muted/30")}
                       >
-                        <span className={cn(
-                          "text-[11px] font-black uppercase tracking-widest",
-                          language === lang.id ? "text-secondary" : "text-muted-foreground"
-                        )}>
-                          {lang.label}
-                        </span>
-                        {language === lang.id && (
-                          <div className="h-6 w-6 rounded-full bg-secondary flex items-center justify-center">
-                            <Check className="h-3 w-3 text-white" />
-                          </div>
-                        )}
+                        <span className="text-[11px] font-black uppercase tracking-widest">{lang.label}</span>
+                        {language === lang.id && <div className="h-6 w-6 rounded-full bg-secondary flex items-center justify-center"><Check className="h-3 w-3 text-white" /></div>}
                       </button>
                     ))}
                   </div>
                 </div>
-              </TabsContent>
-            </Tabs>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-            <div className="pt-6">
-              <Button 
-                onClick={handleSave}
-                disabled={isSaving}
-                className="w-full h-14 rounded-2xl bg-secondary hover:bg-secondary/90 text-white font-black text-[11px] uppercase tracking-[0.2em] shadow-lg shadow-secondary/20 transition-all active:scale-95"
-              >
-                {isSaving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
-                {isSaving ? t.saving : t.save_btn}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+          <TabsContent value="architect">
+            <Card className="border-none shadow-2xl rounded-[2.5rem] bg-card text-card-foreground overflow-hidden">
+              <CardContent className="p-8 space-y-10">
+                {/* IDENTITY SECTION */}
+                <div className="space-y-6">
+                  <div className="flex items-center gap-3 px-1">
+                    <Wand2 className="h-4 w-4 text-secondary" />
+                    <h4 className="text-[11px] font-black uppercase tracking-widest opacity-80">{t.identity_title}</h4>
+                  </div>
+
+                  <div className="grid gap-6">
+                    <div className="space-y-2">
+                      <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{t.name_label}</Label>
+                      <Input
+                        value={archIdentity.name || ''}
+                        onChange={(e) => setArchIdentity({ ...archIdentity, name: e.target.value })}
+                        className="bg-muted/30 border-none rounded-xl"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{t.role_label}</Label>
+                      <Input
+                        value={archIdentity.role || ''}
+                        onChange={(e) => setArchIdentity({ ...archIdentity, role: e.target.value })}
+                        className="bg-muted/30 border-none rounded-xl"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{t.prompt_label}</Label>
+                      <Textarea
+                        value={archIdentity.systemPrompt || ''}
+                        onChange={(e) => setArchIdentity({ ...archIdentity, systemPrompt: e.target.value })}
+                        className="bg-muted/30 border-none rounded-xl min-h-[150px] resize-none"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* AI SECTION */}
+                <div className="space-y-6 pt-4 border-t border-border/40">
+                  <div className="flex items-center gap-3 px-1">
+                    <ShieldCheck className="h-4 w-4 text-secondary" />
+                    <h4 className="text-[11px] font-black uppercase tracking-widest opacity-80">{t.ai_title}</h4>
+                  </div>
+
+                  <div className="grid sm:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{t.model_label}</Label>
+                      <Input
+                        value={archAi.model || ''}
+                        onChange={(e) => setArchAi({ ...archAi, model: e.target.value })}
+                        className="bg-muted/30 border-none rounded-xl"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{t.temp_label} ({archAi.temperature || 0.7})</Label>
+                      <Input
+                        type="number" step="0.1" min="0" max="1"
+                        value={archAi.temperature || 0.7}
+                        onChange={(e) => setArchAi({ ...archAi, temperature: parseFloat(e.target.value) })}
+                        className="bg-muted/30 border-none rounded-xl"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">{t.api_key_label}</Label>
+                    <Input
+                      type="password"
+                      placeholder={t.api_key_placeholder}
+                      value={archAi.apiKey || ''}
+                      onChange={(e) => setArchAi({ ...archAi, apiKey: e.target.value })}
+                      className="bg-muted/30 border-none rounded-xl"
+                    />
+                  </div>
+                </div>
+
+                <Button
+                  onClick={handleSaveArchitect}
+                  disabled={isSavingArch}
+                  className="w-full h-12 rounded-2xl bg-secondary hover:bg-secondary/90 text-white font-black uppercase tracking-widest text-[10px] mt-4 shadow-lg shadow-secondary/20"
+                >
+                  {isSavingArch ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Save className="h-4 w-4 mr-2" />{t.save_architect}</>}
+                </Button>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+
       </main>
     </div>
   );
 }
+
