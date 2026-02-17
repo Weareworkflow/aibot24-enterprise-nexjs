@@ -1,7 +1,5 @@
-
 import { NextRequest, NextResponse } from 'next/server';
-import { doc, getDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase-server';
+import { db } from '@/lib/firebase-admin';
 
 /**
  * API oficial de AIBot24 para el motor de ejecución.
@@ -14,14 +12,14 @@ export async function GET(
   try {
     const { id } = await params;
 
-    const agentRef = doc(db, 'agents', id);
-    const agentSnap = await getDoc(agentRef);
+    const agentRef = db.collection('agents').doc(id);
+    const agentSnap = await agentRef.get();
 
-    if (!agentSnap.exists()) {
+    if (!agentSnap.exists) {
       return NextResponse.json({ error: 'Unidad no localizada' }, { status: 404 });
     }
 
-    const data = agentSnap.data();
+    const data = agentSnap.data() as any;
 
     // 1. Capa de Identidad (Core)
     const identityBlock = `
@@ -37,14 +35,14 @@ export async function GET(
     const activeIntegrations = Object.entries(data.integrations || {})
       .filter(([_, active]) => active)
       .map(([name]) => `- ${name}`);
-    
-    const capabilitiesBlock = activeIntegrations.length > 0 
-      ? `\n# CAPACIDADES Y HERRAMIENTAS ACTIVAS\n${activeIntegrations.join('\n')}` 
+
+    const capabilitiesBlock = activeIntegrations.length > 0
+      ? `\n# CAPACIDADES Y HERRAMIENTAS ACTIVAS\n${activeIntegrations.join('\n')}`
       : '';
 
     // 3. Capa de Comportamiento (Refinado por Chat)
-    const protocolBlock = data.knowledge 
-      ? `\n# PROTOCOLO DE COMPORTAMIENTO (MANUAL TÉCNICO)\n${data.knowledge}` 
+    const protocolBlock = data.knowledge
+      ? `\n# PROTOCOLO DE COMPORTAMIENTO (MANUAL TÉCNICO)\n${data.knowledge}`
       : '\n# PROTOCOLO DE COMPORTAMIENTO\nActúa de forma profesional según tu rol y objetivo.';
 
     // Compilación Final
@@ -52,7 +50,7 @@ export async function GET(
 
     return NextResponse.json({
       success: true,
-      agentId: data.id,
+      agentId: agentSnap.id,
       promptMaster,
       config: {
         isActive: data.isActive,
@@ -61,6 +59,7 @@ export async function GET(
       }
     });
   } catch (error: any) {
+    console.error("Error en API Agents:", error);
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }

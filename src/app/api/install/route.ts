@@ -1,7 +1,5 @@
-
 import { NextRequest, NextResponse } from 'next/server';
-import { doc, setDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase-server';
+import { db } from '@/lib/firebase-admin';
 
 /**
  * Endpoint de Instalación Vía API para Bitrix24.
@@ -10,7 +8,7 @@ import { db } from '@/lib/firebase-server';
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
-    
+
     // Captura de datos del POST de Bitrix24
     const memberId = formData.get('member_id') as string;
     const domain = formData.get('DOMAIN') as string;
@@ -34,8 +32,8 @@ export async function POST(request: NextRequest) {
       expiresAt: Math.floor(Date.now() / 1000) + expiresIn
     };
 
-    // Registro persistente en Firestore
-    await setDoc(doc(db, 'installations', memberId), installationData, { merge: true });
+    // Registro persistente en Firestore (Admin SDK)
+    await db.collection('installations').doc(memberId).set(installationData, { merge: true });
 
     // HTML de finalización: Carga el SDK y notifica a Bitrix que la instalación terminó
     const html = `
