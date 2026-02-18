@@ -2,10 +2,11 @@
 
 /**
  * @fileOverview Genera la configuración inicial estratégica del agente.
+ * Simplified: outputs a single systemPrompt instead of separate objective/tone/knowledge.
  */
 
-import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import { ai } from '@/ai/genkit';
+import { z } from 'genkit';
 
 const GenerateAgentConfigInputSchema = z.object({
   prompt: z.string().describe('Descripción breve del agente deseado.'),
@@ -16,9 +17,7 @@ const GenerateAgentConfigOutputSchema = z.object({
   name: z.string().optional(),
   role: z.string().optional(),
   company: z.string().optional(),
-  objective: z.string().describe('Misión crítica del agente.'),
-  tone: z.string().describe('Estilo de comunicación detallado.'),
-  knowledge: z.string().optional().describe('Borrador inicial del manual técnico.'),
+  systemPrompt: z.string().describe('System Prompt completo del agente, incluyendo objetivo, personalidad y reglas.'),
 });
 export type GenerateAgentConfigOutput = z.infer<typeof GenerateAgentConfigOutputSchema>;
 
@@ -28,15 +27,13 @@ export async function generateAgentConfig(input: GenerateAgentConfigInput): Prom
 
 const prompt = ai.definePrompt({
   name: 'generateAgentConfigPrompt',
-  input: {schema: GenerateAgentConfigInputSchema},
-  output: {schema: GenerateAgentConfigOutputSchema},
+  input: { schema: GenerateAgentConfigInputSchema },
+  output: { schema: GenerateAgentConfigOutputSchema },
   prompt: `Actúa como un Consultor Estratégico de IA para Bitrix24.
 Basado en: "{{{prompt}}}", diseña la base operativa de un agente de chat.
 
 Genera:
-- objective: Una misión de alto impacto enfocada en resultados.
-- tone: Un estilo de voz profesional que encaje con Bitrix24.
-- knowledge: Un manual técnico inicial de 3-4 puntos clave.
+- systemPrompt: Un System Prompt completo que incluya objetivo estratégico, estilo de comunicación, y reglas de negocio iniciales (3-4 puntos clave).
 
 Si se proporcionan nombre, rol o empresa, inclúyelos. Si no, invéntalos profesionalmente.`,
 });
@@ -49,14 +46,12 @@ const generateAgentConfigFlow = ai.defineFlow(
   },
   async input => {
     try {
-      const {output} = await prompt(input);
+      const { output } = await prompt(input);
       return output!;
     } catch (error) {
       console.error("Genkit Generation Error:", error);
       return {
-        objective: "Atención al cliente de alto nivel y resolución de consultas técnicas.",
-        tone: "Profesional, resolutivo y siempre amable siguiendo los estándares corporativos.",
-        knowledge: "1. Saluda cordialmente. 2. Identifica la necesidad del cliente. 3. Proporciona soluciones basadas en los servicios de la empresa."
+        systemPrompt: "Eres un agente de atención al cliente de alto nivel. Tu misión es resolver consultas de forma profesional, resolutiva y amable. Reglas: 1. Saluda cordialmente. 2. Identifica la necesidad del cliente. 3. Proporciona soluciones basadas en los servicios de la empresa."
       };
     }
   }

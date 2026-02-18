@@ -91,26 +91,26 @@ export function AiRefiner({ agent, db }: AiRefinerProps) {
         ));
       }
 
-      // Extraer conocimiento del bloque markdown final
-      const knowledgeMatch = fullContent.match(/```markdown\s*([\s\S]*?)\s*```/);
-      const newKnowledge = knowledgeMatch ? knowledgeMatch[1].trim() : null;
+      // Extraer System Prompt del bloque markdown final
+      const promptMatch = fullContent.match(/```markdown\s*([\s\S]*?)\s*```/);
+      const newSystemPrompt = promptMatch ? promptMatch[1].trim() : null;
 
-      if (newKnowledge) {
+      if (newSystemPrompt) {
         const agentRef = doc(db, "agents", agent.id);
         await updateDoc(agentRef, {
-          knowledge: newKnowledge
+          systemPrompt: newSystemPrompt
         });
 
         const systemMessageId = (Date.now() + 2).toString();
         setHistory(prev => [...prev, {
           id: systemMessageId,
           role: 'system',
-          content: "Protocolo sincronizado en Firestore."
+          content: "System Prompt sincronizado en Firestore."
         }]);
 
         toast({
-          title: "Protocolo Sincronizado",
-          description: "El manual técnico ha sido actualizado.",
+          title: "System Prompt Sincronizado",
+          description: "El prompt del agente ha sido actualizado.",
         });
       }
 
