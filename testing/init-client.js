@@ -43,15 +43,15 @@ async function initCollections() {
         const domain = installSnap.data().domain;
         console.log(`✅ Found Domain: ${domain}`);
 
-        console.log("🛠️  Initializing 'config-app'...");
-        await setDoc(doc(db, 'config-app', memberId), {
+        console.log(`🛠️  Initializing 'config-app/${domain}'...`);
+        await setDoc(doc(db, 'config-app', domain), {
             theme: 'system',
             language: 'es',
             updatedAt: new Date().toISOString()
         }, { merge: true });
 
-        console.log("🛠️  Initializing 'config-architect'...");
-        await setDoc(doc(db, 'config-architect', memberId), {
+        console.log(`🛠️  Initializing 'config-architect/${domain}'...`);
+        await setDoc(doc(db, 'config-architect', domain), {
             name: "Aibot",
             role: "Arquitecto de Protocolos",
             systemPrompt: "Eres un arquitecto de agentes AI experto en Bitrix24.",
@@ -59,8 +59,8 @@ async function initCollections() {
         }); // No merge here to wipe out old fields like 'model'
 
         // Architect AI Sub-collection
-        console.log("🛠️  Initializing 'config-architect/ai/config'...");
-        await setDoc(doc(db, 'config-architect', memberId, 'ai', 'config'), {
+        console.log(`🛠️  Initializing 'config-architect/${domain}/ai/config'...`);
+        await setDoc(doc(db, 'config-architect', domain, 'ai', 'config'), {
             provider: 'openai',
             model: 'gpt-4-turbo',
             temperature: 0.7,
@@ -69,14 +69,8 @@ async function initCollections() {
             updatedAt: new Date().toISOString()
         }, { merge: true });
 
-        console.log("🔐 Initializing 'config-ai'...");
-        await setDoc(doc(db, 'config-ai', memberId), {
-            provider: 'openai',
-            model: 'gpt-4o',
-            apiKey: "ENTER_YOUR_OPENAI_KEY_HERE",
-            temperature: 0.7,
-            maxTokens: 1000
-        }, { merge: true });
+        // config-ai DEPRECATED -> Use settings/ai (Global)
+        console.log("🔐 'config-ai' -> DEPRECATED. Use 'settings/ai' for global AI config.");
 
         console.log("🔐 Initializing 'config-secrets'...");
         const secretsRef = doc(db, 'config-secrets', domain);
