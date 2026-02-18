@@ -21,6 +21,8 @@ import { useToast } from "@/hooks/use-toast";
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 
+import { updateOpenLinesBot } from '@/app/actions/bitrix-actions';
+
 import { IdentitySection } from "./AgentChat/IdentitySection";
 import { SystemPromptSection } from "./AgentChat/SystemPromptSection";
 
@@ -45,12 +47,26 @@ export function AgentChat({ agent }: AgentChatProps) {
 
 
 
-  const handleManualUpdate = (updates: Partial<AIAgent>, title?: string) => {
+  const handleManualUpdate = async (updates: Partial<AIAgent>, title?: string) => {
     if (!db || !agent) return;
 
     updateAgentLocal(agent.id, updates);
 
     const agentRef = doc(db, "agents", agent.id);
+
+    // 1. Sync with Bitrix (Start in background or await?)
+    // Only if identity fields are present and bot is linked
+    if (agent.bitrixBotId && agent.tenantId && (updates.name || updates.role || updates.avatar || updates.color)) {
+      // Merge current agent with updates to ensure we have full data for Bitrix
+      const mergedAgent = { ...agent, ...updates };
+      updateOpenLinesBot(agent.tenantId, mergedAgent)
+        .then((res) => {
+          if (!res.success) console.warn("Bitrix Sync Warning:", res.error);
+          else console.log("Bitrix Sync Success");
+        })
+        .catch(err => console.error("Bitrix Sync Error:", err));
+    }
+
     updateDoc(agentRef, updates)
       .then(() => {
         if (title) {

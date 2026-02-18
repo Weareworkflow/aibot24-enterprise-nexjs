@@ -157,21 +157,10 @@ export async function callBitrixMethod(memberId: string, method: string, params:
 
 export async function registerBitrixBot(memberId: string, agent: AIAgent) {
   // 1. Get Webhook Config (Handler URL)
-  // Intentamos obtener la URL del handler desde config-secrets (si existe), o fallback al appUrl
-  let handlerUrl = process.env.NEXT_PUBLIC_APP_URL || `https://aibot24-voice.web.app`;
+  // Usamos la URL del API Gateway desplegado
+  const webhookUrl = "https://aibot24-chat-gw-75slv2b8.uc.gateway.dev/api/chat";
 
-  try {
-    const secrets = await getSecretsConfig(memberId); // Assuming memberId might be domain or we look up by domain? 
-    // The function getSecretsConfig takes a DOMAIN. We need to look up the installation first to get the domain.
-    // Optimization: callBitrixMethod already fetches the client/domain. Let's rely on defaults or pass it in.
-    if (secrets?.webhookHandlerUrl) {
-      handlerUrl = secrets.webhookHandlerUrl;
-    }
-  } catch (e) {
-    console.warn("Could not fetch secrets for handler URL, using default:", handlerUrl);
-  }
-
-  const webhookUrl = `${handlerUrl}/api/bitrix/webhook`;
+  console.log(`[BitrixService] Registering bot with webhook: ${webhookUrl}`);
 
   // 2. Prepare Params for imbot.register
   const params: any = {
@@ -214,4 +203,28 @@ export async function registerBitrixBot(memberId: string, agent: AIAgent) {
   }
 
   return result;
+}
+
+export async function updateBitrixBot(memberId: string, agent: AIAgent) {
+  // Solo actualizamos propiedades visuales, no la URL del webhook (a menos que cambie logicamente)
+  const params: any = {
+    BOT_ID: agent.bitrixBotId, // Debemos guardar este ID cuando se registra
+    PROPERTIES: {
+      NAME: agent.name,
+      WORK_POSITION: agent.role || "AI Agent",
+      COLOR: agent.color || 'BLUE',
+    }
+  };
+
+  if (agent.avatar) {
+    params.PROPERTIES.PERSONAL_PHOTO = agent.avatar;
+  }
+
+  console.log(`[BitrixService] Updating bot ${agent.bitrixBotId} for agent ${agent.name}`);
+  return await callBitrixMethod(memberId, 'imbot.update', params);
+}
+
+export async function unregisterBitrixBot(memberId: string, botId: string) {
+  console.log(`[BitrixService] Unregistering bot ${botId}`);
+  return await callBitrixMethod(memberId, 'imbot.unregister', { BOT_ID: botId });
 }

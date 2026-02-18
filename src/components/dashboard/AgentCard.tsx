@@ -24,6 +24,7 @@ import { doc, updateDoc, deleteDoc, DocumentReference } from "firebase/firestore
 import { useToast } from "@/hooks/use-toast";
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
+import { unregisterOpenLinesBot } from '@/app/actions/bitrix-actions';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -79,24 +80,37 @@ export function AgentCard({ agent }: AgentCardProps) {
       });
   };
 
-  const handleDelete = (e: React.MouseEvent) => {
+  const handleDelete = async (e: React.MouseEvent) => {
     e.stopPropagation();
     if (!db) return;
 
-    const agentRef = doc(db, "agents", agent.id);
-    deleteDoc(agentRef)
-      .then(() => {
-        toast({
-          title: "Unidad Desconectada",
-          description: `El agente ${agent.name} ha sido eliminado de la flota.`,
-        });
-      })
-      .catch(async (error) => {
-        errorEmitter.emit('permission-error', new FirestorePermissionError({
-          path: agentRef.path,
-          operation: 'delete'
-        }));
+    try {
+      // 1. Unregister from Bitrix if it has a bot ID
+      if (agent.bitrixBotId && agent.tenantId) {
+        try {
+          await unregisterOpenLinesBot(agent.tenantId, agent.bitrixBotId.toString());
+          toast({ title: "Bitrix Sync", description: "Bot desvinculado de Bitrix24." });
+        } catch (err) {
+          console.error("Error unregistering from Bitrix:", err);
+          toast({ variant: "destructive", title: "Bitrix Error", description: "No se pudo desvincular de Bitrix (pero se eliminará localmente)." });
+        }
+      }
+
+      // 2. Delete from Firestore
+      const agentRef = doc(db, "agents", agent.id);
+      await deleteDoc(agentRef);
+
+      toast({
+        title: "Unidad Desconectada",
+        description: `El agente ${agent.name} ha sido eliminado de la flota.`,
       });
+
+    } catch (error: any) {
+      errorEmitter.emit('permission-error', new FirestorePermissionError({
+        path: `agents/${agent.id}`,
+        operation: 'delete'
+      }));
+    }
   };
 
   return (
