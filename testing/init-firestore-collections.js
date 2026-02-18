@@ -120,6 +120,54 @@ async function initCollections() {
             console.log("   ✅ 'config-secrets' already exists. Preserving credentials.");
         }
 
+        // --- Agents (Default Active Agent) ---
+        console.log(`🤖 Ensuring Default Agent for ${memberId}...`);
+        const agentId = memberId; // Use Member ID as Default Agent ID for simplicity
+        const agentRef = db.collection('agents').doc(agentId);
+        const agentSnap = await agentRef.get();
+
+        if (!agentSnap.exists) {
+            await agentRef.set({
+                id: agentId,
+                tenantId: memberId,
+                name: "Aibot Principal",
+                role: "Asistente Virtual",
+                company: "Mi Empresa",
+                objective: "Ayudar a los clientes",
+                tone: "Profesional y amable",
+                knowledge: "Información general de la empresa.",
+                isActive: true,
+                type: 'text',
+                createdAt: new Date().toISOString(),
+                // Advanced Config Defaults
+                model: "gpt-4o",
+                temperature: 0.7,
+                provider: "openai"
+            });
+            console.log("   ✅ Created Default Agent.");
+        } else {
+            console.log("   ✅ Default Agent exists. Preserving.");
+        }
+
+        // --- Metrics (Zeroed) ---
+        console.log(`📊 Initializing Metrics for Agent ${agentId}...`);
+        const metricsRef = db.collection('metrics').doc(agentId);
+        // We act on the specific agent ID because Dashboard listens to `metrics/{agentId}`
+
+        // Always ensure fields exist, even if doc exists (merge: true deals with partials)
+        await metricsRef.set({
+            usageCount: 0,
+            performanceRating: 100,
+            totalInteractionMetric: 0,
+            meetings: 0,
+            transfers: 0,
+            abandoned: 0,
+            latency: "0ms",
+            tokens: "0",
+            updatedAt: new Date().toISOString()
+        }, { merge: true });
+        console.log("   ✅ Metrics initialized/reset to baseline (zeros preserved if merge).");
+
         console.log("\n✅ Initialization Logic Complete.");
         console.log("👉 MANAGE ALL SECRETS DIRECTLY IN FIRESTORE CONSOLE.");
         console.log("   - OpenAI Keys: 'config-ai' (per tenant) OR 'config-architect/ai/config'");

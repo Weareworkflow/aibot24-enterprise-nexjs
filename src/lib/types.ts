@@ -25,6 +25,11 @@ export interface AIAgent {
   isActive?: boolean;
   integrations?: Record<string, boolean>;
   apiEndpoints?: APIEndpoint[];
+  // Advanced Config (Overrides Global/Architect defaults)
+  systemPrompt?: string; // Full override of the system prompt
+  model?: string;        // e.g., 'gpt-4o', 'gemini-pro'
+  temperature?: number;  // 0.0 to 1.0
+  provider?: 'openai' | 'google' | 'anthropic';
   // Bitrix24 Sync Fields
   bitrixBotId?: number; // ID numérico del usuario bot en Bitrix
   bitrixBotCode?: string; // Código único (ej: bot_123)
