@@ -19,46 +19,57 @@ const RefineBodySchema = z.object({
 });
 
 export async function POST(req: Request) {
-    const json = await req.json();
-    const { currentConfig, feedback, metaSystemPrompt } = RefineBodySchema.parse(json);
+    try {
+        const json = await req.json();
+        const { currentConfig, feedback, metaSystemPrompt } = RefineBodySchema.parse(json);
 
-    const defaultSystemPrompt = `Eres el Arquitecto Senior de IA de AIBot24. Tu misión es redactar el SYSTEM PROMPT más avanzado para un agente integrado en Bitrix24.
+        // Verify API Key
+        if (!process.env.OPENAI_API_KEY) {
+            console.error("❌ OPENAI_API_KEY is missing in server environment");
+            return new Response("Configuration Error: Missing API Key", { status: 500 });
+        }
 
-DIRECTRICES CRÍTICAS:
-1. Tu respuesta se mostrará en streaming al usuario.
-2. PRIMERO: Escribe una explicación MUY BREVE y profesional (texto plano, SIN ASTERISCOS, SIN MARKDOWN, no uses negritas). Dile qué cambios hiciste.
-3. SEGUNDO: Deja dos saltos de línea y escribe un bloque de código markdown con el nuevo 'knowledge' completo.
-   Ejemplo de formato:
-   He actualizado el protocolo para incluir...
+        const defaultSystemPrompt = `Eres el Arquitecto Senior de IA de AIBot24. Tu misión es redactar el SYSTEM PROMPT más avanzado para un agente integrado en Bitrix24.
+    
+    DIRECTRICES CRÍTICAS:
+    1. Tu respuesta se mostrará en streaming al usuario.
+    2. PRIMERO: Escribe una explicación MUY BREVE y profesional (texto plano, SIN ASTERISCOS, SIN MARKDOWN, no uses negritas). Dile qué cambios hiciste.
+    3. SEGUNDO: Deja dos saltos de línea y escribe un bloque de código markdown con el nuevo 'knowledge' completo.
+       Ejemplo de formato:
+       He actualizado el protocolo para incluir...
+    
+       \`\`\`markdown
+       # NUEVO PROTOCOLO
+       ...
+       \`\`\`
+    4. El bloque de código debe contener TODO el knowledge actualizado.`;
 
-   \`\`\`markdown
-   # NUEVO PROTOCOLO
-   ...
-   \`\`\`
-4. El bloque de código debe contener TODO el knowledge actualizado.`;
+        const result = streamText({
+            model: openai('gpt-4o'),
+            system: metaSystemPrompt || defaultSystemPrompt,
+            prompt: `
+    DATOS DEL AGENTE:
+    - Nombre: ${currentConfig.name}
+    - Rol: ${currentConfig.role}
+    - Empresa: ${currentConfig.company}
+    - Tono: ${currentConfig.tone}
+    - Objetivo: ${currentConfig.objective}
+    
+    CAPACIDADES TECNOLÓGICAS (Integraciones activas):
+    ${currentConfig.activeIntegrations.map((i: string) => `- ${i}`).join('\n')}
+    
+    MANUAL ACTUAL:
+    """
+    ${currentConfig.knowledge}
+    """
+    
+    NUEVAS INDICACIONES DEL USUARIO:
+    "${feedback}"`,
+        });
 
-    const result = streamText({
-        model: openai('gpt-4o'),
-        system: metaSystemPrompt || defaultSystemPrompt,
-        prompt: `
-DATOS DEL AGENTE:
-- Nombre: ${currentConfig.name}
-- Rol: ${currentConfig.role}
-- Empresa: ${currentConfig.company}
-- Tono: ${currentConfig.tone}
-- Objetivo: ${currentConfig.objective}
-
-CAPACIDADES TECNOLÓGICAS (Integraciones activas):
-${currentConfig.activeIntegrations.map((i: string) => `- ${i}`).join('\n')}
-
-MANUAL ACTUAL:
-"""
-${currentConfig.knowledge}
-"""
-
-NUEVAS INDICACIONES DEL USUARIO:
-"${feedback}"`,
-    });
-
-    return result.toDataStreamResponse();
+        return result.toTextStreamResponse();
+    } catch (error: any) {
+        console.error("❌ Error in /api/ai/refine:", error);
+        return new Response(`Refinement Error: ${error.message}`, { status: 500 });
+    }
 }

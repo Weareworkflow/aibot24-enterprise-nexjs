@@ -162,6 +162,11 @@ export async function registerBitrixBot(memberId: string, agent: AIAgent) {
 
   console.log(`[BitrixService] Registering bot with webhook: ${webhookUrl}`);
 
+  if (!agent.id) {
+    console.error("❌ Agent ID is missing in registerBitrixBot");
+    return { error: "Agent ID is required for registration", error_description: "Missing Agent ID" };
+  }
+
   // 2. Prepare Params for imbot.register
   const params: any = {
     CODE: `bot_${agent.id}`,
@@ -182,7 +187,14 @@ export async function registerBitrixBot(memberId: string, agent: AIAgent) {
   }
 
   // 4. Register Bot
+  console.log(`[BitrixService] Sending imbot.register for ${agent.name} (Code: bot_${agent.id})...`);
   const result = await callBitrixMethod(memberId, 'imbot.register', params);
+
+  if (result.error) {
+    console.error("❌ Bitrix Registration Error:", result.error, result.error_description);
+  } else {
+    console.log("✅ Bitrix Registration Success:", result.result);
+  }
 
   // 5. Update Company (imbot.register might not support WORK_COMPANY directly, 
   // checking docs... usually it creates a user. We might need to update the user profile afterwards)
