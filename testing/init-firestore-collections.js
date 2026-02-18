@@ -174,9 +174,7 @@ async function initCollections() {
                 name: "Aibot Principal",
                 role: "Asistente Virtual",
                 company: "Mi Empresa",
-                objective: "Ayudar a los clientes",
-                tone: "Profesional y amable",
-                knowledge: "Información general de la empresa.",
+                systemPrompt: "", // To be refined via Architect
                 isActive: true,
                 type: 'text',
                 createdAt: new Date().toISOString(),

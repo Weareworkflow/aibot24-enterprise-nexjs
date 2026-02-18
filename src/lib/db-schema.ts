@@ -63,6 +63,6 @@ export const getSubCollections = (db: Firestore) => ({
         collection(db, COLLECTIONS.SESSIONS, sessionId, COLLECTIONS.MESSAGES),
     knowledge: (agentId: string) =>
         collection(db, COLLECTIONS.AGENTS, agentId, COLLECTIONS.KNOWLEDGE).withConverter(createConverter<KnowledgeChunk>()),
-    architectAi: (memberId: string) =>
-        collection(db, COLLECTIONS.CONFIG_ARCHITECT, memberId, 'ai').withConverter(createConverter<AIConfig>()),
+    architectAi: (tenantId: string) =>
+        collection(db, COLLECTIONS.CONFIG_ARCHITECT, tenantId, 'ai').withConverter(createConverter<AIConfig>()),
 });

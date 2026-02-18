@@ -6,13 +6,13 @@ import { AIAgent, APIEndpoint } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { 
-  SmartphoneNfc, 
-  Briefcase, 
-  Globe, 
+import {
+  SmartphoneNfc,
+  Briefcase,
+  Globe,
   MessageSquare,
   UploadCloud,
-  Plus, 
+  Plus,
   Trash2,
   AlertCircle,
   CheckCircle2,
@@ -37,6 +37,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { registerOpenLinesBot } from "@/app/actions/bitrix-actions";
+import { useUIStore } from "@/lib/store";
 
 const DEPARTMENTS = [
   "Departamento de Ventas",
@@ -73,25 +74,28 @@ export function IntegrationModals({ agent, activeModal, onClose, onSave, onApiUp
     onClose();
   };
 
+  const { memberId } = useUIStore();
+
   const handleOpenLines = async () => {
     if (!agent.tenantId) {
       toast({
         variant: "destructive",
         title: "Error de Contexto",
-        description: "No se ha detectado el member_id del portal.",
+        description: "No se ha detectado el dominio del portal (tenantId).",
       });
       return;
     }
 
     setIsRegisteringBot(true);
     try {
+      // Pass agent.tenantId (domain) — installations are keyed by domain
       const result = await registerOpenLinesBot(agent.tenantId, {
         name: agent.name,
         role: agent.role,
         color: agent.color || 'BLUE',
         agentId: agent.id
       });
-      
+
       if (result.success) {
         onSave('integrations', { ...agent.integrations, "Open Lines (Chat Bitrix24)": true }, "Open Lines (Chat Bitrix24)");
         toast({
@@ -160,8 +164,8 @@ export function IntegrationModals({ agent, activeModal, onClose, onSave, onApiUp
             </div>
           </div>
           <DialogFooter className="sm:justify-center">
-            <Button 
-              className="w-full h-12 pill-rounded bg-secondary gap-2 font-black uppercase text-[10px] tracking-widest" 
+            <Button
+              className="w-full h-12 pill-rounded bg-secondary gap-2 font-black uppercase text-[10px] tracking-widest"
               onClick={handleOpenLines}
               disabled={isRegisteringBot}
             >
@@ -263,9 +267,9 @@ export function IntegrationModals({ agent, activeModal, onClose, onSave, onApiUp
           <div className="flex-1 overflow-y-auto pr-2 space-y-6 py-4">
             <div className="bg-slate-50 p-5 rounded-3xl border border-slate-200 space-y-4">
               <h4 className="text-[9px] font-black uppercase text-secondary tracking-widest">Nueva Petición</h4>
-              <Input placeholder="Nombre del servicio" className="h-10 text-[11px] bg-white pill-rounded" value={newApi.name} onChange={(e) => setNewApi({...newApi, name: e.target.value})} />
+              <Input placeholder="Nombre del servicio" className="h-10 text-[11px] bg-white pill-rounded" value={newApi.name} onChange={(e) => setNewApi({ ...newApi, name: e.target.value })} />
               <div className="flex gap-2">
-                <Select value={newApi.method} onValueChange={(val) => setNewApi({...newApi, method: val})}>
+                <Select value={newApi.method} onValueChange={(val) => setNewApi({ ...newApi, method: val })}>
                   <SelectTrigger className="w-[110px] h-10 text-[11px] bg-white pill-rounded">
                     <SelectValue placeholder="Method" />
                   </SelectTrigger>
@@ -274,7 +278,7 @@ export function IntegrationModals({ agent, activeModal, onClose, onSave, onApiUp
                     <SelectItem value="POST">POST</SelectItem>
                   </SelectContent>
                 </Select>
-                <Input placeholder="URL del Endpoint" className="flex-1 h-10 text-[11px] bg-white pill-rounded" value={newApi.url} onChange={(e) => setNewApi({...newApi, url: e.target.value})} />
+                <Input placeholder="URL del Endpoint" className="flex-1 h-10 text-[11px] bg-white pill-rounded" value={newApi.url} onChange={(e) => setNewApi({ ...newApi, url: e.target.value })} />
               </div>
               <Button onClick={handleApiAdd} className="w-full h-11 bg-slate-900 text-white pill-rounded text-[10px] font-black uppercase">Registrar</Button>
             </div>

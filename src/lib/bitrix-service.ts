@@ -49,26 +49,26 @@ export function getBitrixAuthUrl(domain: string, clientId: string) {
   return `https://${domain}/oauth/authorize/?client_id=${clientId}&response_type=code&scope=${BITRIX_SCOPES}`;
 }
 
-export async function getBitrixClient(memberId: string) {
+export async function getBitrixClient(domain: string) {
   // Soporte para Modo Local (Desarrollo)
-  if (process.env.NEXT_PUBLIC_BITRIX_LOCAL_MODE === 'true' && memberId === process.env.BITRIX_LOCAL_MEMBER_ID) {
+  if (process.env.NEXT_PUBLIC_BITRIX_LOCAL_MODE === 'true') {
     if (process.env.BITRIX_LOCAL_ACCESS_TOKEN) {
-      console.log(`[BitrixService] Usando Credenciales Locales desde ENV para: ${memberId}`);
+      console.log(`[BitrixService] Usando Credenciales Locales desde ENV para: ${domain}`);
       return {
         accessToken: process.env.BITRIX_LOCAL_ACCESS_TOKEN,
-        domain: process.env.BITRIX_LOCAL_DOMAIN || "localhost",
+        domain: process.env.BITRIX_LOCAL_DOMAIN || domain,
       };
     } else {
-      console.log(`[BitrixService] Modo Local: Buscando credenciales en Firestore para: ${memberId}`);
-      // Permitimos que continúe el flujo normal para buscar en Firestore
+      console.log(`[BitrixService] Modo Local: Buscando credenciales en Firestore para: ${domain}`);
     }
   }
 
-  const installationRef = doc(db, 'installations', memberId);
+  // Lookup by DOMAIN (installations are keyed by domain now)
+  const installationRef = doc(db, 'installations', domain);
   const installationSnap = await getDoc(installationRef);
 
   if (!installationSnap.exists()) {
-    throw new Error(`Instalación no encontrada para el Member ID: ${memberId}`);
+    throw new Error(`Instalación no encontrada para el dominio: ${domain}`);
   }
 
   const data = installationSnap.data() as BitrixInstallation;
@@ -95,7 +95,7 @@ export async function getBitrixClient(memberId: string) {
     }
 
     if (!clientId || !clientSecret) {
-      throw new Error(`Credenciales de Bitrix no configuradas para el Member ID: ${memberId}`);
+      throw new Error(`Credenciales de Bitrix no configuradas para el dominio: ${domain}`);
     }
 
     const params = new URLSearchParams({
@@ -138,8 +138,8 @@ export async function getBitrixClient(memberId: string) {
   };
 }
 
-export async function callBitrixMethod(memberId: string, method: string, params: any = {}) {
-  const client = await getBitrixClient(memberId);
+export async function callBitrixMethod(domain: string, method: string, params: any = {}) {
+  const client = await getBitrixClient(domain);
 
   const response = await fetch(`https://${client.domain}/rest/${method}.json`, {
     method: 'POST',
@@ -155,7 +155,7 @@ export async function callBitrixMethod(memberId: string, method: string, params:
   return await response.json();
 }
 
-export async function registerBitrixBot(memberId: string, agent: AIAgent) {
+export async function registerBitrixBot(domain: string, agent: AIAgent) {
   // 1. Get Webhook Config (Handler URL)
   // Usamos la URL del API Gateway desplegado
   const webhookUrl = "https://aibot24-chat-gw-75slv2b8.uc.gateway.dev/api/chat";
@@ -190,7 +190,7 @@ export async function registerBitrixBot(memberId: string, agent: AIAgent) {
 
   // 4. Register Bot
   console.log(`[BitrixService] Sending imbot.register for ${agent.name} (Code: bot_${agent.id})...`);
-  const result = await callBitrixMethod(memberId, 'imbot.register', params);
+  const result = await callBitrixMethod(domain, 'imbot.register', params);
 
   if (result.error) {
     console.error("❌ Bitrix Registration Error:", result.error, result.error_description);
@@ -206,7 +206,7 @@ export async function registerBitrixBot(memberId: string, agent: AIAgent) {
       const botId = result.result;
 
       if (agent.company) {
-        await callBitrixMethod(memberId, 'user.update', {
+        await callBitrixMethod(domain, 'user.update', {
           ID: botId,
           WORK_COMPANY: agent.company
         });
@@ -219,7 +219,7 @@ export async function registerBitrixBot(memberId: string, agent: AIAgent) {
   return result;
 }
 
-export async function updateBitrixBot(memberId: string, agent: AIAgent) {
+export async function updateBitrixBot(domain: string, agent: AIAgent) {
   // Solo actualizamos propiedades visuales, no la URL del webhook (a menos que cambie logicamente)
   const params: any = {
     BOT_ID: agent.bitrixBotId, // Debemos guardar este ID cuando se registra
@@ -235,10 +235,10 @@ export async function updateBitrixBot(memberId: string, agent: AIAgent) {
   }
 
   console.log(`[BitrixService] Updating bot ${agent.bitrixBotId} for agent ${agent.name}`);
-  return await callBitrixMethod(memberId, 'imbot.update', params);
+  return await callBitrixMethod(domain, 'imbot.update', params);
 }
 
-export async function unregisterBitrixBot(memberId: string, botId: string) {
+export async function unregisterBitrixBot(domain: string, botId: string) {
   console.log(`[BitrixService] Unregistering bot ${botId}`);
-  return await callBitrixMethod(memberId, 'imbot.unregister', { BOT_ID: botId });
+  return await callBitrixMethod(domain, 'imbot.unregister', { BOT_ID: botId });
 }

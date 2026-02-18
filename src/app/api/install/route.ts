@@ -32,8 +32,65 @@ export async function POST(request: NextRequest) {
       expiresAt: Math.floor(Date.now() / 1000) + expiresIn
     };
 
-    // Registro persistente en Firestore (Admin SDK)
-    await db.collection('installations').doc(memberId).set(installationData, { merge: true });
+    // 1. Registro principal en Firestore (ID = DOMAIN)
+    await db.collection('installations').doc(domain).set(installationData, { merge: true });
+    console.log(`✅ Instalación registrada: installations/${domain}`);
+
+    // 2. Auto-inicializar colecciones dependientes (merge: true preserva datos existentes)
+    const initPromises: Promise<any>[] = [];
+
+    // config-app/{domain} — UI Settings
+    initPromises.push(
+      db.collection('config-app').doc(domain).set({
+        theme: 'system',
+        language: 'es',
+        updatedAt: new Date().toISOString()
+      }, { merge: true })
+    );
+
+    // config-architect/{domain} — Architect Personality
+    initPromises.push(
+      db.collection('config-architect').doc(domain).set({
+        name: 'Aibot',
+        role: 'Arquitecto de Protocolos',
+        systemPrompt: 'Eres un experto en Bitrix24 que ayuda a configurar otros agentes.',
+        updatedAt: new Date().toISOString()
+      }, { merge: true })
+    );
+
+    // config-secrets/{domain} — Bitrix Credentials (placeholder if missing)
+    initPromises.push(
+      db.collection('config-secrets').doc(domain).get().then(async (snap) => {
+        if (!snap.exists) {
+          await db.collection('config-secrets').doc(domain).set({
+            clientId: 'ENTER_CLIENT_ID_IN_FIRESTORE',
+            clientSecret: 'ENTER_CLIENT_SECRET_IN_FIRESTORE',
+            webhookHandlerUrl: '',
+            updatedAt: new Date().toISOString()
+          });
+          console.log(`   ⚠️ config-secrets/${domain} created (placeholder). Set credentials in Firestore.`);
+        }
+      })
+    );
+
+    // settings/ai — Global AI Config (singleton, create only if missing)
+    initPromises.push(
+      db.collection('settings').doc('ai').get().then(async (snap) => {
+        if (!snap.exists) {
+          await db.collection('settings').doc('ai').set({
+            provider: 'openai',
+            model: 'gpt-4o',
+            apiKey: 'ENTER_GLOBAL_API_KEY_HERE',
+            temperature: 0.7,
+            updatedAt: new Date().toISOString()
+          });
+          console.log('   ⚠️ settings/ai created (placeholder). Set your API key in Firestore.');
+        }
+      })
+    );
+
+    await Promise.all(initPromises);
+    console.log(`✅ Colecciones inicializadas para ${domain}`);
 
     // HTML de finalización: Carga el SDK y notifica a Bitrix que la instalación terminó
     const html = `

@@ -57,7 +57,7 @@ export function AgentChat({ agent }: AgentChatProps) {
     // 1. Sync with Bitrix (Start in background or await?)
     // Only if identity fields are present and bot is linked
     if (agent.bitrixBotId && agent.tenantId && (updates.name || updates.role || updates.avatar || updates.color)) {
-      // Merge current agent with updates to ensure we have full data for Bitrix
+      // Use agent.tenantId (domain) — installations are keyed by domain
       const mergedAgent = { ...agent, ...updates };
       updateOpenLinesBot(agent.tenantId, mergedAgent)
         .then((res) => {

@@ -12,10 +12,10 @@ import {
   unregisterBitrixBot as unregisterBot
 } from '@/lib/bitrix-service';
 
-export async function registerOpenLinesBot(memberId: string, agentData: { name: string, role: string, color: string, agentId: string }) {
+export async function registerOpenLinesBot(domain: string, agentData: { name: string, role: string, color: string, agentId: string }) {
   try {
     // Cast to any to bypass strict AIAgent check for partial data
-    const result = await registerBot(memberId, { ...agentData, id: agentData.agentId } as any);
+    const result = await registerBot(domain, { ...agentData, id: agentData.agentId } as any);
     if (result.error) {
       throw new Error(result.error_description || "Error registrando bot en Bitrix24");
     }
@@ -25,9 +25,9 @@ export async function registerOpenLinesBot(memberId: string, agentData: { name: 
   }
 }
 
-export async function updateOpenLinesBot(memberId: string, agentData: any) {
+export async function updateOpenLinesBot(domain: string, agentData: any) {
   try {
-    const result = await updateBot(memberId, agentData);
+    const result = await updateBot(domain, agentData);
     if (result.error) {
       throw new Error(result.error_description || "Error actualizando bot en Bitrix24");
     }
@@ -37,9 +37,9 @@ export async function updateOpenLinesBot(memberId: string, agentData: any) {
   }
 }
 
-export async function unregisterOpenLinesBot(memberId: string, botId: string) {
+export async function unregisterOpenLinesBot(domain: string, botId: string) {
   try {
-    const result = await unregisterBot(memberId, botId);
+    const result = await unregisterBot(domain, botId);
     if (result.error) {
       throw new Error(result.error_description || "Error eliminando bot en Bitrix24");
     }

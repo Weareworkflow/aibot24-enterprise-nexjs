@@ -16,8 +16,10 @@ interface UIState {
   toggleSidebar: () => void;
   activeFilter: 'all' | 'voice' | 'text';
   setActiveFilter: (filter: 'all' | 'voice' | 'text') => void;
-  tenantId: string | null;
+  tenantId: string | null; // Now represents the Portal URL (Domain)
   setTenantId: (id: string | null) => void;
+  memberId: string | null; // Represents the specific installation/user ID
+  setMemberId: (id: string | null) => void;
   domain: string | null;
   setDomain: (domain: string | null) => void;
   language: 'es' | 'en';
@@ -46,6 +48,8 @@ export const useUIStore = create<UIState>()(
       setActiveFilter: (filter) => set({ activeFilter: filter }),
       tenantId: null,
       setTenantId: (id) => set({ tenantId: id }),
+      memberId: null,
+      setMemberId: (id) => set({ memberId: id }),
       domain: null,
       setDomain: (domain) => set({ domain: domain }),
       language: 'es',
@@ -91,6 +95,7 @@ export const useUIStore = create<UIState>()(
       name: 'aibot24-v3-config-v3',
       partialize: (state) => ({
         tenantId: state.tenantId,
+        memberId: state.memberId,
         domain: state.domain,
         language: state.language
       }),

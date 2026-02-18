@@ -12,9 +12,10 @@ import { cn } from "@/lib/utils";
 import { ChatMessage, AIAgent, AgentMetrics } from "@/lib/types";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useFirestore } from "@/firebase";
-import { doc, setDoc } from "firebase/firestore";
+import { doc, setDoc, updateDoc } from "firebase/firestore";
 import { useUIStore } from "@/lib/store";
 import { generateAgentConfig } from "@/ai/flows/generate-agent-config";
+import { registerOpenLinesBot } from "@/app/actions/bitrix-actions";
 
 const ASSISTANT_COLORS = [
   "#1B75BB", "#41E0F0", "#2FC6F6", "#22c55e", "#10b981",
@@ -133,13 +134,10 @@ export default function NewAgentPage() {
         type: 'text',
         role: config.role,
         company: config.company,
-        objective: aiResponse.objective || "Atención al cliente inteligente.",
-        tone: aiResponse.tone || "Profesional y resolutivo.",
-        knowledge: "",
+        systemPrompt: "", // Empty — to be refined by user via Architect
         color: config.color,
         isActive: true,
         createdAt: new Date().toISOString(),
-        integrations: {}
       };
 
       const initialMetrics: AgentMetrics = {
@@ -152,10 +150,41 @@ export default function NewAgentPage() {
         abandoned: 0
       };
 
+      // 1. Save Agent + Metrics to Firestore
       await Promise.all([
         setDoc(doc(db, "agents", agentId), newAgent),
         setDoc(doc(db, "metrics", agentId), initialMetrics)
       ]);
+
+      // 2. Auto-register bot in Bitrix24 (name, role/WORK_POSITION, color, webhook URL)
+      // Company is saved only in Firestore (Bitrix imbot.register doesn't support WORK_COMPANY)
+      if (effectiveTenantId !== "anonymous") {
+        try {
+          const bitrixResult = await registerOpenLinesBot(effectiveTenantId, {
+            name: config.name,
+            role: config.role,
+            color: config.color,
+            agentId: agentId
+          });
+
+          if (bitrixResult.success && bitrixResult.botId) {
+            // Store bitrixBotId on the agent
+            await updateDoc(doc(db, "agents", agentId), {
+              bitrixBotId: bitrixResult.botId,
+            });
+            console.log(`✅ Bot registrado en Bitrix24: ID ${bitrixResult.botId}`);
+          } else {
+            console.warn("⚠️ Bot registration failed:", bitrixResult.error);
+            toast({
+              title: "Agente creado",
+              description: `El agente se guardó pero el bot de Bitrix no se registró: ${bitrixResult.error}. Puedes reintentarlo desde Integraciones.`,
+            });
+          }
+        } catch (bitrixError: any) {
+          console.error("⚠️ Bitrix registration error:", bitrixError);
+          // Don't block — agent is already saved
+        }
+      }
 
       toast({
         title: "Agente Desplegado",

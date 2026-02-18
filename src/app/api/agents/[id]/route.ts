@@ -21,32 +21,22 @@ export async function GET(
 
     const data = agentSnap.data() as any;
 
-    // 1. Capa de Identidad (Core)
-    const identityBlock = `
+    // Build compiled prompt
+    // Priority: systemPrompt (full override), else identity-based fallback
+    let promptMaster: string;
+
+    if (data.systemPrompt) {
+      promptMaster = data.systemPrompt;
+    } else {
+      // Fallback: minimal identity block
+      promptMaster = `
 # IDENTIDAD DEL AGENTE
 - Nombre: ${data.name}
 - Rol: ${data.role}
 - Organización: ${data.company}
-- Tono Requerido: ${data.tone}
-- Objetivo Crítico: ${data.objective}
-    `.trim();
 
-    // 2. Capa de Capacidades (Integraciones)
-    const activeIntegrations = Object.entries(data.integrations || {})
-      .filter(([_, active]) => active)
-      .map(([name]) => `- ${name}`);
-
-    const capabilitiesBlock = activeIntegrations.length > 0
-      ? `\n# CAPACIDADES Y HERRAMIENTAS ACTIVAS\n${activeIntegrations.join('\n')}`
-      : '';
-
-    // 3. Capa de Comportamiento (Refinado por Chat)
-    const protocolBlock = data.knowledge
-      ? `\n# PROTOCOLO DE COMPORTAMIENTO (MANUAL TÉCNICO)\n${data.knowledge}`
-      : '\n# PROTOCOLO DE COMPORTAMIENTO\nActúa de forma profesional según tu rol y objetivo.';
-
-    // Compilación Final
-    const promptMaster = `${identityBlock}${capabilitiesBlock}${protocolBlock}`;
+Actúa de forma profesional según tu rol.`.trim();
+    }
 
     return NextResponse.json({
       success: true,

@@ -13,16 +13,15 @@ interface SystemPromptSectionProps {
 }
 
 export function SystemPromptSection({ agent, onUpdate }: SystemPromptSectionProps) {
-    const [prompt, setPrompt] = useState(agent.knowledge || "");
+    const [prompt, setPrompt] = useState(agent.systemPrompt || "");
     const { toast } = useToast();
 
     useEffect(() => {
-        setPrompt(agent.knowledge || "");
-    }, [agent.knowledge]);
+        setPrompt(agent.systemPrompt || "");
+    }, [agent.systemPrompt]);
 
     const handleSave = () => {
-        onUpdate({ knowledge: prompt }, "Prompt del Sistema");
-        // Feedback visual opcional, ya que onUpdate suele manejar el toast si se le pasa título
+        onUpdate({ systemPrompt: prompt }, "Prompt del Sistema");
     };
 
     return (
@@ -46,7 +45,7 @@ export function SystemPromptSection({ agent, onUpdate }: SystemPromptSectionProp
             <div className="flex justify-end">
                 <Button
                     onClick={handleSave}
-                    disabled={prompt === agent.knowledge}
+                    disabled={prompt === agent.systemPrompt}
                     className="gap-2 bg-secondary text-white hover:bg-secondary/90"
                 >
                     <Save className="h-4 w-4" />

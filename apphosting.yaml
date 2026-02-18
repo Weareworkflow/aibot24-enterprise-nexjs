@@ -5,3 +5,11 @@ runConfig:
   # Increase this value if you'd like to automatically spin up
   # more instances in response to increased traffic.
   maxInstances: 1
+  minInstances: 0
+  concurrency: 80
+
+env:
+  - variable: OPENAI_API_KEY
+    secret: OPENAI_API_KEY
+  - variable: GOOGLE_GENERATIVE_AI_API_KEY
+    secret: GOOGLE_GENERATIVE_AI_API_KEY

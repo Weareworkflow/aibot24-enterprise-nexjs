@@ -8,8 +8,7 @@ import { AiRefiner } from "@/components/agents/AgentChat/AiRefiner";
 import {
   Loader2,
   Wand2,
-  Sparkles,
-  Settings2
+  Sparkles
 } from "lucide-react";
 import { useDoc, useFirestore } from "@/firebase";
 import { doc } from "firebase/firestore";
@@ -22,15 +21,12 @@ export default function AgentConsolePage({ params }: { params: Promise<{ id: str
   const agentId = resolvedParams.id;
   const db = useFirestore();
 
-  const [showRefinerSettings, setShowRefinerSettings] = useState(false);
-  const [metaSystemPrompt, setMetaSystemPrompt] = useState("");
-
   const { agents, setAgent } = useUIStore();
 
   // Real-time synchronization with Firestore
   const agentRef = useMemo(() => {
     if (!db || !agentId) return null;
-    return doc(db, "agents", agentId);
+    return doc(db, "agents", agentId) as any;
   }, [db, agentId]);
 
   const { data: firestoreAgent, loading: firestoreLoading } = useDoc<AIAgent>(agentRef);
@@ -99,27 +95,11 @@ export default function AgentConsolePage({ params }: { params: Promise<{ id: str
                     </p>
                   </div>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setShowRefinerSettings(!showRefinerSettings)}
-                  className={cn(
-                    "h-8 w-8 rounded-full hover:bg-secondary/10 transition-all",
-                    showRefinerSettings ? "bg-secondary/20 text-secondary" : "text-muted-foreground hover:text-secondary"
-                  )}
-                  title="Modificar Instrucciones"
-                >
-                  <Settings2 className="h-4 w-4" />
-                </Button>
               </div>
               <div className="flex-1 min-h-0">
                 <AiRefiner
                   agent={agent}
                   db={db}
-                  showSettings={showRefinerSettings}
-                  onToggleSettings={() => setShowRefinerSettings(!showRefinerSettings)}
-                  metaSystemPrompt={metaSystemPrompt}
-                  setMetaSystemPrompt={setMetaSystemPrompt}
                 />
               </div>
             </div>

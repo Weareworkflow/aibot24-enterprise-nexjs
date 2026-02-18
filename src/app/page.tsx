@@ -24,11 +24,12 @@ export default function HomePage() {
     const targetMemberId = memberIdParam || localMemberId;
 
     if (targetMemberId) {
-      if (!tenantId) {
-        useUIStore.getState().setTenantId(targetMemberId);
+      // Set memberId (Installation ID)
+      if (!useUIStore.getState().memberId) {
+        useUIStore.getState().setMemberId(targetMemberId);
       }
 
-      if (db && !useUIStore.getState().domain) {
+      if (db) {
         const fetchDomain = async () => {
           try {
             const docRef = doc(db, "installations", targetMemberId);
@@ -36,7 +37,9 @@ export default function HomePage() {
             if (docSnap.exists()) {
               const data = docSnap.data();
               if (data?.domain) {
+                // Set Portal URL as tenantId (Data Isolation Key)
                 useUIStore.getState().setDomain(data.domain);
+                useUIStore.getState().setTenantId(data.domain);
               }
             }
           } catch (e) {
@@ -53,7 +56,7 @@ export default function HomePage() {
     return query(
       collection(db, "agents"),
       where("tenantId", "==", tenantId)
-    );
+    ) as any;
   }, [db, tenantId]);
 
   const { data: agents, loading, error } = useCollection<AIAgent>(agentsQuery);

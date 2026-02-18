@@ -7,6 +7,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { AIAgent } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { Send, Loader2, Sparkles, Wand2, AlertTriangle, CheckCircle2, Settings2 } from "lucide-react";
+import { useUIStore } from "@/lib/store";
 
 import { doc, updateDoc, Firestore } from "firebase/firestore";
 import { useToast } from "@/hooks/use-toast";
@@ -15,13 +16,9 @@ import { Textarea } from "@/components/ui/textarea";
 interface AiRefinerProps {
   agent: AIAgent;
   db: Firestore | null;
-  showSettings: boolean;
-  onToggleSettings: () => void;
-  metaSystemPrompt: string;
-  setMetaSystemPrompt: (value: string) => void;
 }
 
-export function AiRefiner({ agent, db, showSettings, onToggleSettings, metaSystemPrompt, setMetaSystemPrompt }: AiRefinerProps) {
+export function AiRefiner({ agent, db }: AiRefinerProps) {
   const [feedbackInput, setFeedbackInput] = useState("");
   const [isRefining, setIsRefining] = useState(false);
   const [history, setHistory] = useState<{ role: 'user' | 'assistant' | 'error' | 'system', content: string, id: string }[]>([]);
@@ -52,10 +49,6 @@ export function AiRefiner({ agent, db, showSettings, onToggleSettings, metaSyste
     }]);
 
     try {
-      const activeIntegrations = Object.entries(agent.integrations || {})
-        .filter(([_, active]) => active)
-        .map(([name]) => name);
-
       const response = await fetch('/api/ai/refine', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -64,14 +57,11 @@ export function AiRefiner({ agent, db, showSettings, onToggleSettings, metaSyste
             name: agent.name,
             role: agent.role,
             company: agent.company,
-            objective: agent.objective,
-            tone: agent.tone,
-            knowledge: agent.knowledge || "",
-            activeIntegrations
+            systemPrompt: agent.systemPrompt || "",
           },
           feedback: userFeedback,
-          metaSystemPrompt: metaSystemPrompt || undefined
-        })
+          tenantId: useUIStore.getState().tenantId // Pass Domain as context
+        }),
       });
 
       if (!response.ok || !response.body) throw new Error("Error en la conexión con el servidor.");
@@ -139,20 +129,9 @@ export function AiRefiner({ agent, db, showSettings, onToggleSettings, metaSyste
   return (
     <div className="flex flex-col h-full bg-card transition-colors duration-300">
 
-      {showSettings && (
-        <div className="p-4 bg-muted/10 border-b animate-in slide-in-from-top-2">
-          <Textarea
-            placeholder="Instrucciones para el Arquitecto (Meta-Prompt)..."
-            className="text-[11px] font-mono h-20 bg-background resize-none mb-1 focus-visible:ring-1"
-            value={metaSystemPrompt}
-            onChange={(e) => setMetaSystemPrompt(e.target.value)}
-          />
-        </div>
-      )}
-
       <ScrollArea className="flex-1 p-6" ref={scrollRef}>
         <div className="space-y-6">
-          {history.length === 0 && !showSettings && (
+          {history.length === 0 && (
             <div className="bg-secondary/5 border border-secondary/20 p-6 rounded-[2rem] text-[12px] text-foreground font-medium leading-relaxed animate-in fade-in duration-700">
               Hola, soy Aibot. Mi función es redactar el System Prompt para <strong className="text-secondary">{agent.name}</strong>.
               <br /><br />

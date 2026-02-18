@@ -11,22 +11,18 @@ export interface APIEndpoint {
 
 export interface AIAgent {
   id: string;
-  tenantId: string; // ID del portal (member_id)
+  tenantId: string; // Portal domain (e.g. workflowteams.bitrix24.es)
   name: string;
   type: AgentType;
-  role: string;
-  company: string;
-  objective: string;
-  tone: string;
-  knowledge: string; // Protocolo de comportamiento refinado por IA
-  avatar?: string; // Base64 image
+  role: string;       // Bitrix WORK_POSITION
+  company: string;    // Only in Firestore (Bitrix doesn't support it)
+  systemPrompt: string; // Full system prompt — single source of truth
+  avatar?: string;    // Base64 image
   color?: string;
   createdAt: string;
   isActive?: boolean;
-  integrations?: Record<string, boolean>;
   apiEndpoints?: APIEndpoint[];
   // Advanced Config (Overrides Global/Architect defaults)
-  systemPrompt?: string; // Full override of the system prompt
   model?: string;        // e.g., 'gpt-4o', 'gemini-pro'
   temperature?: number;  // 0.0 to 1.0
   provider?: 'openai' | 'google' | 'anthropic';
