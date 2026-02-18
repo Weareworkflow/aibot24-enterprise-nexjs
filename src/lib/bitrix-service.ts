@@ -173,6 +173,8 @@ export async function registerBitrixBot(memberId: string, agent: AIAgent) {
     TYPE: 'O', // Open Channel (Solicitado por usuario)
     EVENT_MESSAGE_ADD: webhookUrl,
     EVENT_WELCOME_MESSAGE: webhookUrl,
+    EVENT_BOT_DELETE: webhookUrl, // Handler para cuando eliminan el bot desde bitrix
+    EVENT_MESSAGE_UPDATE: webhookUrl, // Handler para edición de mensajes
     PROPERTIES: {
       NAME: agent.name,
       WORK_POSITION: agent.role || "AI Agent", // Rol en Bitrix
