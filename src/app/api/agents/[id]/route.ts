@@ -22,7 +22,6 @@ export async function GET(
     const data = agentSnap.data() as any;
 
     // Build compiled prompt
-    // Priority: systemPrompt (full override), else identity-based fallback
     let promptMaster: string;
 
     if (data.systemPrompt) {
@@ -41,11 +40,20 @@ Actúa de forma profesional según tu rol.`.trim();
     return NextResponse.json({
       success: true,
       agentId: agentSnap.id,
-      promptMaster,
+      promptMaster: promptMaster.trim(),
       config: {
         isActive: data.isActive,
         color: data.color,
+        bitrixBotId: data.bitrixBotId,
+        avatar: data.avatar,
+        company: data.company,
         createdAt: data.createdAt
+      }
+    }, {
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0',
       }
     });
   } catch (error: any) {

@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { AIAgent, AppConfig } from './types';
+import { AIAgent, AppConfig, BitrixInstallation } from './types';
 import { db } from './firebase-server';
 import { getCollections } from './db-schema';
 import { doc, getDoc } from 'firebase/firestore';
@@ -14,21 +14,26 @@ interface UIState {
   setSearchQuery: (query: string) => void;
   isSidebarOpen: boolean;
   toggleSidebar: () => void;
-  activeFilter: 'all' | 'voice' | 'text';
-  setActiveFilter: (filter: 'all' | 'voice' | 'text') => void;
-  tenantId: string | null; // Now represents the Portal URL (Domain)
+  activeFilter: 'all' | 'text';
+  setActiveFilter: (filter: 'all' | 'text') => void;
+  tenantId: string | null; // Dominio del portal (ej: workflowteams.bitrix24.es)
   setTenantId: (id: string | null) => void;
-  memberId: string | null; // Represents the specific installation/user ID
+  memberId: string | null; // ID único de instalación
   setMemberId: (id: string | null) => void;
   domain: string | null;
   setDomain: (domain: string | null) => void;
   language: 'es' | 'en';
   setLanguage: (lang: 'es' | 'en') => void;
 
-  // App Config (Public)
+  // App Config
   appConfig: AppConfig | null;
   setAppConfig: (config: AppConfig) => void;
-  loadAppConfig: (memberId: string) => Promise<void>;
+  loadAppConfig: (tenantId: string) => Promise<void>;
+
+  // Installation Data (Bitrix Credentials)
+  installation: BitrixInstallation | null;
+  setInstallation: (inst: BitrixInstallation | null) => void;
+  loadInstallation: (domain: string) => Promise<void>;
 
   // Centralized Agent Management
   agents: AIAgent[];
@@ -50,7 +55,7 @@ export const useUIStore = create<UIState>()(
       setTenantId: (id) => set({ tenantId: id }),
       memberId: null,
       setMemberId: (id) => set({ memberId: id }),
-      domain: null,
+      domain: null, // Usually same as tenantId
       setDomain: (domain) => set({ domain: domain }),
       language: 'es',
       setLanguage: (lang) => set({ language: lang }),
@@ -58,16 +63,34 @@ export const useUIStore = create<UIState>()(
       // App Config
       appConfig: null,
       setAppConfig: (config) => set({ appConfig: config }),
-      loadAppConfig: async (memberId) => {
+      loadAppConfig: async (tenantId) => {
         try {
           const { appConfig } = getCollections(db);
-          const docRef = doc(appConfig, memberId);
+          const docRef = doc(appConfig, tenantId);
           const snap = await getDoc(docRef);
           if (snap.exists()) {
-            set({ appConfig: snap.data() });
+            const data = snap.data();
+            set({ appConfig: data });
+            if (data.language) set({ language: data.language });
           }
         } catch (error) {
           console.error("Failed to load app config:", error);
+        }
+      },
+
+      // Installation
+      installation: null,
+      setInstallation: (inst) => set({ installation: inst }),
+      loadInstallation: async (domain) => {
+        try {
+          const { installations } = getCollections(db);
+          const docRef = doc(installations, domain);
+          const snap = await getDoc(docRef);
+          if (snap.exists()) {
+            set({ installation: snap.data() });
+          }
+        } catch (error) {
+          console.error("Failed to load installation:", error);
         }
       },
 
@@ -88,11 +111,9 @@ export const useUIStore = create<UIState>()(
           a.id === agentId ? { ...a, ...updates } : a
         )
       })),
-
-
     }),
     {
-      name: 'aibot24-v3-config-v3',
+      name: 'aibot24-v4-store',
       partialize: (state) => ({
         tenantId: state.tenantId,
         memberId: state.memberId,

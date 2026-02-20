@@ -11,6 +11,15 @@ import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { ChatMessage, AIAgent, AgentMetrics } from "@/lib/types";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { ShieldAlert, Settings } from "lucide-react";
 import { useFirestore } from "@/firebase";
 import { doc, setDoc, updateDoc } from "firebase/firestore";
 import { useUIStore } from "@/lib/store";
@@ -46,69 +55,67 @@ export default function NewAgentPage() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const router = useRouter();
+  const { tenantId, installation, loadInstallation } = useUIStore();
   const db = useFirestore();
-  const { tenantId } = useUIStore();
 
   useEffect(() => {
+    if (tenantId) loadInstallation(tenantId);
+
+    // Initial message
     if (messages.length === 0) {
       setMessages([{
-        id: "start",
-        role: "assistant",
+        id: 'start',
+        role: 'assistant',
         content: CONFIG_STEPS[0].question,
         timestamp: new Date().toISOString()
       }]);
     }
-  }, [messages.length]);
+  }, [tenantId]);
 
-  useEffect(() => {
-    if (scrollRef.current) {
-      const scrollContainer = scrollRef.current.querySelector('[data-radix-scroll-area-viewport]');
-      if (scrollContainer) {
-        scrollContainer.scrollTop = scrollContainer.scrollHeight;
-      }
-    }
-  }, [messages, isFinished]);
-
-  const handleNextStep = (valueOverride?: string) => {
-    const value = valueOverride || inputValue;
-    if (!value.trim() || isFinished) return;
+  const handleNextStep = (value?: string) => {
+    const response = value || inputValue.trim();
+    if (!response) return;
 
     const currentKey = CONFIG_STEPS[currentStep].key;
+    const nextStep = currentStep + 1;
 
-    // User message
-    const userMsg: ChatMessage = {
-      id: Date.now().toString(),
-      role: "user",
-      content: currentKey === 'color' ? "Identidad visual seleccionada" : value,
-      timestamp: new Date().toISOString()
-    };
+    // Save answer
+    setConfig(prev => ({ ...prev, [currentKey]: response }));
 
-    setConfig(prev => ({ ...prev, [currentKey]: value }));
-    setMessages(prev => [...prev, userMsg]);
-    setInputValue("");
+    // Add message to chat
+    const newMessages: ChatMessage[] = [
+      ...messages,
+      { id: Date.now().toString(), role: 'user', content: response, timestamp: new Date().toISOString() }
+    ];
 
-    if (currentStep < CONFIG_STEPS.length - 1) {
-      const nextStep = currentStep + 1;
+    if (nextStep < CONFIG_STEPS.length) {
+      newMessages.push({
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: CONFIG_STEPS[nextStep].question,
+        timestamp: new Date().toISOString()
+      });
       setCurrentStep(nextStep);
-      setTimeout(() => {
-        setMessages(prev => [...prev, {
-          id: (Date.now() + 1).toString(),
-          role: "assistant",
-          content: CONFIG_STEPS[nextStep].question,
-          timestamp: new Date().toISOString()
-        }]);
-      }, 300);
+      setInputValue("");
     } else {
+      newMessages.push({
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: "¡Perfecto! Todo está listo para crear tu agente. ¿Deseas desplegarlo ahora?",
+        timestamp: new Date().toISOString()
+      });
       setIsFinished(true);
-      setTimeout(() => {
-        setMessages(prev => [...prev, {
-          id: (Date.now() + 1).toString(),
-          role: "assistant",
-          content: "Protocolo listo. Pulsa desplegar.",
-          timestamp: new Date().toISOString()
-        }]);
-      }, 400);
     }
+
+    setMessages(newMessages);
+
+    // Scroll to bottom
+    setTimeout(() => {
+      if (scrollRef.current) {
+        const scrollContainer = scrollRef.current.querySelector('[data-radix-scroll-area-viewport]');
+        if (scrollContainer) scrollContainer.scrollTop = scrollContainer.scrollHeight;
+      }
+    }, 100);
   };
 
   const handleSave = async () => {
@@ -117,12 +124,24 @@ export default function NewAgentPage() {
       return;
     }
 
+    // --- CHECK CREDENTIALS ---
+    const isConfigured = installation?.clientId && installation?.clientSecret;
+    if (!isConfigured && tenantId !== "anonymous") {
+      toast({
+        variant: "destructive",
+        title: "Protocolo Incompleto",
+        description: "Debes configurar el Client ID y Secret ID en la sección de Configuración antes de crear agentes para Bitrix24.",
+      });
+      return;
+    }
+
     const effectiveTenantId = tenantId || "anonymous";
     setIsSaving(true);
 
     try {
       const aiResponse = await generateAgentConfig({
-        prompt: `Genera un objetivo estratégico breve y un tono de comunicación para un agente con el rol: ${config.role} de la empresa ${config.company}.`
+        prompt: `Genera un objetivo estratégico breve y un tono de comunicación para un agente con el rol: ${config.role} de la empresa ${config.company}.`,
+        tenantId: effectiveTenantId
       });
 
       const agentId = Date.now().toString();
@@ -201,10 +220,50 @@ export default function NewAgentPage() {
   };
 
   const isColorStep = CONFIG_STEPS[currentStep].key === 'color';
+  const isConfigured = (installation?.clientId && installation?.clientSecret) || tenantId === "anonymous";
 
   return (
     <div className="flex flex-col h-screen bg-background overflow-hidden transition-colors duration-300">
       <Navbar />
+
+      {/* BLOCKING MODAL */}
+      <Dialog open={!isConfigured && !!tenantId}>
+        <DialogContent className="sm:max-w-[425px] rounded-[2.5rem] border-none shadow-2xl">
+          <DialogHeader className="flex flex-col items-center gap-4 py-4">
+            <div className="h-16 w-16 bg-red-500/10 rounded-full flex items-center justify-center">
+              <ShieldAlert className="h-8 w-8 text-red-500" />
+            </div>
+            <DialogTitle className="text-xl font-headline font-bold text-center">Protocolo Incompleto</DialogTitle>
+            <DialogDescription className="text-center text-muted-foreground">
+              Tu portal Bitrix24 no está enlazado correctamente. Debes configurar el <b>Client ID</b> y <b>Secret ID</b> antes de desplegar nuevos agentes inteligentes.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="p-1 bg-secondary/5 rounded-2xl border border-secondary/20">
+            <div className="p-4 space-y-2">
+              <p className="text-[11px] font-bold text-secondary uppercase tracking-widest">¿Por qué es necesario?</p>
+              <p className="text-[10px] text-muted-foreground leading-relaxed">
+                Estas credenciales permiten a la consola registrar el bot dentro de tu infraestructura de Bitrix24, activando los webhooks y permisos necesarios.
+              </p>
+            </div>
+          </div>
+          <DialogFooter className="flex sm:justify-center gap-3 mt-4">
+            <Button
+              variant="outline"
+              onClick={() => router.push("/")}
+              className="rounded-xl font-bold uppercase text-[10px] tracking-widest h-11"
+            >
+              Regresar
+            </Button>
+            <Button
+              onClick={() => router.push("/settings")}
+              className="bg-secondary hover:bg-secondary/90 text-white rounded-xl font-bold uppercase text-[10px] tracking-widest gap-2 h-11"
+            >
+              <Settings className="h-4 w-4" />
+              Configurar Ahora
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       <main className="flex-1 flex flex-col items-center justify-center p-4">
         <div className="w-full max-w-xl flex flex-col h-[calc(100vh-120px)]">
           <div className="mb-4 flex items-center justify-between px-2">
@@ -276,14 +335,32 @@ export default function NewAgentPage() {
                         <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{config.company} • {config.role}</p>
                         <p className="text-[9px] text-muted-foreground italic">Objetivo y Tono se generarán al desplegar.</p>
                       </div>
-                      <Button
-                        onClick={handleSave}
-                        disabled={isSaving}
-                        className="w-full h-12 rounded-full bg-secondary hover:bg-secondary/90 text-white font-black text-[10px] uppercase tracking-widest gap-2 shadow-xl shadow-secondary/20"
-                      >
-                        {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Rocket className="h-4 w-4" />}
-                        {isSaving ? "Generando Protocolo..." : "Desplegar Agente"}
-                      </Button>
+
+                      {!(installation?.clientId && installation?.clientSecret) && tenantId !== "anonymous" ? (
+                        <Card className="p-5 bg-red-500/10 border-red-500/20 rounded-2xl mb-4 text-center space-y-3">
+                          <p className="text-[10px] font-black uppercase tracking-widest text-red-500">Acción Bloqueada</p>
+                          <p className="text-[11px] text-muted-foreground leading-snug">
+                            Debes configurar las credenciales de Bitrix24 para registrar bots.
+                          </p>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => router.push("/settings")}
+                            className="w-full rounded-xl text-[9px] font-black uppercase tracking-widest border-red-500/50 hover:bg-red-500 hover:text-white"
+                          >
+                            Ir a Configuración
+                          </Button>
+                        </Card>
+                      ) : (
+                        <Button
+                          onClick={handleSave}
+                          disabled={isSaving}
+                          className="w-full h-12 rounded-full bg-secondary hover:bg-secondary/90 text-white font-black text-[10px] uppercase tracking-widest gap-2 shadow-xl shadow-secondary/20"
+                        >
+                          {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Rocket className="h-4 w-4" />}
+                          {isSaving ? "Generando Protocolo..." : "Desplegar Agente"}
+                        </Button>
+                      )}
                     </Card>
                   </div>
                 )}

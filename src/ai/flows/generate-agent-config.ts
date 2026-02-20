@@ -3,13 +3,17 @@
 /**
  * @fileOverview Genera la configuración inicial estratégica del agente.
  * Simplified: outputs a single systemPrompt instead of separate objective/tone/knowledge.
+ * Migrated to Vercel AI SDK.
  */
 
-import { ai } from '@/ai/genkit';
-import { z } from 'genkit';
+import { generateObject } from 'ai';
+import { z } from 'zod';
+import { openai, defaultModel } from '@/lib/config-ai';
+import { db } from '@/lib/firebase-admin';
 
 const GenerateAgentConfigInputSchema = z.object({
   prompt: z.string().describe('Descripción breve del agente deseado.'),
+  tenantId: z.string().optional().describe('ID del portal (tenant) para buscar configuración global.'),
 });
 export type GenerateAgentConfigInput = z.infer<typeof GenerateAgentConfigInputSchema>;
 
@@ -22,37 +26,36 @@ const GenerateAgentConfigOutputSchema = z.object({
 export type GenerateAgentConfigOutput = z.infer<typeof GenerateAgentConfigOutputSchema>;
 
 export async function generateAgentConfig(input: GenerateAgentConfigInput): Promise<GenerateAgentConfigOutput> {
-  return generateAgentConfigFlow(input);
-}
+  try {
+    // 1. Fetch Global App Config (Architect Protocol)
+    // We need a tenant context. If not provided in input, we might need to pass it.
+    // Assuming prompt might contain tenant or we use a default.
+    // For now, let's look for a generic "anonymous" or "global" if we can't determine it easily, 
+    // or better, update the signature if possible. 
+    // Wait, the caller (NewAgentPage) has tenantId. Let's update the schema.
 
-const prompt = ai.definePrompt({
-  name: 'generateAgentConfigPrompt',
-  input: { schema: GenerateAgentConfigInputSchema },
-  output: { schema: GenerateAgentConfigOutputSchema },
-  prompt: `Actúa como un Consultor Estratégico de IA para Bitrix24.
-Basado en: "{{{prompt}}}", diseña la base operativa de un agente de chat.
-
+    const { object } = await generateObject({
+      model: defaultModel,
+      schema: GenerateAgentConfigOutputSchema,
+      system: `Eres un experto en diseño de agentes de IA. 
+Tu objetivo es crear un protocolo operativo basado en los requerimientos del usuario.`,
+      prompt: `Diseña la base operativa de un agente de chat basado en: "${input.prompt}".
+      
 Genera:
-- systemPrompt: Un System Prompt completo que incluya objetivo estratégico, estilo de comunicación, y reglas de negocio iniciales (3-4 puntos clave).
+- name: Un nombre creativo para el agente (opcional).
+- role: El rol profesional (opcional).
+- company: La empresa que representa (opcional).
+- systemPrompt: Un System Prompt completo.`,
+      temperature: 0.7,
+    });
 
-Si se proporcionan nombre, rol o empresa, inclúyelos. Si no, invéntalos profesionalmente.`,
-});
+    return object;
 
-const generateAgentConfigFlow = ai.defineFlow(
-  {
-    name: 'generateAgentConfigFlow',
-    inputSchema: GenerateAgentConfigInputSchema,
-    outputSchema: GenerateAgentConfigOutputSchema,
-  },
-  async input => {
-    try {
-      const { output } = await prompt(input);
-      return output!;
-    } catch (error) {
-      console.error("Genkit Generation Error:", error);
-      return {
-        systemPrompt: "Eres un agente de atención al cliente de alto nivel. Tu misión es resolver consultas de forma profesional, resolutiva y amable. Reglas: 1. Saluda cordialmente. 2. Identifica la necesidad del cliente. 3. Proporciona soluciones basadas en los servicios de la empresa."
-      };
-    }
+  } catch (error) {
+    console.error("Agent Config Generation Error:", error);
+    // Fallback response
+    return {
+      systemPrompt: "Eres un agente de atención al cliente de alto nivel. Tu misión es resolver consultas de forma profesional, resolutiva y amable. Reglas: 1. Saluda cordialmente. 2. Identifica la necesidad del cliente. 3. Proporciona soluciones basadas en los servicios de la empresa."
+    };
   }
-);
+}

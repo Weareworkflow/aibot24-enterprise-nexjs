@@ -1,0 +1,82 @@
+DATABASE SCHEMA REFERENCE - AIBOT24
+
+========================================================================
+1. COLLECTION: agents
+========================================================================
+Document ID: Automatic (agentId)
+Purpose: Stores configuration for individual AI agents.
+
+Fields:
+- id: string            (Unique identifier, matches doc ID)
+- tenantId: string      (Portal domain, e.g., workflowteams.bitrix24.es)
+- name: string          (Agent display name)
+- type: "text"          (Agent interaction type)
+- role: string          (Operational role / Bitrix WORK_POSITION)
+- company: string       (Company name / Business sector - WORK_COMPANY in Bitrix)
+- color: string         (UI color theme)
+- systemPrompt: string  (Specific instructions for THIS agent)
+- isActive: boolean     (Operational status)
+- bitrixBotId: number   (Optional: Bot ID assigned by Bitrix24)
+- avatar: string        (Optional: Base64 image)
+
+========================================================================
+2. COLLECTION: installations
+========================================================================
+Document ID: Domain (e.g., workflowteams.bitrix24.es)
+Purpose: Stores Bitrix24 OAuth credentials and installation status.
+
+Fields:
+- memberId: string      (Unique installation ID from Bitrix)
+- domain: string        (Portal domain)
+- status: "active" | "suspended"
+- accessToken: string   (Current OAuth access token)
+- refreshToken: string  (OAuth refresh token)
+- expiresIn: number     (Token duration in seconds)
+- clientSecret: string  (Optional: Technical credential)
+- clientId: string      (Optional: Technical credential)
+
+========================================================================
+3. COLLECTION: config-app
+========================================================================
+Document ID: tenantId (e.g., workflowteams.bitrix24.es)
+Purpose: Global application settings per portal.
+
+Fields:
+- tenantId: string      (Portal domain)
+- theme: "light" | "dark"
+- language: "es" | "en"
+- systemPrompt: string  (GLOBAL SYSTEM PROMPT - Source of Truth)
+
+========================================================================
+4. COLLECTION: metrics (STUB / PLANNED)
+========================================================================
+Document ID: agentId
+Purpose: Usage and performance statistics for agents.
+
+Fields:
+- usageCount: number
+- performanceRating: number
+- totalInteractionMetric: number
+- latency: string (Optional)
+- tokens: string (Optional)
+- transfers: number (Optional)
+- meetings: number (Optional)
+- abandoned: number (Optional)
+========================================================================
+5. REST API ENDPOINTS
+========================================================================
+
+A. CONSULTAS (GET)
+-----------------
+Endpoints para consultar datos de la base de datos vía API REST:
+- GET /api/agents/[id]: Retorna la configuración y el prompt compilado de un agente por su ID interno.
+- GET /api/agents/[tenantId]/[botId]: Consulta "Doble ID" (Dominio + ID de Bitrix) para localizar agentes desde Bitrix24.
+- GET /api/installations/[domain]: Retorna credenciales y estado de conexión de un portal.
+
+B. MÉTRICAS (POST)
+-----------------
+Endpoint para que los agentes externos envíen sus métricas de rendimiento:
+- POST /api/metrics: Actualiza los contadores y estadísticas en la colección 'metrics'.
+  Cuerpo esperado: { "agentId": "...", "metrics": { ... } }
+
+========================================================================

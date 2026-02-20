@@ -3,10 +3,10 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { getCollections, getSubCollections } from "@/lib/db-schema";
+import { getCollections } from "@/lib/db-schema";
 import { useFirestore } from "@/firebase";
-import { setDoc, doc, Timestamp, collection, addDoc } from "firebase/firestore";
-import { Loader2, CheckCircle2, AlertTriangle } from "lucide-react";
+import { setDoc, doc } from "firebase/firestore";
+import { Loader2, AlertTriangle } from "lucide-react";
 
 export default function SeedPage() {
     const db = useFirestore();
@@ -37,92 +37,46 @@ export default function SeedPage() {
         const logs: string[] = [];
 
         try {
-            const { aiConfig, sessions, auditLogs } = getCollections(db);
+            const { agents, installations, appConfig } = getCollections(db);
 
-            // 1. Initialize config-ai
-            logs.push("Initializing 'config-ai'...");
-            await setDoc(doc(aiConfig, "default"), {
-                apiKey: "sk-placeholder-key-replace-me", // Placeholder
-                model: "gpt-4-turbo-preview",
-                temperature: 0.7,
-                maxTokens: 500,
-                provider: "openai"
+            // 1. Initialize Agents
+            logs.push("Initializing 'agents'...");
+            await setDoc(doc(agents, "demo-agent-001"), {
+                id: "demo-agent-001",
+                tenantId: "workflowteams.bitrix24.es",
+                name: "Demo Agent",
+                type: "text",
+                role: "Asistente",
+                company: "Retail",
+                color: "#ff0000",
+                systemPrompt: "Eres un asistente de prueba.",
+                isActive: true
             });
-            logs.push("✅ 'config-ai/default' created.");
+            logs.push("✅ 'agents/demo-agent-001' created.");
 
-            // 2. Initialize sessions (Demo)
-            logs.push("Initializing 'sessions'...");
-            await setDoc(doc(sessions, "demo-session-001"), {
-                id: "demo-session-001",
-                agentId: "virtual-agent-001",
-                installationId: "demo-install",
-                channel: "web",
+            // 2. Initialize installations
+            logs.push("Initializing 'installations'...");
+            await setDoc(doc(installations, "demo-install-001"), {
+                memberId: "demo-member-001",
+                domain: "workflowteams.bitrix24.es",
                 status: "active",
-                startTime: new Date().toISOString(),
-                lastInteraction: new Date().toISOString(),
-                summary: "This is a demo session to initialize the collection.",
-                metadata: {
-                    userAgent: "Mozilla/5.0",
-                    initializedBy: "Admin Seeder"
-                }
+                accessToken: "dummy-access",
+                refreshToken: "dummy-refresh",
+                expiresIn: 3600,
+                clientSecret: "dummy-secret",
+                clientId: "dummy-id"
             });
-            logs.push("✅ 'sessions/demo-session-001' created.");
+            logs.push("✅ 'installations/demo-install-001' created.");
 
-            // 3. Initialize audit_logs (Demo)
-            logs.push("Initializing 'audit_logs'...");
-            await addDoc(auditLogs, {
-                id: "init-log", // Firestore will ignore this if using addDoc, but we need it for type
-                timestamp: new Date().toISOString(),
-                actorId: "system-admin",
-                action: "create",
-                resource: "settings",
-                resourceId: "init",
-                changes: { description: "Database initialized" },
-                ipAddress: "127.0.0.1"
+            // 3. Initialize app-config
+            logs.push("Initializing 'config-app'...");
+            await setDoc(doc(appConfig, "workflowteams.bitrix24.es"), {
+                theme: "light",
+                language: "es",
+                systemPrompt: "Global system prompt placeholder",
+                tenantId: "workflowteams.bitrix24.es"
             });
-            logs.push("✅ 'audit_logs' entry created.");
-
-            // 4. Initialize knowledge base (Sub-collection)
-            logs.push("Initializing 'knowledge'...");
-            // We need a dummy agent to attach knowledge to, or just use a placeholder ID
-            const { knowledge } = getSubCollections(db);
-            await addDoc(knowledge("placeholder-agent"), {
-                id: "chunk-001",
-                agentId: "placeholder-agent",
-                content: "This is a sample knowledge chunk.",
-                embedding: [0.1, 0.2, 0.3], // Dummy vector
-                source: "manual-entry",
-                createdAt: new Date().toISOString(),
-                metadata: { tag: "sample" }
-            });
-            logs.push("✅ 'agents/placeholder-agent/knowledge' created.");
-
-            // 5. Initialize Architect Agent Config
-            logs.push("Initializing 'config-architect'...");
-            const { architectConfig } = getCollections(db);
-            const { architectAi } = getSubCollections(db);
-
-            const architectId = "default"; // or tenantId
-
-            // Personality
-            await setDoc(doc(architectConfig, architectId), {
-                name: "Aibot",
-                role: "Arquitecto de Protocolos",
-                systemPrompt: "Eres un arquitecto de agentes AI especializado en crear configuraciones eficientes.",
-                updatedAt: new Date().toISOString()
-            });
-
-            // AI Settings (Sub-collection)
-            await setDoc(doc(architectAi(architectId), "config"), {
-                provider: "openai",
-                model: "gpt-4-turbo",
-                temperature: 0.7,
-                maxTokens: 1000,
-                apiKey: "sk-architect-placeholder", // Security: placeholder
-                updatedAt: new Date().toISOString()
-            });
-
-            logs.push(`✅ 'config-architect/${architectId}' and its AI config created.`);
+            logs.push("✅ 'config-app/workflowteams.bitrix24.es' created.");
 
             setStatus(logs);
 

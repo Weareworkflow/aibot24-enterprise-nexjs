@@ -2,10 +2,14 @@
 # https://firebase.google.com/docs/app-hosting/configure
 
 runConfig:
-  # Increase this value if you'd like to automatically spin up
-  # more instances in response to increased traffic.
   maxInstances: 1
   minInstances: 0
   concurrency: 80
 
-# API keys are managed in Firestore (settings/ai), not as env vars.
+env:
+  - variable: BITRIX_BOT_HANDLER_URL
+    value: https://aibot24-chat-gw-75slv2b8.uc.gateway.dev/api/chat
+
+secrets:
+  - variable: OPENAI_API_KEY
+    secret: OPENAI_API_KEY
