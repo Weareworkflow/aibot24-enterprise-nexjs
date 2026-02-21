@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useMemo, useState, useEffect } from "react";
+import { use, useState, useEffect } from "react";
 import { Navbar } from "@/components/layout/Navbar";
 import { AIAgent } from "@/lib/types";
 import { AgentChat } from "@/components/agents/AgentChat";
@@ -10,39 +10,37 @@ import {
   Wand2,
   Sparkles
 } from "lucide-react";
-import { useDoc, useFirestore } from "@/firebase";
-import { doc } from "firebase/firestore";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import { useUIStore } from "@/lib/store";
 
 export default function AgentConsolePage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
   const agentId = resolvedParams.id;
-  const db = useFirestore();
 
   const { agents, setAgent } = useUIStore();
+  const [loading, setLoading] = useState(true);
 
-  // Real-time synchronization with Firestore
-  const agentRef = useMemo(() => {
-    if (!db || !agentId) return null;
-    return doc(db, "agents", agentId) as any;
-  }, [db, agentId]);
-
-  const { data: firestoreAgent, loading: firestoreLoading } = useDoc<AIAgent>(agentRef);
-
-  // Sync state: Firestore -> Zustand
+  // Fetch agent from API
   useEffect(() => {
-    if (firestoreAgent) {
-      setAgent(firestoreAgent);
+    async function fetchAgent() {
+      try {
+        const res = await fetch(`/api/agents/${agentId}`);
+        if (res.ok) {
+          const data = await res.json();
+          setAgent(data);
+        }
+      } catch (err) {
+        console.error("Error fetching agent:", err);
+      } finally {
+        setLoading(false);
+      }
     }
-  }, [firestoreAgent, setAgent]);
+    fetchAgent();
+  }, [agentId, setAgent]);
 
-  // Derive agent from global store for instant UI updates
-  const agent = agents.find(a => a.id === agentId) || firestoreAgent;
-  const loading = firestoreLoading && !agent;
+  // Derive agent from global store
+  const agent = agents.find(a => a.id === agentId);
 
-  if (loading) return (
+  if (loading && !agent) return (
     <div className="flex flex-col min-h-screen bg-background transition-colors duration-300">
       <Navbar />
       <div className="flex-1 flex flex-col items-center justify-center gap-4">
@@ -97,10 +95,7 @@ export default function AgentConsolePage({ params }: { params: Promise<{ id: str
                 </div>
               </div>
               <div className="flex-1 min-h-0">
-                <AiRefiner
-                  agent={agent}
-                  db={db}
-                />
+                <AiRefiner agent={agent} />
               </div>
             </div>
           </div>

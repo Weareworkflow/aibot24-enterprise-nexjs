@@ -1,71 +1,51 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/firebase-admin';
+import { getDb } from '@/lib/mongodb';
 
-/**
- * lookup API: Encuentra un agente por su Dominio (tenantId) e ID de Bot en Bitrix.
- */
+export const dynamic = 'force-dynamic';
+
 export async function GET(
     request: NextRequest,
     { params }: { params: Promise<{ tenantId: string; botId: string }> }
 ) {
     try {
         const { tenantId, botId } = await params;
-        const bitrixBotId = parseInt(botId);
+        const db = await getDb();
 
-        if (isNaN(bitrixBotId)) {
-            return NextResponse.json({ error: 'ID de bot inválido' }, { status: 400 });
+        const agent = await db.collection('agents').findOne({
+            tenantId,
+            bitrixBotId: parseInt(botId),
+        });
+
+        if (!agent) {
+            return NextResponse.json(
+                { error: `Agent not found for tenant ${tenantId} and botId ${botId}` },
+                { status: 404 }
+            );
         }
 
-        const agentsRef = db.collection('agents');
-        const query = agentsRef
-            .where('tenantId', '==', tenantId)
-            .where('bitrixBotId', '==', bitrixBotId)
-            .limit(1);
+        // Fetch global config for prompt compilation
+        const config = await db.collection('config-app').findOne({ tenantId });
+        const globalPrompt = config?.systemPrompt || '';
 
-        const querySnap = await query.get();
-
-        if (querySnap.empty) {
-            return NextResponse.json({ error: 'Agente no localizado para este portal y bot' }, { status: 404 });
+        // Build compiled prompt: GLOBAL + AGENT SPECIFIC
+        let compiledPrompt = '';
+        if (globalPrompt) {
+            compiledPrompt += globalPrompt.trim() + '\n\n';
         }
 
-        const agentDoc = querySnap.docs[0];
-        const data = agentDoc.data();
-
-        // Build compiled prompt
-        let promptMaster: string;
-        if (data.systemPrompt) {
-            promptMaster = data.systemPrompt;
+        if (agent.systemPrompt) {
+            compiledPrompt += agent.systemPrompt.trim();
         } else {
-            promptMaster = `
-# IDENTIDAD DEL AGENTE
-- Nombre: ${data.name}
-- Rol: ${data.role}
-- Organización: ${data.company}
-
-Actúa de forma profesional según tu rol.`.trim();
+            compiledPrompt += `Eres ${agent.name || 'un agente de IA'}. Tu rol es ${agent.role || 'asistente'}. Empresa: ${agent.company || 'N/A'}.`;
         }
 
         return NextResponse.json({
-            success: true,
-            agentId: agentDoc.id,
-            promptMaster: promptMaster.trim(),
-            config: {
-                isActive: data.isActive,
-                color: data.color,
-                bitrixBotId: data.bitrixBotId,
-                avatar: data.avatar,
-                company: data.company,
-                createdAt: data.createdAt
-            }
-        }, {
-            headers: {
-                'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
-                'Pragma': 'no-cache',
-                'Expires': '0',
-            }
+            ...agent,
+            _id: undefined,
+            compiledPrompt: compiledPrompt.trim(),
         });
     } catch (error: any) {
-        console.error("Error en API Agents Lookup:", error);
-        return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+        console.error('[Agent Lookup] Error:', error);
+        return NextResponse.json({ error: error.message || 'Internal error' }, { status: 500 });
     }
 }

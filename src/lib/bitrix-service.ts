@@ -1,19 +1,10 @@
-import { db } from './firebase-server';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { getDb } from './mongodb';
 import { BitrixInstallation, AIAgent } from './types';
 
 /**
  * Servicio central para gestionar la comunicación con Bitrix24.
- * Utiliza los secretos actualizados y el alcance (scope) completo de permisos.
+ * Utiliza los secretos recuperados de MongoDB para mayor seguridad y flexibilidad.
  */
-
-/**
- * Servicio central para gestionar la comunicación con Bitrix24.
- * Utiliza los secretos recuperados de Firestore para mayor seguridad y flexibilidad.
- */
-
-// Ya no usamos constantes hardcodeadas. Se recomienda configurar config/bitrix en Firestore
-// para valores globales, o se recuperarán de la instalación específica.
 
 export const BITRIX_SCOPES = [
   'crm',
@@ -31,19 +22,6 @@ export const BITRIX_SCOPES = [
   'catalogmobile'
 ].join(',');
 
-/**
- * Obtiene la configuración de secretos de Bitrix de Firestore para un dominio específico.
- */
-async function getSecretsConfig(domain: string) {
-  try {
-    const configRef = doc(db, 'config-secrets', domain);
-    const configSnap = await getDoc(configRef);
-    return configSnap.exists() ? configSnap.data() : null;
-  } catch (error) {
-    console.error(`Error recuperando secretos para ${domain}:`, error);
-    return null;
-  }
-}
 
 export function getBitrixAuthUrl(domain: string, clientId: string) {
   return `https://${domain}/oauth/authorize/?client_id=${clientId}&response_type=code&scope=${BITRIX_SCOPES}`;
@@ -59,42 +37,35 @@ export async function getBitrixClient(domain: string) {
         domain: process.env.BITRIX_LOCAL_DOMAIN || domain,
       };
     } else {
-      console.log(`[BitrixService] Modo Local: Buscando credenciales en Firestore para: ${domain}`);
+      console.log(`[BitrixService] Modo Local: Buscando credenciales en MongoDB para: ${domain}`);
     }
   }
 
-  // Lookup by DOMAIN (installations are keyed by domain now)
-  const installationRef = doc(db, 'installations', domain);
-  const installationSnap = await getDoc(installationRef);
+  const db = await getDb();
+  // Look for records where either the domain string OR the memberId matches the input
+  const data = await db.collection('installations').findOne({
+    $or: [
+      { domain: domain },
+      { memberId: domain }
+    ]
+  }) as BitrixInstallation | null;
 
-  if (!installationSnap.exists()) {
+  if (!data) {
+    console.error(`[BitrixService] Installation not found in DB for domain: ${domain}`);
     throw new Error(`Instalación no encontrada para el dominio: ${domain}`);
   }
 
-  const data = installationSnap.data() as BitrixInstallation;
   const now = Math.floor(Date.now() / 1000);
-
-  const expiresAt = data.expiresAt || (Math.floor(new Date(data.createdAt).getTime() / 1000) + (data.expiresIn || 3600));
-  const isExpired = now >= (expiresAt - 300); // 5 minutos de margen
+  const expiresAt = (data as any).expiresAt || (Math.floor(new Date((data as any).createdAt).getTime() / 1000) + (data.expiresIn || 3600));
+  const isExpired = now >= (expiresAt - 900); // 15 minute buffer vs 5
 
   if (isExpired && data.refreshToken) {
-    // Intentar obtener clientId/Secret de la instalación, o fallback al global (usando el DOMINIO)
+    console.log(`[BitrixService] Token expired for ${domain}. Refreshing...`);
     let clientId = data.clientId;
     let clientSecret = data.clientSecret;
 
     if (!clientId || !clientSecret) {
-      // Usamos el dominio (ej: workflowteams.bitrix24.es) como ID para buscar los secretos
-      const globalConfig = await getSecretsConfig(data.domain);
-      if (globalConfig) {
-        console.log(`[BitrixService] Using Secrets from Firestore for domain: ${data.domain}`);
-        clientId = clientId || globalConfig?.clientId;
-        clientSecret = clientSecret || globalConfig?.clientSecret;
-      } else {
-        console.warn(`[BitrixService] WARNING: No secrets found in config-secrets for domain: ${data.domain}`);
-      }
-    }
-
-    if (!clientId || !clientSecret) {
+      console.error(`[BitrixService] Missing client_id/secret for ${domain}. Cannot refresh.`);
       throw new Error(`Credenciales de Bitrix no configuradas para el dominio: ${domain}`);
     }
 
@@ -110,24 +81,29 @@ export async function getBitrixClient(domain: string) {
       const newData = await response.json();
 
       if (newData.error) {
+        console.error(`[BitrixService] Refresh Error for ${domain}:`, newData);
         throw new Error(`Bitrix OAuth Error: ${newData.error_description || newData.error}`);
       }
 
-      const updatedData: Partial<BitrixInstallation> = {
+      const updatedData = {
         accessToken: newData.access_token,
         refreshToken: newData.refresh_token,
         expiresIn: parseInt(newData.expires_in),
         expiresAt: Math.floor(Date.now() / 1000) + parseInt(newData.expires_in),
       };
 
-      await updateDoc(installationRef, updatedData);
+      await db.collection('installations').updateOne(
+        { domain },
+        { $set: updatedData }
+      );
 
+      console.log(`[BitrixService] Token refreshed successfully for ${domain}`);
       return {
         accessToken: newData.access_token,
         domain: data.domain,
       };
     } catch (error: any) {
-      console.error("Error crítico refrescando token:", error.message);
+      console.error("[BitrixService] Critical error refreshing token:", error.message);
       throw error;
     }
   }
@@ -141,23 +117,37 @@ export async function getBitrixClient(domain: string) {
 export async function callBitrixMethod(domain: string, method: string, params: any = {}) {
   const client = await getBitrixClient(domain);
 
-  const response = await fetch(`https://${client.domain}/rest/${method}.json`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      auth: client.accessToken,
-      ...params,
-    }),
-  });
+  const url = `https://${client.domain}/rest/${method}.json`;
+  const maskedToken = client.accessToken ? `${client.accessToken.substring(0, 10)}...` : 'MISSING';
 
-  return await response.json();
+  console.log(`[BitrixService] Calling REST: ${url} (Token: ${maskedToken})`);
+
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        auth: client.accessToken,
+        ...params,
+      }),
+    });
+
+    const result = await response.json();
+
+    if (result.error) {
+      console.error(`[BitrixService] REST Error for ${method}:`, result);
+    }
+
+    return result;
+  } catch (err: any) {
+    console.error(`[BitrixService] Fetch Failure for ${method}:`, err.message);
+    throw err;
+  }
 }
 
 export async function registerBitrixBot(domain: string, agent: AIAgent) {
-  // 1. Get Webhook Config (Handler URL)
-  // Usamos la URL del API Gateway desplegado
   const webhookUrl = "https://aibot24-chat-gw-75slv2b8.uc.gateway.dev/api/chat";
 
   console.log(`[BitrixService] Registering bot with webhook: ${webhookUrl}`);
@@ -167,28 +157,24 @@ export async function registerBitrixBot(domain: string, agent: AIAgent) {
     return { error: "Agent ID is required for registration", error_description: "Missing Agent ID" };
   }
 
-  // 2. Prepare Params for imbot.register
   const params: any = {
     CODE: `bot_${agent.id}`,
-    TYPE: 'O', // Open Channel (Solicitado por usuario)
+    TYPE: 'O',
     EVENT_MESSAGE_ADD: webhookUrl,
     EVENT_WELCOME_MESSAGE: webhookUrl,
-    EVENT_BOT_DELETE: webhookUrl, // Handler para cuando eliminan el bot desde bitrix
-    EVENT_MESSAGE_UPDATE: webhookUrl, // Handler para edición de mensajes
+    EVENT_BOT_DELETE: webhookUrl,
+    EVENT_MESSAGE_UPDATE: webhookUrl,
     PROPERTIES: {
       NAME: agent.name,
-      WORK_POSITION: agent.role || "AI Agent", // Rol en Bitrix
+      WORK_POSITION: agent.role || "AI Agent",
       COLOR: agent.color || 'BLUE',
     }
   };
 
-  // 3. Handle Avatar (PERSONAL_PHOTO)
   if (agent.avatar) {
-    params.PROPERTIES.PERSONAL_PHOTO = agent.avatar; // Bitrix soporta base64 en este campo para imbot? 
-    // La documentación de imbot.register dice PERSONAL_PHOTO: Avatar del chatbot (base64 string).
+    params.PROPERTIES.PERSONAL_PHOTO = agent.avatar;
   }
 
-  // 4. Register Bot
   console.log(`[BitrixService] Sending imbot.register for ${agent.name} (Code: bot_${agent.id})...`);
   const result = await callBitrixMethod(domain, 'imbot.register', params);
 
@@ -198,13 +184,9 @@ export async function registerBitrixBot(domain: string, agent: AIAgent) {
     console.log("✅ Bitrix Registration Success:", result.result);
   }
 
-  // 5. Update Company (imbot.register might not support WORK_COMPANY directly, 
-  // checking docs... usually it creates a user. We might need to update the user profile afterwards)
   if (result && result.result) {
     try {
-      // El result devuelve el ID del bot (que es un user_id).
       const botId = result.result;
-
       if (agent.company) {
         await callBitrixMethod(domain, 'user.update', {
           ID: botId,
@@ -220,10 +202,9 @@ export async function registerBitrixBot(domain: string, agent: AIAgent) {
 }
 
 export async function updateBitrixBot(domain: string, agent: AIAgent) {
-  // Solo actualizamos propiedades visuales, no la URL del webhook (a menos que cambie logicamente)
   const params: any = {
-    BOT_ID: agent.bitrixBotId, // Debemos guardar este ID cuando se registra
-    PROPERTIES: {
+    BOT_ID: agent.bitrixBotId,
+    FIELDS: {
       NAME: agent.name,
       WORK_POSITION: agent.role || "AI Agent",
       COLOR: agent.color || 'BLUE',
@@ -231,7 +212,7 @@ export async function updateBitrixBot(domain: string, agent: AIAgent) {
   };
 
   if (agent.avatar) {
-    params.PROPERTIES.PERSONAL_PHOTO = agent.avatar;
+    params.FIELDS.PERSONAL_PHOTO = agent.avatar;
   }
 
   console.log(`[BitrixService] Updating bot ${agent.bitrixBotId} for agent ${agent.name}`);

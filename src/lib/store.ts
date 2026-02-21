@@ -1,9 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { AIAgent, AppConfig, BitrixInstallation } from './types';
-import { db } from './firebase-server';
-import { getCollections } from './db-schema';
-import { doc, getDoc } from 'firebase/firestore';
+import { AIAgent, AppConfig, BitrixInstallation, UserRole, AgentMetrics } from './types';
 
 /**
  * Global store for UI state and Bitrix24 context.
@@ -25,6 +22,14 @@ interface UIState {
   language: 'es' | 'en';
   setLanguage: (lang: 'es' | 'en') => void;
 
+  // User Context
+  userId: string | null;
+  setUserId: (id: string | null) => void;
+  userRole: UserRole | null;
+  setUserRole: (role: UserRole | null) => void;
+  isAuthorized: boolean;
+  setIsAuthorized: (auth: boolean) => void;
+
   // App Config
   appConfig: AppConfig | null;
   setAppConfig: (config: AppConfig) => void;
@@ -40,6 +45,10 @@ interface UIState {
   setAgents: (agents: AIAgent[]) => void;
   setAgent: (agent: AIAgent) => void;
   updateAgentLocal: (agentId: string, updates: Partial<AIAgent>) => void;
+
+  // Real-time Metrics
+  agentMetrics: Record<string, AgentMetrics>;
+  setAgentMetrics: (agentId: string, metrics: AgentMetrics) => void;
 }
 
 export const useUIStore = create<UIState>()(
@@ -59,19 +68,24 @@ export const useUIStore = create<UIState>()(
       setDomain: (domain) => set({ domain: domain }),
       language: 'es',
       setLanguage: (lang) => set({ language: lang }),
+      userId: null,
+      setUserId: (id) => set({ userId: id }),
+      userRole: null,
+      setUserRole: (role) => set({ userRole: role }),
+      isAuthorized: false,
+      setIsAuthorized: (auth) => set({ isAuthorized: auth }),
 
       // App Config
       appConfig: null,
       setAppConfig: (config) => set({ appConfig: config }),
       loadAppConfig: async (tenantId) => {
         try {
-          const { appConfig } = getCollections(db);
-          const docRef = doc(appConfig, tenantId);
-          const snap = await getDoc(docRef);
-          if (snap.exists()) {
-            const data = snap.data();
+          const res = await fetch(`/api/config/${encodeURIComponent(tenantId)}`);
+          if (res.ok) {
+            const data = await res.json();
             set({ appConfig: data });
             if (data.language) set({ language: data.language });
+            // appConfig object is already set above at line 82
           }
         } catch (error) {
           console.error("Failed to load app config:", error);
@@ -83,11 +97,10 @@ export const useUIStore = create<UIState>()(
       setInstallation: (inst) => set({ installation: inst }),
       loadInstallation: async (domain) => {
         try {
-          const { installations } = getCollections(db);
-          const docRef = doc(installations, domain);
-          const snap = await getDoc(docRef);
-          if (snap.exists()) {
-            set({ installation: snap.data() });
+          const res = await fetch(`/api/installations/${encodeURIComponent(domain)}`);
+          if (res.ok) {
+            const data = await res.json();
+            set({ installation: data });
           }
         } catch (error) {
           console.error("Failed to load installation:", error);
@@ -111,14 +124,26 @@ export const useUIStore = create<UIState>()(
           a.id === agentId ? { ...a, ...updates } : a
         )
       })),
+
+      // Real-time Metrics implementation
+      agentMetrics: {},
+      setAgentMetrics: (agentId, metrics) => set((state) => ({
+        agentMetrics: {
+          ...state.agentMetrics,
+          [agentId]: metrics
+        }
+      })),
     }),
     {
-      name: 'aibot24-v4-store',
+      name: 'aibot24-v5-store',
       partialize: (state) => ({
         tenantId: state.tenantId,
         memberId: state.memberId,
         domain: state.domain,
-        language: state.language
+        language: state.language,
+        userId: state.userId,
+        userRole: state.userRole,
+        agentMetrics: state.agentMetrics
       }),
     }
   )

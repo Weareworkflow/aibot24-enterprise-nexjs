@@ -14,12 +14,19 @@ import {
 
 export async function registerOpenLinesBot(domain: string, agentData: { name: string, role: string, color: string, agentId: string }) {
   try {
-    // Cast to any to bypass strict AIAgent check for partial data
-    const result = await registerBot(domain, { ...agentData, id: agentData.agentId } as any);
+    // Registramos el bot para obtener el bitrixBotId real
+    const result = await registerBot(domain, {
+      name: agentData.name,
+      role: agentData.role,
+      color: agentData.color,
+      id: agentData.agentId // ID temporal usado para el CODE de Bitrix
+    } as any);
+
     if (result.error) {
       throw new Error(result.error_description || "Error registrando bot en Bitrix24");
     }
-    return { success: true, botId: result.result };
+
+    return { success: true, botId: result.result as number };
   } catch (error: any) {
     return { success: false, error: error.message };
   }

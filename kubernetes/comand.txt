@@ -1,0 +1,25 @@
+docker build -t workflow48/aibot24-enterprise-dashboard:latest .
+
+docker push workflow48/aibot24-enterprise-dashboard:latest
+
+kubectl apply -f kubernetes/configmap.yaml
+
+kubectl apply -f kubernetes/secret.yaml
+
+kubectl apply -f kubernetes/service.yaml
+
+kubectl apply -f kubernetes/ingress.yaml
+
+kubectl apply -f kubernetes/deployment.yaml
+
+kubectl logs -f -n apps deployment/aibot24-enterprise-dashboard
+
+kubectl rollout restart deployment/aibot24-enterprise-dashboard -n apps
+
+kubectl get pods -n apps -l app=aibot24-enterprise-dashboard                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       
+
+
+#Deployment
+docker build --no-cache -t workflow48/aibot24-enterprise-dashboard:latest .
+docker push workflow48/aibot24-enterprise-dashboard:latest
+kubectl rollout restart deployment/aibot24-enterprise-dashboard -n apps

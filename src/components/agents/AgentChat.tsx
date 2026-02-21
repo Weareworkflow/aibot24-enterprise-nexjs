@@ -4,22 +4,19 @@ import { useRef } from "react";
 import { AIAgent } from "@/lib/types";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs";
+import {
+  BrainCircuit,
   Settings2,
   ArrowLeft
 } from "lucide-react";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
-import { useFirestore } from "@/firebase";
-import { doc, updateDoc } from "firebase/firestore";
 import { useToast } from "@/hooks/use-toast";
-import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError } from '@/firebase/errors';
 
 import { updateOpenLinesBot } from '@/app/actions/bitrix-actions';
 
@@ -40,7 +37,6 @@ interface AgentChatProps {
 export function AgentChat({ agent }: AgentChatProps) {
 
   const scrollRef = useRef<HTMLDivElement>(null);
-  const db = useFirestore();
   const router = useRouter();
   const { toast } = useToast();
   const { updateAgentLocal } = useUIStore();
@@ -48,38 +44,43 @@ export function AgentChat({ agent }: AgentChatProps) {
 
 
   const handleManualUpdate = async (updates: Partial<AIAgent>, title?: string) => {
-    if (!db || !agent) return;
+    if (!agent) return;
 
+    // Actualizar estado local inmediatamente para feedback visual
     updateAgentLocal(agent.id, updates);
 
-    const agentRef = doc(db, "agents", agent.id);
-
-    // 1. Sync with Bitrix (Start in background or await?)
-    // Only if identity fields are present and bot is linked
-    if (agent.bitrixBotId && agent.tenantId && (updates.name || updates.role || updates.avatar || updates.color)) {
-      // Use agent.tenantId (domain) — installations are keyed by domain
-      const mergedAgent = { ...agent, ...updates };
-      updateOpenLinesBot(agent.tenantId, mergedAgent)
-        .then((res) => {
-          if (!res.success) console.warn("Bitrix Sync Warning:", res.error);
-          else console.log("Bitrix Sync Success");
-        })
-        .catch(err => console.error("Bitrix Sync Error:", err));
-    }
-
-    updateDoc(agentRef, updates)
-      .then(() => {
-        if (title) {
-          toast({ title: "Sincronizado", description: `${title} actualizado en tiempo real.` });
-        }
-      })
-      .catch(async (error) => {
-        errorEmitter.emit('permission-error', new FirestorePermissionError({
-          path: agentRef.path,
-          operation: 'update',
-          requestResourceData: updates
-        }));
+    try {
+      // 1. Sincronizar con MongoDB vía API
+      const res = await fetch(`/api/agents/${agent.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates),
       });
+
+      if (!res.ok) throw new Error("Fallo al actualizar en la base de datos");
+
+      if (title) {
+        toast({ title: "Sincronizado", description: `${title} actualizado en tiempo real.` });
+      }
+
+      // 2. Sincronizar con Bitrix si hay cambios de identidad
+      if (agent.bitrixBotId && agent.tenantId && (updates.name || updates.role || updates.avatar || updates.color)) {
+        const mergedAgent = { ...agent, ...updates };
+        updateOpenLinesBot(agent.tenantId, mergedAgent)
+          .then((res) => {
+            if (!res.success) console.warn("Bitrix Sync Warning:", res.error);
+            else console.log("Bitrix Sync Success");
+          })
+          .catch(err => console.error("Bitrix Sync Error:", err));
+      }
+    } catch (error: any) {
+      console.error("Update Error:", error);
+      toast({
+        variant: "destructive",
+        title: "Error de Sincronización",
+        description: error.message || "No se pudo actualizar el agente."
+      });
+    }
   };
 
   return (
@@ -118,39 +119,40 @@ export function AgentChat({ agent }: AgentChatProps) {
       </div>
 
       <ScrollArea className="flex-1 modern-scroll" ref={scrollRef}>
-        <div className="flex flex-col p-4">
-          <Accordion type="single" collapsible className="w-full">
-            <AccordionItem value="identidad" className="border-b-0 px-4">
-              <AccordionTrigger className="hover:no-underline py-8 group border-b border-border/40">
-                <div className="flex items-center gap-5 text-[13px] font-black uppercase tracking-[0.2em] text-secondary transition-colors">
-                  <div className="h-12 w-12 rounded-[1.2rem] bg-muted/50 flex items-center justify-center group-data-[state=open]:bg-secondary group-data-[state=open]:text-white transition-all shadow-sm border border-border/40">
-                    <Settings2 className="h-6 w-6" />
-                  </div>
-                  Identidad
-                </div>
-              </AccordionTrigger>
-              <AccordionContent className="pb-10 pt-6 animate-in fade-in slide-in-from-top-2">
-                <IdentitySection agent={agent} onUpdate={handleManualUpdate} />
-              </AccordionContent>
-            </AccordionItem>
+        <div className="flex flex-col p-6">
+          <Tabs defaultValue="identidad" className="w-full">
+            <TabsList className="grid w-full h-14 p-1.5 bg-card/50 backdrop-blur-xl border border-border/40 rounded-[1.5rem] shadow-sm mb-8 grid-cols-2">
+              <TabsTrigger
+                value="identidad"
+                className="rounded-xl gap-2 font-black uppercase text-[10px] tracking-widest data-[state=active]:bg-background data-[state=active]:shadow-lg"
+              >
+                <Settings2 className="h-4 w-4" />
+                Identidad
+              </TabsTrigger>
+              <TabsTrigger
+                value="system-prompt"
+                className="rounded-xl gap-2 font-black uppercase text-[10px] tracking-widest data-[state=active]:bg-background data-[state=active]:shadow-lg"
+              >
+                <BrainCircuit className="h-4 w-4" />
+                System Prompt
+              </TabsTrigger>
+            </TabsList>
 
-            <AccordionItem value="system-prompt" className="border-b-0 px-4">
-              <AccordionTrigger className="hover:no-underline py-8 group">
-                <div className="flex items-center gap-5 text-[13px] font-black uppercase tracking-[0.2em] text-secondary transition-colors">
-                  <div className="h-12 w-12 rounded-[1.2rem] bg-muted/50 flex items-center justify-center group-data-[state=open]:bg-secondary group-data-[state=open]:text-white transition-all shadow-sm border border-border/40">
-                    <Settings2 className="h-6 w-6" />
-                  </div>
-                  System Prompt
-                </div>
-              </AccordionTrigger>
-              <AccordionContent className="pb-10 pt-6 animate-in fade-in slide-in-from-top-2">
+            <TabsContent value="identidad" className="mt-0 focus-visible:outline-none">
+              <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
+                <IdentitySection agent={agent} onUpdate={handleManualUpdate} />
+              </div>
+            </TabsContent>
+
+            <TabsContent value="system-prompt" className="mt-0 focus-visible:outline-none">
+              <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
                 <SystemPromptSection
                   agent={agent}
                   onUpdate={handleManualUpdate}
                 />
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
+              </div>
+            </TabsContent>
+          </Tabs>
         </div>
       </ScrollArea>
 

@@ -1,17 +1,19 @@
-# Configuración de Entornos (Español)
+# Gestión de Entorno de Producción
 
-He separado exitosamente tus entornos de la siguiente manera:
+Este proyecto está configurado para operar exclusivamente en entornos de producción integrados con Bitrix24. No se utilizan entornos locales de prueba con mocks.
 
-1.  **Sistema de Prefijos**: La aplicación ahora agrega automáticamente un prefijo (`test_` o `prod_`) a todas las colecciones de Firestore, dependiendo del entorno en el que te encuentres.
+## Conexión a Base de Datos
+- **Variable**: `MONGODB_URI`
+- **Uso**: Conexión obligatoria al clúster de MongoDB. Asegúrate de que el clúster sea accesible desde tu entorno de ejecución (ej: Kubernetes).
 
-2.  **Entorno Local (Test)**: 
-    - He configurado tu archivo `.env.local` con `NEXT_PUBLIC_APP_ENV=test`.
-    - Esto significa que tu aplicación local ahora leerá y escribirá en colecciones que comienzan con `test_` (ejemplo: `test_agents`).
-    - **Importante**: Al cambiar a este nuevo prefijo, tu aplicación parecerá vacía inicialmente, ya que los datos antiguos no se migran automáticamente.
-    - **Solución**: Debes ir a la página `/seed` en tu navegador y hacer clic en el botón de inicialización para poblar este nuevo entorno de pruebas con datos de ejemplo.
+## Integración con Bitrix24
+- La aplicación requiere ser ejecutada dentro de un portal de Bitrix24 para que el SDK (`BX24`) funcione correctamente.
+- No existe el "Modo Local" o "Anónimo". Todas las operaciones de creación de agentes validan el `tenantId` (dominio del portal).
 
-3.  **Producción**: 
-    - Cuando despliegues la aplicación (o si eliminas la variable `NEXT_PUBLIC_APP_ENV`), el sistema usará los nombres de colección estándar (sin prefijo `test_`), manteniendo tus datos reales seguros y separados.
+## Despliegue en Kubernetes
+- Las variables de entorno se gestionan vía `ConfigMap` y `Secret` en Kubernetes.
+- No es necesario mantener un archivo `.env` en el servidor, ya que el clúster inyecta los valores directamente.
 
-## Resumen de Acción
-ve a **`http://localhost:3000/seed`** y haz clic en **"Create Collections & Sample Data"** para reactivar tu entorno local.
+## Auditoría Final
+- Se han eliminado todos los scripts de simulación y mocks de desarrollo.
+- El archivo de configuración maestro es `.env.local` solo para propósitos de despliegue inicial.

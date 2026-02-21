@@ -2,8 +2,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
-import { FirebaseClientProvider } from "@/firebase";
-import { FirebaseErrorListener } from "@/components/firebase/FirebaseErrorListener";
 import { ThemeProvider } from "@/components/layout/ThemeProvider";
 import Script from "next/script";
 
@@ -17,68 +15,28 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const isDev = process.env.NODE_ENV === 'development' || process.env.NEXT_PUBLIC_BITRIX_LOCAL_MODE === 'true';
-
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
-        {/* Cargamos el SDK de Bitrix24 aquí para que esté disponible en toda la app */}
-        {/* Cargamos el SDK de Bitrix24 aquí para que esté disponible en toda la app */}
-        {process.env.NEXT_PUBLIC_BITRIX_LOCAL_MODE !== 'true' ? (
-          <Script
-            src="https://api.bitrix24.com/api/v1/"
-            strategy="beforeInteractive"
-          />
-        ) : null}
-        {isDev && (
-          <script
-            dangerouslySetInnerHTML={{
-              __html: `
-                if (typeof window !== 'undefined' && !window.BX24) {
-                  window.BX24 = {
-                    init: (callback) => {
-                      console.log("[DEV MOCK] BX24.init simulado para localhost");
-                      if (callback) setTimeout(callback, 100);
-                    },
-                    installFinish: () => {
-                      console.log("[DEV MOCK] BX24.installFinish simulado - Instalación completada");
-                    },
-                    getAuth: () => {
-                      console.log("[DEV MOCK] BX24.getAuth simulado");
-                      return {
-                        member_id: "${process.env.BITRIX_LOCAL_MEMBER_ID || 'dev_member_local'}",
-                        domain: "${process.env.BITRIX_LOCAL_DOMAIN || 'dev-portal.bitrix24.es'}",
-                        access_token: "${process.env.BITRIX_LOCAL_ACCESS_TOKEN || 'dev_access_token'}",
-                        refresh_token: "${process.env.BITRIX_LOCAL_REFRESH_TOKEN || 'dev_refresh_token'}",
-                        expires_in: 3600
-                      };
-                    },
-                    callMethod: (method, params, callback) => {
-                      console.log("[DEV MOCK] BX24.callMethod simulado:", method, params);
-                      if (callback) setTimeout(() => callback({ result: "OK", error: null }), 300);
-                    }
-                  };
-                }
-              `,
-            }}
-          />
-        )}
+
+        {/* Cargamos el SDK de Bitrix24 de forma obligatoria en producción */}
+        <Script
+          src="https://api.bitrix24.com/api/v1/"
+          strategy="beforeInteractive"
+        />
       </head>
       <body className="font-body antialiased min-h-screen bg-background text-foreground transition-colors duration-300">
         <ThemeProvider
           attribute="class"
-          defaultTheme="light"
-          enableSystem={false}
+          defaultTheme="system"
+          enableSystem
           disableTransitionOnChange
         >
-          <FirebaseClientProvider>
-            {children}
-            <Toaster />
-            <FirebaseErrorListener />
-          </FirebaseClientProvider>
+          {children}
+          <Toaster />
         </ThemeProvider>
       </body>
     </html>

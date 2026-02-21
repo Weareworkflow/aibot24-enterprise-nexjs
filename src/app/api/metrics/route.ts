@@ -1,33 +1,35 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/firebase-admin';
-import admin from 'firebase-admin';
+import { getDb } from '@/lib/mongodb';
 
-/**
- * API para que los agentes envíen métricas de rendimiento.
- */
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json();
         const { agentId, metrics } = body;
 
         if (!agentId) {
-            return NextResponse.json({ error: 'agentId is required' }, { status: 400 });
+            return NextResponse.json({ error: 'Missing agentId' }, { status: 400 });
         }
 
-        const metricsRef = db.collection('metrics').doc(agentId);
+        const metricsData = metrics || {};
+        const db = await getDb();
 
-        // Update with merge to preserve historical fields if any
-        await metricsRef.set({
-            ...metrics,
-            updatedAt: admin.firestore.FieldValue.serverTimestamp()
-        }, { merge: true });
+        const { agentId: _, ...updates } = metricsData;
 
-        return NextResponse.json({
-            success: true,
-            message: 'Métricas actualizadas correctamente'
-        });
+        await db.collection('metrics').updateOne(
+            { agentId },
+            {
+                $set: {
+                    ...updates,
+                    updatedAt: new Date().toISOString()
+                },
+                $setOnInsert: { agentId }
+            },
+            { upsert: true }
+        );
+
+        return NextResponse.json({ success: true });
     } catch (error: any) {
-        console.error("Error en API Metrics:", error);
-        return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+        console.error('[Metrics POST] Error:', error);
+        return NextResponse.json({ error: error.message || 'Internal error' }, { status: 500 });
     }
 }

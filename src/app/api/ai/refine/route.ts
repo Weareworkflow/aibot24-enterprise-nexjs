@@ -1,72 +1,58 @@
-import { streamText, openai, defaultModel } from '@/lib/config-ai';
-import { z } from 'zod';
-import { db } from '@/lib/firebase-admin';
+import { streamText } from 'ai';
+import { openai, defaultModel } from '@/lib/config-ai';
+import { getDb } from '@/lib/mongodb';
 
-export const maxDuration = 30;
-
-const RefineBodySchema = z.object({
-    currentConfig: z.object({
-        name: z.string().optional().default("Agente"),
-        role: z.string().optional().default("Asistente"),
-        company: z.string().optional().default("Empresa"),
-        systemPrompt: z.string().optional().default(""),
-    }),
-    feedback: z.string(),
-    metaSystemPrompt: z.string().optional(),
-    tenantId: z.string().optional()
-});
-
-export async function POST(req: Request) {
+export async function POST(request: Request) {
     try {
-        const json = await req.json();
-        const { currentConfig, feedback, metaSystemPrompt, tenantId } = RefineBodySchema.parse({ ...json, tenantId: json.memberId || json.tenantId });
+        const { currentConfig, feedback, tenantId } = await request.json();
 
-        if (!tenantId) {
-            return new Response("Configuration Error: Missing tenantId (Domain) context", { status: 400 });
+        if (!feedback) {
+            return new Response('Feedback is required', { status: 400 });
         }
 
-        // 1. Fetch Global System Prompt (Architect Profile fallback) from config-app
-        const configRef = db.collection('config-app').doc(tenantId);
-        const configSnap = await configRef.get();
-        const configData = configSnap.exists ? configSnap.data() : null;
+        // Fetch global system prompt (Architect Protocol) from config-app
+        let architectProtocol = '';
+        if (tenantId) {
+            try {
+                const db = await getDb();
+                const config = await db.collection('config-app').findOne({ tenantId });
+                if (config?.systemPrompt) {
+                    architectProtocol = config.systemPrompt;
+                }
+            } catch (e) {
+                console.warn('[Refine] Could not fetch global config:', e);
+            }
+        }
 
-        const defaultSystemPrompt = configData?.systemPrompt || `Eres el Arquitecto Senior de IA de AIBot24. Tu misión es redactar el SYSTEM PROMPT más avanzado para un agente integrado en Bitrix24.
-    
-    DIRECTRICES CRÍTICAS:
-    1. Tu respuesta se mostrará en streaming al usuario.
-    2. PRIMERO: Escribe una explicación MUY BREVE y profesional (texto plano, SIN ASTERISCOS, SIN MARKDOWN, no uses negritas). Dile qué cambios hiciste.
-    3. SEGUNDO: Deja dos saltos de línea y escribe un bloque de código markdown con el SYSTEM PROMPT completo y actualizado.
-       Ejemplo de formato:
-       He actualizado el system prompt para incluir...
-    
-       \`\`\`markdown
-       # SYSTEM PROMPT
-       Eres un agente de...
-       ...
-       \`\`\`
-    4. El bloque de código debe contener TODO el System Prompt actualizado, incluyendo rol, personalidad, reglas y protocolos.`;
+        const systemPrompt = architectProtocol
+            ? `${architectProtocol}\n\n---\nAhora, actúa como un Arquitecto de System Prompts. Refina el protocolo del agente según las instrucciones del usuario.`
+            : `Eres un experto en diseño de System Prompts para agentes de IA. Tu trabajo es refinar y mejorar el System Prompt de un agente según las instrucciones del usuario.`;
 
         const result = streamText({
             model: defaultModel,
-            system: metaSystemPrompt || defaultSystemPrompt,
-            prompt: `
-    DATOS DEL AGENTE:
-    - Nombre: ${currentConfig.name}
-    - Rol: ${currentConfig.role}
-    - Empresa: ${currentConfig.company}
-    
-    SYSTEM PROMPT ACTUAL:
-    """
-    ${currentConfig.systemPrompt}
-    """
-    
-    NUEVAS INDICACIONES DEL USUARIO:
-    "${feedback}"`,
+            system: systemPrompt,
+            prompt: `## Configuración Actual del Agente:
+- Nombre: ${currentConfig.name}
+- Rol: ${currentConfig.role}
+- Empresa: ${currentConfig.company}
+- System Prompt Actual:
+\`\`\`
+${currentConfig.systemPrompt}
+\`\`\`
+
+## Instrucción del Usuario:
+"${feedback}"
+
+## Tu Tarea:
+1. Analiza la instrucción del usuario.
+2. Explica brevemente qué cambios harás y por qué.
+3. Al final, incluye el System Prompt completo y actualizado dentro de un bloque \`\`\`markdown ... \`\`\`.`,
+            temperature: 0.7,
         });
 
         return result.toTextStreamResponse();
     } catch (error: any) {
-        console.error("❌ Error in /api/ai/refine:", error);
-        return new Response(`Refinement Error: ${error.message}`, { status: 500 });
+        console.error('[Refine] Error:', error);
+        return new Response(error.message || 'Internal error', { status: 500 });
     }
 }

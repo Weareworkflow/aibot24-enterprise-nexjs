@@ -19,11 +19,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { useFirestore, useDoc } from "@/firebase";
-import { doc, updateDoc, deleteDoc, DocumentReference } from "firebase/firestore";
 import { useToast } from "@/hooks/use-toast";
-import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError } from '@/firebase/errors';
 import { unregisterOpenLinesBot } from '@/app/actions/bitrix-actions';
 import {
   AlertDialog,
@@ -38,78 +34,93 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
+import { useState, useEffect } from "react";
+import { useUIStore } from "@/lib/store";
+
 interface AgentCardProps {
   agent: AIAgent;
 }
 
 export function AgentCard({ agent }: AgentCardProps) {
   const router = useRouter();
-  const db = useFirestore();
   const { toast } = useToast();
   const isActive = agent.isActive !== false;
+  const { userRole, updateAgentLocal } = useUIStore();
 
-  // Real-time metrics subscription
-  const { data: metrics } = useDoc<AgentMetrics>(
-    db ? (doc(db, "metrics", agent.id) as DocumentReference<AgentMetrics>) : null
-  );
+  // Access metrics from global store (updated via SSE in parent)
+  const globalMetrics = useUIStore(state => state.agentMetrics[agent.id]);
+  const metrics = globalMetrics || null;
 
   const handleCardClick = () => {
+    if (userRole === 'viewer') return;
     router.push(`/agents/${agent.id}`);
   };
 
-  const handleToggleActive = (e: React.MouseEvent) => {
+  const handleToggleActive = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!db) return;
 
-    const agentRef = doc(db, "agents", agent.id);
     const nextState = !isActive;
 
-    updateDoc(agentRef, { isActive: nextState })
-      .then(() => {
-        toast({
-          title: nextState ? "Protocolo Activado" : "Unidad en Espera",
-          description: `El estado de ${agent.name} ha sido sincronizado.`,
-        });
-      })
-      .catch(async (error) => {
-        errorEmitter.emit('permission-error', new FirestorePermissionError({
-          path: agentRef.path,
-          operation: 'update',
-          requestResourceData: { isActive: nextState }
-        }));
+    try {
+      const res = await fetch(`/api/agents/${agent.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isActive: nextState }),
       });
+
+      if (!res.ok) throw new Error("Fallo al actualizar estado");
+
+      toast({
+        title: nextState ? "Agente Activado" : "Agente en Espera",
+      });
+
+      // Actualizar localmente
+      updateAgentLocal(agent.id, { isActive: nextState });
+
+    } catch (error: any) {
+      console.error("Toggle Error:", error);
+      toast({
+        variant: "destructive",
+        title: "Error al actualizar",
+      });
+    }
   };
 
   const handleDelete = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!db) return;
 
     try {
-      // 1. Unregister from Bitrix if it has a bot ID
+      // 1. Desvincular de Bitrix si tiene ID
       if (agent.bitrixBotId && agent.tenantId) {
         try {
           await unregisterOpenLinesBot(agent.tenantId, agent.bitrixBotId.toString());
-          toast({ title: "Bitrix Sync", description: "Bot desvinculado de Bitrix24." });
+          toast({ title: "Bot desvinculado" });
         } catch (err) {
           console.error("Error unregistering from Bitrix:", err);
-          toast({ variant: "destructive", title: "Bitrix Error", description: "No se pudo desvincular de Bitrix (pero se eliminará localmente)." });
+          toast({ variant: "destructive", title: "Bitrix Error" });
         }
       }
 
-      // 2. Delete from Firestore
-      const agentRef = doc(db, "agents", agent.id);
-      await deleteDoc(agentRef);
-
-      toast({
-        title: "Unidad Desconectada",
-        description: `El agente ${agent.name} ha sido eliminado de la flota.`,
+      // 2. Eliminar de MongoDB vía API
+      const res = await fetch(`/api/agents/${agent.id}`, {
+        method: 'DELETE',
       });
 
+      if (!res.ok) throw new Error("Fallo al eliminar de la base de datos");
+
+      toast({
+        title: "Agente eliminado",
+      });
+
+      // Recargar página para actualizar lista
+      window.location.reload();
+
     } catch (error: any) {
-      errorEmitter.emit('permission-error', new FirestorePermissionError({
-        path: `agents/${agent.id}`,
-        operation: 'delete'
-      }));
+      console.error("Delete Error:", error);
+      toast({
+        variant: "destructive",
+        title: "Error al eliminar",
+      });
     }
   };
 

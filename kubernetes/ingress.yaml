@@ -1,0 +1,25 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: aibot24-enterprise-dashboard-ingress
+  namespace: apps
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.tls: "true"
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  tls:
+  - hosts:
+    - aibot24-enterprise.weareworkflow.com
+    secretName: aibot24-enterprise-dashboard-tls
+  rules:
+  - host: aibot24-enterprise.weareworkflow.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: aibot24-enterprise-dashboard-service
+            port:
+              number: 80

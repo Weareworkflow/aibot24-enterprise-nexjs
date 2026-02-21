@@ -1,63 +1,101 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/firebase-admin';
+import { getDb } from '@/lib/mongodb';
 
-/**
- * API oficial de AIBot24 para el motor de ejecución.
- * Entrega el prompt compilado jerárquico utilizando el singleton del servidor.
- */
+export const dynamic = 'force-dynamic';
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params;
+    const db = await getDb();
 
-    const agentRef = db.collection('agents').doc(id);
-    const agentSnap = await agentRef.get();
+    const agent = await db.collection('agents').findOne({ id });
 
-    if (!agentSnap.exists) {
-      return NextResponse.json({ error: 'Unidad no localizada' }, { status: 404 });
+    if (!agent) {
+      return NextResponse.json(
+        { error: `Agent with ID ${id} not found` },
+        { status: 404 }
+      );
     }
 
-    const data = agentSnap.data() as any;
+    // Fetch global config for prompt compilation
+    const config = await db.collection('config-app').findOne({ tenantId: agent.tenantId });
+    const globalPrompt = config?.systemPrompt || '';
 
-    // Build compiled prompt
-    let promptMaster: string;
+    // Build compiled prompt: GLOBAL + AGENT SPECIFIC
+    let compiledPrompt = '';
+    if (globalPrompt) {
+      compiledPrompt += globalPrompt.trim() + '\n\n';
+    }
 
-    if (data.systemPrompt) {
-      promptMaster = data.systemPrompt;
+    if (agent.systemPrompt) {
+      compiledPrompt += agent.systemPrompt.trim();
     } else {
-      // Fallback: minimal identity block
-      promptMaster = `
-# IDENTIDAD DEL AGENTE
-- Nombre: ${data.name}
-- Rol: ${data.role}
-- Organización: ${data.company}
-
-Actúa de forma profesional según tu rol.`.trim();
+      compiledPrompt += `Eres ${agent.name || 'un agente de IA'}. Tu rol es ${agent.role || 'asistente'}. Empresa: ${agent.company || 'N/A'}.`;
     }
 
     return NextResponse.json({
-      success: true,
-      agentId: agentSnap.id,
-      promptMaster: promptMaster.trim(),
-      config: {
-        isActive: data.isActive,
-        color: data.color,
-        bitrixBotId: data.bitrixBotId,
-        avatar: data.avatar,
-        company: data.company,
-        createdAt: data.createdAt
-      }
-    }, {
-      headers: {
-        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
-        'Pragma': 'no-cache',
-        'Expires': '0',
-      }
+      ...agent,
+      _id: undefined,
+      compiledPrompt: compiledPrompt.trim(),
     });
+
   } catch (error: any) {
-    console.error("Error en API Agents:", error);
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    console.error('[Agent GET] Error:', error);
+    return NextResponse.json({ error: error.message || 'Internal error' }, { status: 500 });
+  }
+}
+
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+    const body = await request.json();
+    const db = await getDb();
+
+    // Remove fields that shouldn't be updated directly
+    const { _id, id: bodyId, ...updates } = body;
+
+    const result = await db.collection('agents').updateOne(
+      { id },
+      { $set: { ...updates, updatedAt: new Date().toISOString() } }
+    ).catch(error => {
+      if (error.code === 11000) {
+        throw new Error(`Duplicate Bot ID: Another agent in ${updates.tenantId || 'this portal'} is already using botId ${updates.bitrixBotId}`);
+      }
+      throw error;
+    });
+
+    if (result.matchedCount === 0) {
+      return NextResponse.json({ error: 'Agent not found' }, { status: 404 });
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (error: any) {
+    console.error('[Agent PUT] Error:', error);
+    return NextResponse.json({ error: error.message || 'Internal error' }, { status: 500 });
+  }
+}
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+    const db = await getDb();
+
+    await db.collection('agents').deleteOne({ id });
+    // Also delete related metrics
+    await db.collection('metrics').deleteOne({ agentId: id });
+
+    return NextResponse.json({ success: true });
+  } catch (error: any) {
+    console.error('[Agent DELETE] Error:', error);
+    return NextResponse.json({ error: error.message || 'Internal error' }, { status: 500 });
   }
 }

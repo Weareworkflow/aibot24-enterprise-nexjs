@@ -14,18 +14,18 @@ import {
   Save,
   Loader2,
   BrainCircuit,
-  Database
+  Database,
+  Users,
+  Trash2,
+  UserPlus
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useUIStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
 import { useTheme } from "next-themes";
 import { translations } from "@/lib/translations";
-import { useFirestore, useDoc } from "@/firebase";
-import { doc, setDoc, serverTimestamp } from "firebase/firestore";
-import { useMemo, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { AppConfig } from "@/lib/types";
-import { getCollections } from "@/lib/db-schema";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -34,24 +34,10 @@ import { Input } from "@/components/ui/input";
 export default function SettingsPage() {
   const router = useRouter();
   const { theme, setTheme } = useTheme();
-  const { tenantId, domain, language, setLanguage, installation, loadInstallation } = useUIStore();
-  const db = useFirestore();
+  const { tenantId, domain, language, setLanguage, installation, loadInstallation, loadAppConfig, appConfig } = useUIStore();
 
   const t = translations[language].settings;
 
-  // --- 1. GENERAL APP CONFIG ---
-  const configRef = useMemo(() => {
-    if (!db || !tenantId) return null;
-    return doc(getCollections(db).appConfig, tenantId);
-  }, [db, tenantId]);
-
-  // --- 2. INSTALLATION DATA ---
-  const instRef = useMemo(() => {
-    if (!db || !tenantId) return null;
-    return doc(getCollections(db).installations, tenantId);
-  }, [db, tenantId]);
-
-  const { data: remoteConfig } = useDoc<AppConfig>(configRef);
   const [localPrompt, setLocalPrompt] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 
@@ -59,25 +45,35 @@ export default function SettingsPage() {
   const [clientId, setClientId] = useState("");
   const [clientSecret, setClientSecret] = useState("");
 
+  // Members management
+  const [members, setMembers] = useState<any[]>([]);
+  const [newUserId, setNewUserId] = useState("");
+  const [newUserName, setNewUserName] = useState("");
+  const [isLoadingMembers, setIsLoadingMembers] = useState(false);
+
   const isConfigured = installation?.clientId && installation?.clientSecret;
 
   useEffect(() => {
-    if (tenantId) loadInstallation(tenantId);
+    if (tenantId) {
+      loadInstallation(tenantId);
+      loadAppConfig(tenantId);
+      fetchMembers();
+    }
   }, [tenantId]);
 
   useEffect(() => {
-    if (remoteConfig) {
-      if (remoteConfig.theme && remoteConfig.theme !== theme) {
-        setTheme(remoteConfig.theme);
+    if (appConfig) {
+      if (appConfig.theme && appConfig.theme !== theme) {
+        setTheme(appConfig.theme);
       }
-      if (remoteConfig.language && remoteConfig.language !== language) {
-        setLanguage(remoteConfig.language);
+      if (appConfig.language && appConfig.language !== language) {
+        setLanguage(appConfig.language);
       }
-      if (remoteConfig.systemPrompt !== undefined) {
-        setLocalPrompt(remoteConfig.systemPrompt);
+      if (appConfig.systemPrompt !== undefined) {
+        setLocalPrompt(appConfig.systemPrompt);
       }
     }
-  }, [remoteConfig, setTheme, setLanguage]);
+  }, [appConfig, setTheme, setLanguage]);
 
   useEffect(() => {
     if (installation) {
@@ -87,7 +83,7 @@ export default function SettingsPage() {
   }, [installation]);
 
   const saveSettings = async (newTheme?: string, newLang?: 'es' | 'en') => {
-    if (!configRef) return;
+    if (!tenantId) return;
     setIsSaving(true);
 
     if (newTheme) setTheme(newTheme);
@@ -97,12 +93,15 @@ export default function SettingsPage() {
       const themeVal = (newTheme || theme) as AppConfig['theme'];
       const langVal = (newLang || language) as AppConfig['language'];
 
-      await setDoc(configRef, {
-        theme: themeVal,
-        language: langVal,
-        systemPrompt: localPrompt,
-        updatedAt: serverTimestamp()
-      }, { merge: true });
+      await fetch(`/api/config/${encodeURIComponent(tenantId)}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          theme: themeVal,
+          language: langVal,
+          systemPrompt: localPrompt,
+        }),
+      });
     } catch (err) {
       console.error("Failed to save settings:", err);
     } finally {
@@ -111,17 +110,77 @@ export default function SettingsPage() {
   };
 
   const saveConnection = async () => {
-    if (!instRef) return;
+    if (!tenantId) return;
     setIsSaving(true);
     try {
-      await setDoc(instRef, {
-        clientId,
-        clientSecret,
-        updatedAt: serverTimestamp()
-      }, { merge: true });
-      if (tenantId) loadInstallation(tenantId);
+      await fetch(`/api/installations/${encodeURIComponent(tenantId)}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          clientId,
+          clientSecret,
+        }),
+      });
+      loadInstallation(tenantId);
     } catch (err) {
       console.error("Failed to save connection:", err);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const fetchMembers = async () => {
+    if (!tenantId) return;
+    setIsLoadingMembers(true);
+    try {
+      const res = await fetch(`/api/members/${encodeURIComponent(tenantId)}`);
+      if (res.ok) {
+        setMembers(await res.json());
+      }
+    } catch (err) {
+      console.error("Failed to fetch members:", err);
+    } finally {
+      setIsLoadingMembers(false);
+    }
+  };
+
+  const addMember = async () => {
+    if (!tenantId || !newUserId) return;
+    setIsSaving(true);
+    try {
+      const res = await fetch(`/api/members/${encodeURIComponent(tenantId)}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: newUserId,
+          userName: newUserName,
+          role: 'viewer'
+        }),
+      });
+      if (res.ok) {
+        setNewUserId("");
+        setNewUserName("");
+        fetchMembers();
+      }
+    } catch (err) {
+      console.error("Failed to add member:", err);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const deleteMember = async (targetId: string) => {
+    if (!tenantId) return;
+    setIsSaving(true);
+    try {
+      const res = await fetch(`/api/members/${encodeURIComponent(tenantId)}?userId=${targetId}`, {
+        method: 'DELETE',
+      });
+      if (res.ok) {
+        fetchMembers();
+      }
+    } catch (err) {
+      console.error("Failed to delete member:", err);
     } finally {
       setIsSaving(false);
     }
@@ -180,6 +239,10 @@ export default function SettingsPage() {
             <TabsTrigger value="general" className="rounded-xl gap-2 font-black uppercase text-[10px] tracking-widest data-[state=active]:bg-background data-[state=active]:shadow-lg">
               <Settings2 className="h-4 w-4" />
               {t.tab_appearance}
+            </TabsTrigger>
+            <TabsTrigger value="connection" className="rounded-xl gap-2 font-black uppercase text-[10px] tracking-widest data-[state=active]:bg-background data-[state=active]:shadow-lg">
+              <Database className="h-4 w-4" />
+              {t.tab_connection}
             </TabsTrigger>
             <TabsTrigger value="connection" className="rounded-xl gap-2 font-black uppercase text-[10px] tracking-widest data-[state=active]:bg-background data-[state=active]:shadow-lg">
               <Database className="h-4 w-4" />
@@ -245,6 +308,7 @@ export default function SettingsPage() {
               </CardContent>
             </Card>
           </TabsContent>
+
           <TabsContent value="general">
             <Card className="border-none shadow-2xl rounded-[2.5rem] bg-card text-card-foreground overflow-hidden">
               <CardContent className="p-8 space-y-10">
@@ -344,4 +408,3 @@ export default function SettingsPage() {
     </div>
   );
 }
-

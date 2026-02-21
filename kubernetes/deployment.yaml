@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: aibot24-enterprise-dashboard
+  namespace: apps
+  labels:
+    app: aibot24-enterprise-dashboard
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: aibot24-enterprise-dashboard
+  template:
+    metadata:
+      labels:
+        app: aibot24-enterprise-dashboard
+    spec:
+      containers:
+      - name: dashboard
+        image: workflow48/aibot24-enterprise-dashboard:latest # Asegúrate de subirla a tu registro local
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 9002
+        envFrom:
+        - configMapRef:
+            name: aibot24-enterprise-dashboard-config
+        - secretRef:
+            name: aibot24-enterprise-dashboard-secrets
+        livenessProbe:
+          httpGet:
+            path: /api/health
+            port: 9002
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /api/health
+            port: 9002
+          initialDelaySeconds: 15
+          periodSeconds: 5

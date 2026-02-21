@@ -9,7 +9,7 @@ import { Loader2, Send, Bot, Rocket, Check, Sparkles } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { ChatMessage, AIAgent, AgentMetrics } from "@/lib/types";
+import { AIAgent, AgentMetrics } from "@/lib/types";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Dialog,
@@ -20,11 +20,16 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { ShieldAlert, Settings } from "lucide-react";
-import { useFirestore } from "@/firebase";
-import { doc, setDoc, updateDoc } from "firebase/firestore";
 import { useUIStore } from "@/lib/store";
 import { generateAgentConfig } from "@/ai/flows/generate-agent-config";
 import { registerOpenLinesBot } from "@/app/actions/bitrix-actions";
+
+interface ChatMessage {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp: string;
+}
 
 const ASSISTANT_COLORS = [
   "#1B75BB", "#41E0F0", "#2FC6F6", "#22c55e", "#10b981",
@@ -56,7 +61,7 @@ export default function NewAgentPage() {
   const { toast } = useToast();
   const router = useRouter();
   const { tenantId, installation, loadInstallation } = useUIStore();
-  const db = useFirestore();
+
 
   useEffect(() => {
     if (tenantId) loadInstallation(tenantId);
@@ -119,14 +124,9 @@ export default function NewAgentPage() {
   };
 
   const handleSave = async () => {
-    if (!db) {
-      toast({ variant: "destructive", title: "Error", description: "Base de datos no disponible." });
-      return;
-    }
-
     // --- CHECK CREDENTIALS ---
     const isConfigured = installation?.clientId && installation?.clientSecret;
-    if (!isConfigured && tenantId !== "anonymous") {
+    if (!isConfigured) {
       toast({
         variant: "destructive",
         title: "Protocolo Incompleto",
@@ -135,74 +135,95 @@ export default function NewAgentPage() {
       return;
     }
 
-    const effectiveTenantId = tenantId || "anonymous";
-    setIsSaving(true);
+    const effectiveTenantId = tenantId;
+    if (!effectiveTenantId) {
+      toast({
+        variant: "destructive",
+        title: "Portal no detectado",
+        description: "No se ha podido identificar el portal de Bitrix24.",
+      });
+      return;
+    }
 
     try {
+      let agentId = "";
+      let botIdToUse: number | undefined;
+
+      // 1. Register bot in Bitrix24 FIRST to get the botId
+      try {
+        const bitrixResult = await registerOpenLinesBot(effectiveTenantId, {
+          name: config.name,
+          role: config.role,
+          color: config.color,
+          agentId: "pending_" + Date.now() // Temporary ID for Bitrix CODE
+        });
+
+        if (bitrixResult.success && bitrixResult.botId) {
+          botIdToUse = bitrixResult.botId;
+          agentId = `${effectiveTenantId}-${botIdToUse}`;
+          console.log(`✅ Bot registrado en Bitrix24: ID ${botIdToUse}. Agent ID: ${agentId}`);
+        } else {
+          throw new Error(`Error registrando bot en Bitrix: ${bitrixResult.error}`);
+        }
+      } catch (bitrixError: any) {
+        console.error("⚠️ Bitrix registration error:", bitrixError);
+        toast({
+          variant: "destructive",
+          title: "Error de Registro",
+          description: bitrixError.message || "No se pudo registrar el bot en Bitrix24."
+        });
+        setIsSaving(false);
+        return;
+      }
+
       const aiResponse = await generateAgentConfig({
         prompt: `Genera un objetivo estratégico breve y un tono de comunicación para un agente con el rol: ${config.role} de la empresa ${config.company}.`,
         tenantId: effectiveTenantId
       });
 
-      const agentId = Date.now().toString();
-
-      const newAgent: AIAgent = {
+      const newAgent = {
         id: agentId,
         tenantId: effectiveTenantId,
         name: config.name,
-        type: 'text',
+        type: 'text' as const,
         role: config.role,
         company: config.company,
-        systemPrompt: "", // Empty — to be refined by user via Architect
+        systemPrompt: "",
         color: config.color,
         isActive: true,
-        createdAt: new Date().toISOString(),
+        bitrixBotId: botIdToUse
       };
 
-      const initialMetrics: AgentMetrics = {
-        usageCount: 0,
-        performanceRating: 100,
-        totalInteractionMetric: 0,
-        tokens: "0",
-        meetings: 0,
-        transfers: 0,
-        abandoned: 0
+      const initialMetrics = {
+        agentId,
+        metrics: {
+          usageCount: 0,
+          performanceRating: 100,
+          totalInteractionMetric: 0,
+          tokens: "0",
+          meetings: 0,
+          transfers: 0,
+          abandoned: 0
+        }
       };
 
-      // 1. Save Agent + Metrics to Firestore
-      await Promise.all([
-        setDoc(doc(db, "agents", agentId), newAgent),
-        setDoc(doc(db, "metrics", agentId), initialMetrics)
+      // 2. Save Agent + Metrics via API routes using the NEW ID
+      const [agentRes, metricsRes] = await Promise.all([
+        fetch('/api/agents', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(newAgent),
+        }),
+        fetch('/api/metrics', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(initialMetrics),
+        })
       ]);
 
-      // 2. Auto-register bot in Bitrix24 (name, role/WORK_POSITION, color, webhook URL)
-      // Company is saved only in Firestore (Bitrix imbot.register doesn't support WORK_COMPANY)
-      if (effectiveTenantId !== "anonymous") {
-        try {
-          const bitrixResult = await registerOpenLinesBot(effectiveTenantId, {
-            name: config.name,
-            role: config.role,
-            color: config.color,
-            agentId: agentId
-          });
-
-          if (bitrixResult.success && bitrixResult.botId) {
-            // Store bitrixBotId on the agent
-            await updateDoc(doc(db, "agents", agentId), {
-              bitrixBotId: bitrixResult.botId,
-            });
-            console.log(`✅ Bot registrado en Bitrix24: ID ${bitrixResult.botId}`);
-          } else {
-            console.warn("⚠️ Bot registration failed:", bitrixResult.error);
-            toast({
-              title: "Agente creado",
-              description: `El agente se guardó pero el bot de Bitrix no se registró: ${bitrixResult.error}. Puedes reintentarlo desde Integraciones.`,
-            });
-          }
-        } catch (bitrixError: any) {
-          console.error("⚠️ Bitrix registration error:", bitrixError);
-          // Don't block — agent is already saved
-        }
+      if (!agentRes.ok) {
+        const errorData = await agentRes.json();
+        throw new Error(errorData.error || "Fallo al guardar el agente");
       }
 
       toast({
@@ -220,7 +241,7 @@ export default function NewAgentPage() {
   };
 
   const isColorStep = CONFIG_STEPS[currentStep].key === 'color';
-  const isConfigured = (installation?.clientId && installation?.clientSecret) || tenantId === "anonymous";
+  const isConfigured = (installation?.clientId && installation?.clientSecret);
 
   return (
     <div className="flex flex-col h-screen bg-background overflow-hidden transition-colors duration-300">
@@ -336,7 +357,7 @@ export default function NewAgentPage() {
                         <p className="text-[9px] text-muted-foreground italic">Objetivo y Tono se generarán al desplegar.</p>
                       </div>
 
-                      {!(installation?.clientId && installation?.clientSecret) && tenantId !== "anonymous" ? (
+                      {!(installation?.clientId && installation?.clientSecret) ? (
                         <Card className="p-5 bg-red-500/10 border-red-500/20 rounded-2xl mb-4 text-center space-y-3">
                           <p className="text-[10px] font-black uppercase tracking-widest text-red-500">Acción Bloqueada</p>
                           <p className="text-[11px] text-muted-foreground leading-snug">

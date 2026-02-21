@@ -10,9 +10,9 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { 
-  BookOpen, 
-  HelpCircle, 
+import {
+  BookOpen,
+  HelpCircle,
   ShieldCheck,
   Zap,
   Mail,
@@ -35,7 +35,7 @@ const FAQS = [
   },
   {
     q: "¿Mis datos y los de mis clientes están seguros?",
-    a: "Totalmente. AIBot24 utiliza encriptación de grado militar (AES-256) para almacenar tus protocolos y archivos. Además, operamos bajo la infraestructura segura de Google Cloud y Firebase, cumpliendo con los estándares internacionales de protección de datos."
+    a: "Totalmente. AIBot24 utiliza encriptación de grado militar (AES-256) para almacenar tus protocolos y archivos. Además, operamos bajo infraestructura de nube segura, cumpliendo con los estándares internacionales de protección de datos."
   }
 ];
 
@@ -46,13 +46,13 @@ export default function HelpPage() {
     <div className="flex flex-col min-h-screen bg-background transition-colors duration-300">
       <Navbar />
       <main className="container mx-auto px-4 py-12 max-w-6xl space-y-8">
-        
+
         {/* 1. FAQ - Ahora contiene el Header integrado */}
         <Card className="border-none shadow-2xl rounded-[3rem] bg-card overflow-hidden high-volume">
           <CardHeader className="p-10 border-b border-border bg-muted/20 flex flex-row items-center gap-6">
-            <Button 
-              variant="ghost" 
-              size="icon" 
+            <Button
+              variant="ghost"
+              size="icon"
               className="h-12 w-12 flex items-center justify-center bg-card rounded-2xl hover:bg-foreground hover:text-background transition-all shadow-md border border-border flex-shrink-0"
               onClick={() => router.back()}
             >
@@ -75,9 +75,9 @@ export default function HelpPage() {
             </div>
             <Accordion type="single" collapsible className="w-full space-y-4">
               {FAQS.map((faq, idx) => (
-                <AccordionItem 
-                  key={idx} 
-                  value={`item-${idx}`} 
+                <AccordionItem
+                  key={idx}
+                  value={`item-${idx}`}
                   className="border border-border rounded-[2rem] px-8 bg-muted/20 hover:bg-card transition-all data-[state=open]:bg-card data-[state=open]:shadow-lg data-[state=open]:border-secondary/20"
                 >
                   <AccordionTrigger className="hover:no-underline py-6 group">
@@ -118,8 +118,8 @@ export default function HelpPage() {
                   Explora nuestra biblioteca completa de documentación para<br className="hidden lg:block" /> dominar todas las capacidades de AIBot24.
                 </p>
               </div>
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 className="w-full h-14 rounded-full border-2 border-border bg-transparent hover:bg-muted hover:text-secondary text-foreground font-black text-[11px] uppercase tracking-[0.2em] transition-all"
               >
                 EXPLORAR GUIA

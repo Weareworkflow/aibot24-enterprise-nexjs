@@ -9,22 +9,21 @@ import { cn } from "@/lib/utils";
 import { Send, Loader2, Sparkles, Wand2, AlertTriangle, CheckCircle2, Settings2 } from "lucide-react";
 import { useUIStore } from "@/lib/store";
 
-import { doc, updateDoc, Firestore } from "firebase/firestore";
 import { useToast } from "@/hooks/use-toast";
 import { Textarea } from "@/components/ui/textarea";
 
 interface AiRefinerProps {
   agent: AIAgent;
-  db: Firestore | null;
 }
 
-export function AiRefiner({ agent, db }: AiRefinerProps) {
+export function AiRefiner({ agent }: AiRefinerProps) {
   const [feedbackInput, setFeedbackInput] = useState("");
   const [isRefining, setIsRefining] = useState(false);
   const [history, setHistory] = useState<{ role: 'user' | 'assistant' | 'error' | 'system', content: string, id: string }[]>([]);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+  const { updateAgentLocal } = useUIStore();
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -36,7 +35,7 @@ export function AiRefiner({ agent, db }: AiRefinerProps) {
   }, [history, isRefining]);
 
   const handleRefine = async () => {
-    if (!feedbackInput.trim() || !db) return;
+    if (!feedbackInput.trim()) return;
     const userFeedback = feedbackInput;
     setFeedbackInput("");
     setIsRefining(true);
@@ -96,21 +95,30 @@ export function AiRefiner({ agent, db }: AiRefinerProps) {
       const newSystemPrompt = promptMatch ? promptMatch[1].trim() : null;
 
       if (newSystemPrompt) {
-        const agentRef = doc(db, "agents", agent.id);
-        await updateDoc(agentRef, {
-          systemPrompt: newSystemPrompt
+        // ACTUALIZACIÓN DE MONGODB VÍA API
+        const updateRes = await fetch(`/api/agents/${agent.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            systemPrompt: newSystemPrompt
+          }),
         });
+
+        if (!updateRes.ok) throw new Error("Fallo al guardar el prompt en la base de datos.");
+
+        // Actualizar estado local
+        updateAgentLocal(agent.id, { systemPrompt: newSystemPrompt });
 
         const systemMessageId = (Date.now() + 2).toString();
         setHistory(prev => [...prev, {
           id: systemMessageId,
           role: 'system',
-          content: "System Prompt sincronizado en Firestore."
+          content: "Prompt sincronizado."
         }]);
 
         toast({
-          title: "System Prompt Sincronizado",
-          description: "El prompt del agente ha sido actualizado.",
+          title: "Sincronizado",
+          description: "Configuración actualizada en la nube.",
         });
       }
 
@@ -133,9 +141,9 @@ export function AiRefiner({ agent, db }: AiRefinerProps) {
         <div className="space-y-6">
           {history.length === 0 && (
             <div className="bg-secondary/5 border border-secondary/20 p-6 rounded-[2rem] text-[12px] text-foreground font-medium leading-relaxed animate-in fade-in duration-700">
-              Hola, soy Aibot. Mi función es redactar el System Prompt para <strong className="text-secondary">{agent.name}</strong>.
+              Hola, soy Aibot. Mi función es redactar el protocolo para <strong className="text-secondary">{agent.name}</strong>.
               <br /><br />
-              Dame instrucciones y actualizaré el System Prompt en la base de datos instantáneamente.
+              Dame instrucciones y actualizaré la configuración instantáneamente.
             </div>
           )}
 

@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: aibot24-enterprise-dashboard-config
+  namespace: apps
+data:
+  NEXT_PUBLIC_APP_URL: "https://aibot24-enterprise.weareworkflow.com"
+  BITRIX_BOT_HANDLER_URL: "https://aibot24-chat-gw-75slv2b8.uc.gateway.dev/api/chat"

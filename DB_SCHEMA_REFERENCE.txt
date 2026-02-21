@@ -1,82 +1,89 @@
-DATABASE SCHEMA REFERENCE - AIBOT24
+DATABASE SCHEMA REFERENCE - AIBOT24 (MONGODB)
 
 ========================================================================
 1. COLLECTION: agents
 ========================================================================
-Document ID: Automatic (agentId)
-Purpose: Stores configuration for individual AI agents.
+Primary ID (id): {domain}-{bitrixBotId} (e.g., portal.bitrix24.es-101)
+Purpose: Configuración de bots de IA individuales.
 
 Fields:
-- id: string            (Unique identifier, matches doc ID)
-- tenantId: string      (Portal domain, e.g., workflowteams.bitrix24.es)
-- name: string          (Agent display name)
-- type: "text"          (Agent interaction type)
-- role: string          (Operational role / Bitrix WORK_POSITION)
-- company: string       (Company name / Business sector - WORK_COMPANY in Bitrix)
-- color: string         (UI color theme)
-- systemPrompt: string  (Specific instructions for THIS agent)
-- isActive: boolean     (Operational status)
-- bitrixBotId: number   (Optional: Bot ID assigned by Bitrix24)
-- avatar: string        (Optional: Base64 image)
+- id: string            (Key primaria: dominio-botId)
+- tenantId: string      (Dominio del portal)
+- name: string          (Nombre del agente)
+- type: "text"          (Tipo de interacción)
+- role: string          (Rol operativo / WORK_POSITION en Bitrix)
+- company: string       (Empresa / WORK_COMPANY en Bitrix)
+- color: string         (Tema visual)
+- systemPrompt: string  (Instrucciones específicas del agente)
+- isActive: boolean     (Estado operativo)
+- bitrixBotId: number   (ID numérico asignado por Bitrix24)
+- avatar: string        (Opcional: Imagen en Base64)
 
 ========================================================================
 2. COLLECTION: installations
 ========================================================================
-Document ID: Domain (e.g., workflowteams.bitrix24.es)
-Purpose: Stores Bitrix24 OAuth credentials and installation status.
+Primary ID (id): {domain} (e.g., portal.bitrix24.es)
+Purpose: Credenciales OAuth y estado del portal.
 
 Fields:
-- memberId: string      (Unique installation ID from Bitrix)
-- domain: string        (Portal domain)
+- id: string            (Dominio del portal)
+- memberId: string      (ID único de instalación de Bitrix)
+- domain: string        (Dominio del portal)
 - status: "active" | "suspended"
-- accessToken: string   (Current OAuth access token)
-- refreshToken: string  (OAuth refresh token)
-- expiresIn: number     (Token duration in seconds)
-- clientSecret: string  (Optional: Technical credential)
-- clientId: string      (Optional: Technical credential)
+- accessToken: string   (Token de acceso actual)
+- refreshToken: string  (Token de refresco OAuth)
+- expiresIn: number     (Duración del token en segundos)
+- expiresAt: number     (Timestamp Unix de expiración)
+- clientSecret: string  (Opcional: Credencial técnica)
+- clientId: string      (Opcional: Credencial técnica)
 
 ========================================================================
 3. COLLECTION: config-app
 ========================================================================
-Document ID: tenantId (e.g., workflowteams.bitrix24.es)
-Purpose: Global application settings per portal.
+Primary ID (id): {tenantId} (e.g., portal.bitrix24.es)
+Purpose: Ajustes globales de la app por portal.
 
 Fields:
-- tenantId: string      (Portal domain)
+- id: string            (Dominio del portal)
+- tenantId: string      (Dominio del portal)
 - theme: "light" | "dark"
 - language: "es" | "en"
-- systemPrompt: string  (GLOBAL SYSTEM PROMPT - Source of Truth)
+- systemPrompt: string  (PROMPT GLOBAL - Base para todos los agentes)
 
 ========================================================================
-4. COLLECTION: metrics (STUB / PLANNED)
+4. COLLECTION: metrics
 ========================================================================
-Document ID: agentId
-Purpose: Usage and performance statistics for agents.
+Primary ID: Generado automáticamente por MongoDB
+Relationship field (agentId): {domain}-{bitrixBotId}
+Purpose: Estadísticas de uso y rendimiento por bot.
 
 Fields:
-- usageCount: number
+- agentId: string       (Vínculo con AIAgent)
+- usageCount: number    (Total de interacciones)
 - performanceRating: number
 - totalInteractionMetric: number
-- latency: string (Optional)
-- tokens: string (Optional)
-- transfers: number (Optional)
-- meetings: number (Optional)
-- abandoned: number (Optional)
+- latency: string       (Opcional)
+- tokens: string        (Opcional)
+- transfers: number     (Opcional)
+- meetings: number      (Total de citas agendadas)
+- abandoned: number     (Total de chats abandonados)
+
 ========================================================================
 5. REST API ENDPOINTS
 ========================================================================
 
-A. CONSULTAS (GET)
------------------
-Endpoints para consultar datos de la base de datos vía API REST:
-- GET /api/agents/[id]: Retorna la configuración y el prompt compilado de un agente por su ID interno.
-- GET /api/agents/[tenantId]/[botId]: Consulta "Doble ID" (Dominio + ID de Bitrix) para localizar agentes desde Bitrix24.
-- GET /api/installations/[domain]: Retorna credenciales y estado de conexión de un portal.
+A. AGENTES
+----------
+- GET /api/agents?tenantId=X: Lista todos los agentes de un portal.
+- GET /api/agents/[id]: Obtiene un agente (incluye prompt compilado: GLOBAL + AGENT).
+- POST /api/agents: Crea o actualiza un agente (requiere id en formato dominio-botId).
+- PUT /api/agents/[id]: Actualiza campos específicos de un agente.
 
-B. MÉTRICAS (POST)
------------------
-Endpoint para que los agentes externos envíen sus métricas de rendimiento:
-- POST /api/metrics: Actualiza los contadores y estadísticas en la colección 'metrics'.
-  Cuerpo esperado: { "agentId": "...", "metrics": { ... } }
+B. CONFIGURACIÓN Y MÉTRICAS
+---------------------------
+- GET /api/config/[tenantId]: Obtiene la configuración global del portal.
+- PUT /api/config/[tenantId]: Actualiza la configuración global.
+- POST /api/metrics: Registra o actualiza estadísticas (espera agentId y metrics).
+- GET /api/metrics/[agentId]: Recupera estadísticas de un bot específico.
 
 ========================================================================

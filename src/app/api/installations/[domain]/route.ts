@@ -1,41 +1,61 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/firebase-admin';
+import { getDb } from '@/lib/mongodb';
 
-/**
- * API para consultar detalles de instalación por dominio.
- */
 export async function GET(
     request: NextRequest,
     { params }: { params: Promise<{ domain: string }> }
 ) {
     try {
         const { domain } = await params;
+        const db = await getDb();
 
-        const installRef = db.collection('installations').doc(domain);
-        const installSnap = await installRef.get();
+        const installation = await db.collection('installations').findOne({
+            $or: [
+                { domain: domain },
+                { memberId: domain }
+            ]
+        });
 
-        if (!installSnap.exists) {
-            return NextResponse.json({ error: 'Instalación no encontrada' }, { status: 404 });
+        if (!installation) {
+            return NextResponse.json(
+                { error: `Installation not found for domain: ${domain}` },
+                { status: 404 }
+            );
         }
 
-        const data = installSnap.data() as any;
-
         return NextResponse.json({
-            success: true,
-            domain: data.domain,
-            status: data.status,
-            memberId: data.memberId,
-            expiresAt: data.expiresAt,
-            // Se incluyen credenciales para uso interno del motor de agentes
-            credentials: {
-                accessToken: data.accessToken,
-                refreshToken: data.refreshToken,
-                clientId: data.clientId,
-                clientSecret: data.clientSecret
-            }
+            ...installation,
+            _id: undefined,
         });
     } catch (error: any) {
-        console.error("Error en API Installations:", error);
-        return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+        console.error('[Installation GET] Error:', error);
+        return NextResponse.json({ error: error.message || 'Internal error' }, { status: 500 });
+    }
+}
+
+export async function PUT(
+    request: NextRequest,
+    { params }: { params: Promise<{ domain: string }> }
+) {
+    try {
+        const { domain } = await params;
+        const body = await request.json();
+        const db = await getDb();
+
+        const { _id, domain: _, ...updates } = body;
+
+        await db.collection('installations').updateOne(
+            { domain },
+            {
+                $set: { ...updates, updatedAt: new Date().toISOString() },
+                $setOnInsert: { domain }
+            },
+            { upsert: true }
+        );
+
+        return NextResponse.json({ success: true });
+    } catch (error: any) {
+        console.error('[Installation PUT] Error:', error);
+        return NextResponse.json({ error: error.message || 'Internal error' }, { status: 500 });
     }
 }

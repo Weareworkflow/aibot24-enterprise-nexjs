@@ -7,8 +7,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, ShieldCheck, CheckCircle2, Database, AlertCircle } from "lucide-react";
 import { Logo } from "@/components/layout/Logo";
 import { useUIStore } from "@/lib/store";
-import { useFirestore } from "@/firebase";
-import { doc, setDoc } from "firebase/firestore";
 import { BitrixInstallation } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 
@@ -17,7 +15,6 @@ function InstallContent() {
   const [errorMsg, setErrorMsg] = useState("");
   const searchParams = useSearchParams();
   const router = useRouter();
-  const db = useFirestore();
   const { setTenantId, setDomain } = useUIStore();
 
   useEffect(() => {
@@ -25,7 +22,7 @@ function InstallContent() {
 
     const tryInitialize = () => {
       const BX24 = (window as any).BX24;
-      
+
       if (!BX24) {
         console.warn("BX24 SDK no encontrado aún...");
         return false;
@@ -36,13 +33,12 @@ function InstallContent() {
 
         try {
           const auth = BX24.getAuth();
-          
-          // Captura jerárquica: Prioridad al Auth del SDK, luego a URL params
+
           const memberId = auth?.member_id || searchParams.get('member_id');
           const domain = auth?.domain || searchParams.get('DOMAIN');
 
-          if (!memberId || !db) {
-            console.error("Contexto insuficiente:", { memberId, dbAvailable: !!db });
+          if (!memberId) {
+            console.error("Contexto insuficiente:", { memberId });
             if (isSubscribed) {
               setStatus('error');
               setErrorMsg("No se pudo identificar el portal. Asegúrate de estar dentro de Bitrix24.");
@@ -50,28 +46,33 @@ function InstallContent() {
             return;
           }
 
-          const installationRecord: BitrixInstallation = {
-            memberId,
-            domain: domain || "unknown",
-            accessToken: auth?.access_token || searchParams.get('AUTH_ID') || "",
-            refreshToken: auth?.refresh_token || searchParams.get('REFRESH_ID') || "",
-            expiresIn: parseInt(auth?.expires_in || searchParams.get('AUTH_EXPIRES') || "3600"),
-            status: 'active',
-            createdAt: new Date().toISOString()
-          };
+          // Save installation via API route
+          const res = await fetch('/api/install', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              auth: {
+                member_id: memberId,
+                domain: domain || "",
+                access_token: auth?.access_token || searchParams.get('AUTH_ID') || "",
+                refresh_token: auth?.refresh_token || searchParams.get('REFRESH_ID') || "",
+                expires_in: auth?.expires_in || searchParams.get('AUTH_EXPIRES') || "3600",
+                user_id: auth?.user_id || searchParams.get('USER_ID') || "",
+              },
+              event: "ONAPPINSTALL",
+              data: {}
+            }),
+          });
 
-          const installRef = doc(db, "installations", memberId);
-          await setDoc(installRef, installationRecord, { merge: true });
-          
+          if (!res.ok) throw new Error("Error al sincronizar con la base de datos.");
+
           if (isSubscribed) {
-            setTenantId(memberId);
+            setTenantId(domain || memberId);
             if (domain) setDomain(domain);
             setStatus('success');
-            
-            // Notificar a Bitrix que el proceso de frontend terminó
+
             BX24.installFinish();
-            
-            // Redirigir al dashboard tras confirmación visual
+
             setTimeout(() => {
               if (isSubscribed) router.push('/');
             }, 1500);
@@ -87,16 +88,13 @@ function InstallContent() {
       return true;
     };
 
-    // Intentar inicializar inmediatamente
     if (!tryInitialize()) {
-      // Si falla (ej: el script aún no carga), intentamos en un intervalo corto
       const checkInterval = setInterval(() => {
         if (tryInitialize()) {
           clearInterval(checkInterval);
         }
       }, 100);
 
-      // Timeout de seguridad de 10 segundos
       const timeout = setTimeout(() => {
         if (status === 'loading') {
           clearInterval(checkInterval);
@@ -113,7 +111,7 @@ function InstallContent() {
     }
 
     return () => { isSubscribed = false; };
-  }, [searchParams, db, setTenantId, setDomain, router, status]);
+  }, [searchParams, setTenantId, setDomain, router, status]);
 
   return (
     <div className="space-y-6">
@@ -190,10 +188,10 @@ export default function InstallPage() {
           </Suspense>
         </CardContent>
       </Card>
-      
+
       <div className="mt-10 flex items-center gap-3 px-6 py-3 bg-muted/30 rounded-full border border-border/40 shadow-sm backdrop-blur-sm animate-in fade-in duration-1000">
         <Database className="h-3.5 w-3.5 text-secondary" />
-        <span className="text-[9px] font-black uppercase text-muted-foreground tracking-[0.2em]">Cloud Sync: Firestore Real-Time</span>
+        <span className="text-[9px] font-black uppercase text-muted-foreground tracking-[0.2em]">Enlace en la Nube Sincronizado</span>
       </div>
     </div>
   );
