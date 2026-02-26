@@ -182,27 +182,29 @@ function DashboardContent() {
 
   return (
     <main className="container mx-auto px-4 py-8 max-w-7xl">
-      {/* Top Bar */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-8">
-        <div className="relative w-full sm:max-w-md">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Buscar agente..."
-            className="pl-12 h-12 bg-card border-border/60 rounded-2xl text-sm font-medium focus-visible:ring-secondary/50"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
+      {/* Top Bar Container - Sticky */}
+      <div className="sticky top-14 z-40 -mx-4 px-4 py-4 mb-4 bg-background/95 backdrop-blur-sm border-b border-border/5">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="relative w-full sm:max-w-md">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Buscar agente..."
+              className="pl-12 h-12 bg-card border-border/60 rounded-2xl text-sm font-medium focus-visible:ring-secondary/50"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
 
-        {userRole !== 'viewer' && (
-          <Button
-            onClick={() => router.push('/agents/new')}
-            className="w-full sm:w-auto h-12 px-6 rounded-2xl bg-secondary text-white shadow-lg shadow-secondary/20 transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-2 font-black uppercase text-[10px] tracking-widest"
-          >
-            <Plus className="h-4 w-4" />
-            Nuevo Agente
-          </Button>
-        )}
+          {userRole !== 'viewer' && (
+            <Button
+              onClick={() => router.push('/agents/new')}
+              className="w-full sm:w-auto h-12 px-6 rounded-2xl bg-secondary text-white shadow-lg shadow-secondary/20 transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-2 font-black uppercase text-[10px] tracking-widest"
+            >
+              <Plus className="h-4 w-4" />
+              Nuevo Agente
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Grid */}
