@@ -13,7 +13,6 @@ import {
   Settings2,
   Save,
   Loader2,
-  BrainCircuit,
   Database,
   Users,
   Trash2,
@@ -28,7 +27,6 @@ import { useEffect, useState } from "react";
 import { AppConfig } from "@/lib/types";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 
 export default function SettingsPage() {
@@ -37,9 +35,6 @@ export default function SettingsPage() {
   const { tenantId, domain, language, setLanguage, installation, loadInstallation, loadAppConfig, appConfig } = useUIStore();
 
   const t = translations[language].settings;
-
-  const [localPrompt, setLocalPrompt] = useState("");
-  const [localPromptRegistered, setLocalPromptRegistered] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 
   // States for connection credentials
@@ -70,12 +65,6 @@ export default function SettingsPage() {
       if (appConfig.language && appConfig.language !== language) {
         setLanguage(appConfig.language);
       }
-      if (appConfig.systemPrompt !== undefined) {
-        setLocalPrompt(appConfig.systemPrompt);
-      }
-      if (appConfig.systemPromptRegistered !== undefined) {
-        setLocalPromptRegistered(appConfig.systemPromptRegistered);
-      }
     }
   }, [appConfig, setTheme, setLanguage]);
 
@@ -103,8 +92,6 @@ export default function SettingsPage() {
         body: JSON.stringify({
           theme: themeVal,
           language: langVal,
-          systemPrompt: localPrompt,
-          systemPromptRegistered: localPromptRegistered,
         }),
       });
     } catch (err) {
@@ -249,10 +236,6 @@ export default function SettingsPage() {
               <Database className="h-4 w-4" />
               {t.tab_connection}
             </TabsTrigger>
-            <TabsTrigger value="connection" className="rounded-xl gap-2 font-black uppercase text-[10px] tracking-widest data-[state=active]:bg-background data-[state=active]:shadow-lg">
-              <Database className="h-4 w-4" />
-              {t.tab_connection}
-            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="connection">
@@ -371,55 +354,6 @@ export default function SettingsPage() {
                         {language === lang.id && <div className="h-6 w-6 rounded-full bg-secondary flex items-center justify-center"><Check className="h-3 w-3 text-white" /></div>}
                       </button>
                     ))}
-                  </div>
-                </div>
-
-                {/* GLOBAL SYSTEM PROMPT */}
-                <div className="space-y-6 pt-4 border-t border-border/40">
-                  <div className="flex flex-col gap-2.5 px-1 text-foreground">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <BrainCircuit className="h-4 w-4 text-secondary" />
-                        <h4 className="text-[11px] font-black uppercase tracking-widest opacity-80">{t.prompt_label}</h4>
-                      </div>
-                      <Button
-                        size="sm"
-                        onClick={() => saveSettings()}
-                        disabled={isSaving}
-                        className="bg-secondary text-white rounded-xl h-8 text-[9px] font-black uppercase tracking-widest"
-                      >
-                        {isSaving ? <Loader2 className="h-3 w-3 animate-spin" /> : <><Save className="h-3 w-3 mr-1.5" /> {t.save_btn.split(' ')[0]}</>}
-                      </Button>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    {/* GLOBAL BASE */}
-                    <div className="space-y-3">
-                      <div className="flex items-center gap-2 px-1">
-                        <div className="h-1.5 w-1.5 rounded-full bg-secondary" />
-                        <span className="text-[10px] font-black uppercase tracking-widest opacity-60">Base (Global)</span>
-                      </div>
-                      <Textarea
-                        value={localPrompt}
-                        onChange={(e) => setLocalPrompt(e.target.value)}
-                        placeholder="Instrucciones base para todos los agentes..."
-                        className="bg-muted/30 border-none rounded-2xl min-h-[300px] resize-none focus-visible:ring-secondary/50 p-5 text-sm leading-relaxed"
-                      />
-                    </div>
-
-                    {/* GLOBAL REGISTERED */}
-                    <div className="space-y-3">
-                      <div className="flex items-center gap-2 px-1">
-                        <div className="h-1.5 w-1.5 rounded-full bg-primary" />
-                        <span className="text-[10px] font-black uppercase tracking-widest opacity-60">Seguimiento (Global)</span>
-                      </div>
-                      <Textarea
-                        value={localPromptRegistered}
-                        onChange={(e) => setLocalPromptRegistered(e.target.value)}
-                        placeholder="Instrucciones de seguimiento para todos los agentes..."
-                        className="bg-muted/30 border-none rounded-2xl min-h-[300px] resize-none focus-visible:ring-primary/50 p-5 text-sm leading-relaxed"
-                      />
-                    </div>
                   </div>
                 </div>
               </CardContent>

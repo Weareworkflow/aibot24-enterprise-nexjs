@@ -16,7 +16,6 @@ export async function GET(
             tenantId,
             theme: 'light',
             language: 'es',
-            systemPrompt: '',
         });
     } catch (error: any) {
         console.error('[Config GET] Error:', error);

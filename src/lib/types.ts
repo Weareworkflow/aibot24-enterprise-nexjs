@@ -44,8 +44,6 @@ export interface AppConfig {
   id: string; // El dominio del portal (ej: portal.bitrix24.es), actúa como llave primaria
   theme: 'light' | 'dark';
   language: 'es' | 'en';
-  systemPrompt: string;
-  systemPromptRegistered: string;
   tenantId: string; // Dominio del portal, ej: workflowteams.bitrix24.es
 }
 
