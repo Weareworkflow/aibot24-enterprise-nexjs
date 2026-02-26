@@ -33,22 +33,22 @@ export function AutomationForm({ initialData, onSuccess, onCancel }: AutomationF
         nombre: initialData?.nombre || "",
         tipo_plantilla: initialData?.tipo_plantilla || "RECORDATORIO",
         canal: initialData?.canal || "WHATSAPP",
-        trigger_type: initialData?.trigger_type || "BEFORE",
+        trigger_type: initialData?.trigger_type || (initialData?.tipo_plantilla === "TARGETING" ? "AFTER" : initialData?.tipo_plantilla === "INFORMATIVA" ? "FRECUENTE" : "BEFORE"),
         frecuencia_tipo: initialData?.frecuencia_tipo || "DIARIO",
         dia_ejecucion: initialData?.dia_ejecucion || "",
         hora_especifica: initialData?.hora_especifica || "09:00",
         mensaje_json: JSON.stringify(initialData?.mensaje_json || { titulo: "", cuerpo: "" }, null, 2),
         condicion_parada: initialData?.condicion_parada || "",
-        offset_minutos: initialData?.offset_minutos || 0,
+        offset_minutos: initialData?.tipo_plantilla === "RECORDATORIO" ? (parseInt(initialData?.dia_ejecucion) || 0) : (initialData?.offset_minutos || 0),
     });
 
     // Handle Type Change: Enforce strict trigger mapping
     useEffect(() => {
         if (formData.tipo_plantilla === "RECORDATORIO") {
             setFormData(prev => ({ ...prev, trigger_type: "BEFORE" }));
-        } else if (formData.tipo_plantilla === "RETARGETING") {
+        } else if (formData.tipo_plantilla === "TARGETING") {
             setFormData(prev => ({ ...prev, trigger_type: "AFTER" }));
-        } else if (formData.tipo_plantilla === "INFORMATIVO") {
+        } else if (formData.tipo_plantilla === "INFORMATIVA") {
             if (!["FRECUENTE", "SCHEDULED"].includes(formData.trigger_type)) {
                 setFormData(prev => ({ ...prev, trigger_type: "FRECUENTE" }));
             }
@@ -129,8 +129,8 @@ export function AutomationForm({ initialData, onSuccess, onCancel }: AutomationF
                         </SelectTrigger>
                         <SelectContent className="rounded-xl">
                             <SelectItem value="RECORDATORIO">RECORDATORIO</SelectItem>
-                            <SelectItem value="RETARGETING">RETARGETING</SelectItem>
-                            <SelectItem value="INFORMATIVO">INFORMATIVO</SelectItem>
+                            <SelectItem value="TARGETING">TARGETING</SelectItem>
+                            <SelectItem value="INFORMATIVA">INFORMATIVA</SelectItem>
                         </SelectContent>
                     </Select>
                 </div>
@@ -177,10 +177,10 @@ export function AutomationForm({ initialData, onSuccess, onCancel }: AutomationF
                             {formData.tipo_plantilla === "RECORDATORIO" && (
                                 <SelectItem value="BEFORE">{t.trigger_before}</SelectItem>
                             )}
-                            {formData.tipo_plantilla === "RETARGETING" && (
+                            {formData.tipo_plantilla === "TARGETING" && (
                                 <SelectItem value="AFTER">{t.trigger_after}</SelectItem>
                             )}
-                            {formData.tipo_plantilla === "INFORMATIVO" && (
+                            {formData.tipo_plantilla === "INFORMATIVA" && (
                                 <>
                                     <SelectItem value="FRECUENTE">{t.trigger_freq}</SelectItem>
                                     <SelectItem value="SCHEDULED">{t.trigger_scheduled}</SelectItem>
@@ -207,8 +207,8 @@ export function AutomationForm({ initialData, onSuccess, onCancel }: AutomationF
                 </div>
             )}
 
-            {/* RETARGETING AFTER (Inactivity) */}
-            {formData.tipo_plantilla === "RETARGETING" && formData.trigger_type === "AFTER" && (
+            {/* TARGETING AFTER (Inactivity) */}
+            {formData.tipo_plantilla === "TARGETING" && formData.trigger_type === "AFTER" && (
                 <div className="p-6 rounded-2xl bg-secondary/5 border border-secondary/10 space-y-4 animate-in zoom-in-95 duration-200">
                     <div className="space-y-2 max-w-[200px]">
                         <Label className="text-[10px] font-black uppercase tracking-widest text-secondary">Días de Inactividad</Label>
@@ -223,8 +223,8 @@ export function AutomationForm({ initialData, onSuccess, onCancel }: AutomationF
                 </div>
             )}
 
-            {/* INFORMATIVO SCHEDULED */}
-            {formData.tipo_plantilla === "INFORMATIVO" && formData.trigger_type === "SCHEDULED" && (
+            {/* INFORMATIVA SCHEDULED */}
+            {formData.tipo_plantilla === "INFORMATIVA" && formData.trigger_type === "SCHEDULED" && (
                 <div className="p-6 rounded-2xl bg-secondary/5 border border-secondary/10 space-y-4 animate-in zoom-in-95 duration-200">
                     <div className="space-y-2 max-w-[200px]">
                         <Label className="text-[10px] font-black uppercase tracking-widest text-secondary">Fecha de Envío</Label>
