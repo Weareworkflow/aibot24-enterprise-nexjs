@@ -67,11 +67,11 @@ export default function AgentConsolePage({ params }: { params: Promise<{ id: str
   );
 
   return (
-    <div className="flex flex-col min-h-screen bg-background lg:overflow-hidden transition-colors duration-300">
+    <div className="flex flex-col min-h-screen bg-background transition-colors duration-300">
       <Navbar />
       <main className="flex-1 w-full px-4 md:px-6 py-6 flex flex-col min-h-0">
         <div className="flex-1 min-h-0 mb-4">
-          <div className="h-auto lg:h-[calc(100vh-120px)] flex flex-col min-h-0">
+          <div className="h-auto flex flex-col min-h-0">
             <AgentChat agent={agent} />
           </div>
         </div>

@@ -27,7 +27,7 @@ export function Navbar() {
   }, [appConfig?.theme, setTheme]);
 
   return (
-    <nav className="border-b bg-card text-card-foreground border-border/60 sticky top-0 z-50 h-14 flex items-center shadow-sm transition-colors duration-300">
+    <nav className="border-b bg-card text-card-foreground border-border/60 z-50 h-14 flex items-center shadow-sm transition-colors duration-300">
       <div className="w-full px-4 md:px-8 flex items-center justify-between gap-4">
         <div className="flex items-center gap-6 flex-shrink-0">
           <Link href="/" className="transition-opacity hover:opacity-90">

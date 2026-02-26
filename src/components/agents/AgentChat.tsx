@@ -86,7 +86,7 @@ export function AgentChat({ agent }: AgentChatProps) {
   };
 
   return (
-    <div className="flex flex-col h-full bg-card rounded-[2.5rem] overflow-hidden shadow-2xl border-none high-volume">
+    <div className="flex flex-col bg-card rounded-[2.5rem] shadow-2xl border-none high-volume">
       {/* Header Integrado Nítido */}
       <div className="p-6 border-b bg-card flex items-center justify-between">
         <div className="flex items-center gap-5">
@@ -120,7 +120,7 @@ export function AgentChat({ agent }: AgentChatProps) {
 
       </div>
 
-      <ScrollArea className="flex-1 modern-scroll" ref={scrollRef}>
+      <div className="flex-1">
         <div className="flex flex-col p-6">
           <Tabs defaultValue="identidad" className="w-full">
             <TabsList className="grid w-full h-14 p-1.5 bg-card/50 backdrop-blur-xl border border-border/40 rounded-[1.5rem] shadow-sm mb-8 grid-cols-3">
@@ -169,7 +169,7 @@ export function AgentChat({ agent }: AgentChatProps) {
             </TabsContent>
           </Tabs>
         </div>
-      </ScrollArea>
+      </div>
 
 
     </div>
