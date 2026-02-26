@@ -6,7 +6,8 @@ export const translations = {
       settings: "Configuración",
       help: "Ayuda",
       anonymous: "Sesión Anónima",
-      active_portal: "Portal Activo"
+      active_portal: "Portal Activo",
+      automations: "Automatizaciones"
     },
     dashboard: {
       title: "Panel Operativo",
@@ -82,6 +83,35 @@ export const translations = {
       contact_desc: "Optimiza tus flujos para maximizar el rendimiento mediante soporte experto para tu flota operativa.",
       contact_btn: "SOLICITAR ASISTENCIA",
       version: "Protocolo de ayuda actualizado v3.1"
+    },
+    automations: {
+      title: "Centro de Automatizaciones",
+      new_template: "Nueva Automatización",
+      edit_template: "Editar Plantilla",
+      no_templates: "Sin Automatizaciones",
+      no_templates_desc: "Configura flujos de notificaciones inteligentes (Recordatorios, Retargeting, Informativos) para tu flota.",
+      table_name: "Nombre",
+      table_type: "Tipo",
+      table_channel: "Canal",
+      table_trigger: "Disparador",
+      table_actions: "Acciones",
+      form_name: "Nombre de la Plantilla",
+      form_type: "Tipo de Plantilla",
+      form_channel: "Canal de Envío",
+      form_trigger: "Tipo de Disparador",
+      form_freq: "Frecuencia",
+      form_day: "Día de Ejecución",
+      form_hour: "Hora Específica",
+      form_message: "Contenido del Mensaje (JSON)",
+      form_stop: "Condición de Parada",
+      save_btn: "Guardar Automatización",
+      freq_daily: "Diario",
+      freq_weekly: "Semanal",
+      freq_monthly: "Mensual",
+      trigger_before: "Antes del Evento",
+      trigger_after: "Después del Evento",
+      trigger_freq: "Frecuente / Ciclo",
+      trigger_scheduled: "Programado (Fecha Única)"
     }
   },
   en: {
@@ -91,7 +121,8 @@ export const translations = {
       settings: "Settings",
       help: "Help",
       anonymous: "Anonymous Session",
-      active_portal: "Active Portal"
+      active_portal: "Active Portal",
+      automations: "Automations"
     },
     dashboard: {
       title: "Operations Dashboard",
@@ -167,6 +198,35 @@ export const translations = {
       contact_desc: "Optimize your flows to maximize performance through expert support for your operational fleet.",
       contact_btn: "REQUEST ASSISTANCE",
       version: "Help protocol updated v3.1"
+    },
+    automations: {
+      title: "Automation Center",
+      new_template: "New Automation",
+      edit_template: "Edit Template",
+      no_templates: "No Automations",
+      no_templates_desc: "Setup intelligent notification flows (Reminders, Retargeting, Information) for your fleet.",
+      table_name: "Name",
+      table_type: "Type",
+      table_channel: "Channel",
+      table_trigger: "Trigger",
+      table_actions: "Actions",
+      form_name: "Template Name",
+      form_type: "Template Type",
+      form_channel: "Delivery Channel",
+      form_trigger: "Trigger Type",
+      form_freq: "Frequency",
+      form_day: "Execution Day",
+      form_hour: "Specific Hour",
+      form_message: "Message Content (JSON)",
+      form_stop: "Stop Condition",
+      save_btn: "Save Automation",
+      freq_daily: "Daily",
+      freq_weekly: "Weekly",
+      freq_monthly: "Monthly",
+      trigger_before: "Before Event",
+      trigger_after: "After Event",
+      trigger_freq: "Frequent / Cycle",
+      trigger_scheduled: "Scheduled (One-time)"
     }
   }
 };

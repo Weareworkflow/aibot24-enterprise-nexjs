@@ -6,12 +6,13 @@ export async function GET(request: NextRequest) {
         const { searchParams } = new URL(request.url);
         const tenantId = searchParams.get('tenantId');
 
+        if (!tenantId) {
+            return NextResponse.json({ error: 'Missing tenantId parameter' }, { status: 400 });
+        }
+
         const db = await getDb();
 
-        const filter: Record<string, any> = {};
-        if (tenantId) {
-            filter.tenantId = tenantId;
-        }
+        const filter: Record<string, any> = { tenantId };
 
         const agents = await db.collection('agents')
             .find(filter)

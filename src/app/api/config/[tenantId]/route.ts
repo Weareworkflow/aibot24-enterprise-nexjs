@@ -44,6 +44,26 @@ export async function PUT(
             { upsert: true }
         );
 
+        // --- Cache Invalidation ---
+        try {
+            const agentInternalUrl = process.env.AGENT_INTERNAL_URL;
+            if (agentInternalUrl) {
+                console.log(`[Config PUT] Triggering global cache invalidation for tenant: ${tenantId}`);
+
+                fetch(`${agentInternalUrl}/api/cache/invalidate`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        agent_id: tenantId,
+                        type: 'config'
+                    })
+                }).catch(err => console.error('[Config PUT] Cache invalidation fetch error:', err));
+            }
+        } catch (cacheErr) {
+            console.error('[Config PUT] Cache invalidation logic error:', cacheErr);
+        }
+        // --------------------------
+
         return NextResponse.json({ success: true });
     } catch (error: any) {
         console.error('[Config PUT] Error:', error);

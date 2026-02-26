@@ -21,8 +21,7 @@ import {
 } from "@/components/ui/dialog";
 import { ShieldAlert, Settings } from "lucide-react";
 import { useUIStore } from "@/lib/store";
-import { generateAgentConfig } from "@/ai/flows/generate-agent-config";
-import { registerOpenLinesBot } from "@/app/actions/bitrix-actions";
+import { deployAgent } from "@/app/actions/bitrix-actions";
 
 interface ChatMessage {
   id: string;
@@ -124,6 +123,7 @@ export default function NewAgentPage() {
   };
 
   const handleSave = async () => {
+    setIsSaving(true);
     // --- CHECK CREDENTIALS ---
     const isConfigured = installation?.clientId && installation?.clientSecret;
     if (!isConfigured) {
@@ -132,6 +132,7 @@ export default function NewAgentPage() {
         title: "Protocolo Incompleto",
         description: "Debes configurar el Client ID y Secret ID en la sección de Configuración antes de crear agentes para Bitrix24.",
       });
+      setIsSaving(false);
       return;
     }
 
@@ -142,88 +143,21 @@ export default function NewAgentPage() {
         title: "Portal no detectado",
         description: "No se ha podido identificar el portal de Bitrix24.",
       });
+      setIsSaving(false);
       return;
     }
 
     try {
-      let agentId = "";
-      let botIdToUse: number | undefined;
-
-      // 1. Register bot in Bitrix24 FIRST to get the botId
-      try {
-        const bitrixResult = await registerOpenLinesBot(effectiveTenantId, {
-          name: config.name,
-          role: config.role,
-          color: config.color,
-          agentId: "pending_" + Date.now() // Temporary ID for Bitrix CODE
-        });
-
-        if (bitrixResult.success && bitrixResult.botId) {
-          botIdToUse = bitrixResult.botId;
-          agentId = `${effectiveTenantId}-${botIdToUse}`;
-          console.log(`✅ Bot registrado en Bitrix24: ID ${botIdToUse}. Agent ID: ${agentId}`);
-        } else {
-          throw new Error(`Error registrando bot en Bitrix: ${bitrixResult.error}`);
-        }
-      } catch (bitrixError: any) {
-        console.error("⚠️ Bitrix registration error:", bitrixError);
-        toast({
-          variant: "destructive",
-          title: "Error de Registro",
-          description: bitrixError.message || "No se pudo registrar el bot en Bitrix24."
-        });
-        setIsSaving(false);
-        return;
-      }
-
-      const aiResponse = await generateAgentConfig({
-        prompt: `Genera un objetivo estratégico breve y un tono de comunicación para un agente con el rol: ${config.role} de la empresa ${config.company}.`,
-        tenantId: effectiveTenantId
-      });
-
-      const newAgent = {
-        id: agentId,
-        tenantId: effectiveTenantId,
+      // Use the consolidated server action for atomic deployment
+      const result = await deployAgent(effectiveTenantId, {
         name: config.name,
-        type: 'text' as const,
         role: config.role,
         company: config.company,
-        systemPrompt: "",
-        color: config.color,
-        isActive: true,
-        bitrixBotId: botIdToUse
-      };
+        color: config.color
+      });
 
-      const initialMetrics = {
-        agentId,
-        metrics: {
-          usageCount: 0,
-          performanceRating: 100,
-          totalInteractionMetric: 0,
-          tokens: "0",
-          meetings: 0,
-          transfers: 0,
-          abandoned: 0
-        }
-      };
-
-      // 2. Save Agent + Metrics via API routes using the NEW ID
-      const [agentRes, metricsRes] = await Promise.all([
-        fetch('/api/agents', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(newAgent),
-        }),
-        fetch('/api/metrics', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(initialMetrics),
-        })
-      ]);
-
-      if (!agentRes.ok) {
-        const errorData = await agentRes.json();
-        throw new Error(errorData.error || "Fallo al guardar el agente");
+      if (!result.success) {
+        throw new Error(result.error || "Fallo al desplegar el agente");
       }
 
       toast({
@@ -233,8 +167,12 @@ export default function NewAgentPage() {
 
       router.push("/");
     } catch (error: any) {
-      console.error("Error al guardar:", error);
-      toast({ variant: "destructive", title: "Error al desplegar", description: "Hubo un problema de red al generar el protocolo. Reintente." });
+      console.error("Error al desplegar:", error);
+      toast({
+        variant: "destructive",
+        title: "Error al desplegar",
+        description: error.message || "Hubo un problema de red al generar el protocolo. Reintente."
+      });
     } finally {
       setIsSaving(false);
     }

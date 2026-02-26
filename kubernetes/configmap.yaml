@@ -5,4 +5,5 @@ metadata:
   namespace: apps
 data:
   NEXT_PUBLIC_APP_URL: "https://aibot24-enterprise.weareworkflow.com"
-  BITRIX_BOT_HANDLER_URL: "https://aibot24-chat-gw-75slv2b8.uc.gateway.dev/api/chat"
+  BITRIX_BOT_HANDLER_URL: "https://agent.weareworkflow.com/webhook"
+  AGENT_INTERNAL_URL: "http://aibot-agent.agents-mcp.svc.cluster.local:8080"

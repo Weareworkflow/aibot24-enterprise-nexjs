@@ -23,23 +23,31 @@ export async function GET(
     // Fetch global config for prompt compilation
     const config = await db.collection('config-app').findOne({ tenantId: agent.tenantId });
     const globalPrompt = config?.systemPrompt || '';
+    const globalPromptRegistered = config?.systemPromptRegistered || '';
 
-    // Build compiled prompt: GLOBAL + AGENT SPECIFIC
-    let compiledPrompt = '';
-    if (globalPrompt) {
-      compiledPrompt += globalPrompt.trim() + '\n\n';
-    }
+    // Function to build compiled prompt
+    const compile = (global: string, specific: string, fallback: string) => {
+      let result = '';
+      if (global) result += global.trim() + '\n\n';
+      if (specific) result += specific.trim();
+      else result += fallback;
+      return result.trim();
+    };
 
-    if (agent.systemPrompt) {
-      compiledPrompt += agent.systemPrompt.trim();
-    } else {
-      compiledPrompt += `Eres ${agent.name || 'un agente de IA'}. Tu rol es ${agent.role || 'asistente'}. Empresa: ${agent.company || 'N/A'}.`;
-    }
+    const fallback = `Eres ${agent.name || 'un agente de IA'}. Tu rol es ${agent.role || 'asistente'}. Empresa: ${agent.company || 'N/A'}.`;
+
+    const compiledPrompt = compile(globalPrompt, agent.systemPrompt, fallback);
+    const compiledPromptRegistered = compile(
+      globalPromptRegistered || globalPrompt,
+      agent.systemPromptRegistered || agent.systemPrompt,
+      fallback
+    );
 
     return NextResponse.json({
       ...agent,
       _id: undefined,
-      compiledPrompt: compiledPrompt.trim(),
+      compiledPrompt,
+      compiledPromptRegistered,
     });
 
   } catch (error: any) {
@@ -73,6 +81,30 @@ export async function PUT(
     if (result.matchedCount === 0) {
       return NextResponse.json({ error: 'Agent not found' }, { status: 404 });
     }
+
+    // --- Cache Invalidation ---
+    try {
+      const agentInternalUrl = process.env.AGENT_INTERNAL_URL;
+      if (agentInternalUrl) {
+        const agent = await db.collection('agents').findOne({ id });
+        if (agent) {
+          const identifier = `${agent.tenantId}-${agent.bitrixBotId}`;
+          console.log(`[Agent PUT] Triggering cache invalidation for: ${identifier}`);
+
+          fetch(`${agentInternalUrl}/api/cache/invalidate`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              agent_id: identifier,
+              type: 'config'
+            })
+          }).catch(err => console.error('[Agent PUT] Cache invalidation fetch error:', err));
+        }
+      }
+    } catch (cacheErr) {
+      console.error('[Agent PUT] Cache invalidation logic error:', cacheErr);
+    }
+    // --------------------------
 
     return NextResponse.json({ success: true });
   } catch (error: any) {

@@ -18,8 +18,16 @@ export async function GET(request: NextRequest) {
             const db = await getDb();
             let lastUpdate = '';
 
+            let isClosed = false;
+
             const sendEvent = (data: any) => {
-                controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`));
+                if (isClosed || request.signal.aborted) return;
+                try {
+                    controller.enqueue(encoder.encode(`data: ${JSON.stringify(data)}\n\n`));
+                } catch (err) {
+                    console.error('[SSE sendEvent] Error:', err);
+                    isClosed = true;
+                }
             };
 
             // Initial fetch
@@ -56,8 +64,13 @@ export async function GET(request: NextRequest) {
             }, 5000); // 5 seconds interval for balance between real-time and server load
 
             request.signal.addEventListener('abort', () => {
+                isClosed = true;
                 clearInterval(interval);
-                controller.close();
+                try {
+                    controller.close();
+                } catch (e) {
+                    // Ignore errors if already closed
+                }
             });
         },
     });

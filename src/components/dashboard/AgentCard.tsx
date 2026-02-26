@@ -93,11 +93,26 @@ export function AgentCard({ agent }: AgentCardProps) {
       // 1. Desvincular de Bitrix si tiene ID
       if (agent.bitrixBotId && agent.tenantId) {
         try {
-          await unregisterOpenLinesBot(agent.tenantId, agent.bitrixBotId.toString());
-          toast({ title: "Bot desvinculado" });
+          const bitrixResult = await unregisterOpenLinesBot(agent.tenantId, agent.bitrixBotId.toString());
+          if (bitrixResult.success) {
+            toast({ title: "Bot desvinculado de Bitrix24" });
+          } else {
+            console.warn("Bitrix unregistration returned success:false", bitrixResult.error);
+            toast({
+              variant: "destructive",
+              title: "Aviso de Bitrix",
+              description: "El bot no se pudo eliminar de Bitrix (puede que ya no exista)."
+            });
+            // Continuamos la eliminación local de todos modos para no bloquear al usuario
+          }
         } catch (err) {
           console.error("Error unregistering from Bitrix:", err);
-          toast({ variant: "destructive", title: "Bitrix Error" });
+          toast({
+            variant: "destructive",
+            title: "Error de Comunicación",
+            description: "No se pudo contactar con Bitrix24 para eliminar el bot."
+          });
+          // No retornamos aquí, permitimos que intente borrar de la DB local
         }
       }
 

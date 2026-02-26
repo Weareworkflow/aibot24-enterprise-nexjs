@@ -39,6 +39,7 @@ export default function SettingsPage() {
   const t = translations[language].settings;
 
   const [localPrompt, setLocalPrompt] = useState("");
+  const [localPromptRegistered, setLocalPromptRegistered] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 
   // States for connection credentials
@@ -72,6 +73,9 @@ export default function SettingsPage() {
       if (appConfig.systemPrompt !== undefined) {
         setLocalPrompt(appConfig.systemPrompt);
       }
+      if (appConfig.systemPromptRegistered !== undefined) {
+        setLocalPromptRegistered(appConfig.systemPromptRegistered);
+      }
     }
   }, [appConfig, setTheme, setLanguage]);
 
@@ -100,6 +104,7 @@ export default function SettingsPage() {
           theme: themeVal,
           language: langVal,
           systemPrompt: localPrompt,
+          systemPromptRegistered: localPromptRegistered,
         }),
       });
     } catch (err) {
@@ -387,16 +392,34 @@ export default function SettingsPage() {
                       </Button>
                     </div>
                   </div>
-                  <div className="space-y-2">
-                    <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground opacity-60">
-                      {t.webhook_note}
-                    </Label>
-                    <Textarea
-                      value={localPrompt}
-                      onChange={(e) => setLocalPrompt(e.target.value)}
-                      placeholder="Enter global system prompt..."
-                      className="bg-muted/30 border-none rounded-2xl min-h-[200px] resize-none focus-visible:ring-secondary/50 p-5 text-sm"
-                    />
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    {/* GLOBAL BASE */}
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2 px-1">
+                        <div className="h-1.5 w-1.5 rounded-full bg-secondary" />
+                        <span className="text-[10px] font-black uppercase tracking-widest opacity-60">Base (Global)</span>
+                      </div>
+                      <Textarea
+                        value={localPrompt}
+                        onChange={(e) => setLocalPrompt(e.target.value)}
+                        placeholder="Instrucciones base para todos los agentes..."
+                        className="bg-muted/30 border-none rounded-2xl min-h-[300px] resize-none focus-visible:ring-secondary/50 p-5 text-sm leading-relaxed"
+                      />
+                    </div>
+
+                    {/* GLOBAL REGISTERED */}
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2 px-1">
+                        <div className="h-1.5 w-1.5 rounded-full bg-primary" />
+                        <span className="text-[10px] font-black uppercase tracking-widest opacity-60">Seguimiento (Global)</span>
+                      </div>
+                      <Textarea
+                        value={localPromptRegistered}
+                        onChange={(e) => setLocalPromptRegistered(e.target.value)}
+                        placeholder="Instrucciones de seguimiento para todos los agentes..."
+                        className="bg-muted/30 border-none rounded-2xl min-h-[300px] resize-none focus-visible:ring-primary/50 p-5 text-sm leading-relaxed"
+                      />
+                    </div>
                   </div>
                 </div>
               </CardContent>

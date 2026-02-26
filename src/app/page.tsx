@@ -43,30 +43,38 @@ function DashboardContent() {
   // Context initialization from URL params (Bitrix24 iframe)
   useEffect(() => {
     const BX24 = (window as any).BX24;
+    const urlDomain = searchParams.get('DOMAIN');
+    const urlUser = searchParams.get('USER_ID');
+    const urlMemberId = searchParams.get('member_id');
+
     if (BX24) {
       BX24.init(() => {
         const auth = BX24.getAuth();
         if (auth) {
-          const d = auth.domain || searchParams.get('DOMAIN');
-          const m = auth.member_id;
-          const u = auth.user_id || searchParams.get('USER_ID');
+          const d = auth.domain || urlDomain;
+          const m = auth.member_id || urlMemberId;
+          const u = auth.user_id || urlUser;
 
-          if (d) { setTenantId(d); setDomain(d); }
+          if (d) {
+            if (tenantId !== d) setAgents([]); // Clear agents before switching
+            setTenantId(d);
+            setDomain(d);
+          }
           if (m) setMemberId(m);
           if (u) setUserId(u);
         }
       });
     } else {
-      // Fallback for local dev
-      const urlDomain = searchParams.get('DOMAIN');
-      const urlUser = searchParams.get('USER_ID');
-      if (urlDomain && !tenantId) {
+      // Fallback for local dev or direct access
+      if (urlDomain) {
+        if (tenantId !== urlDomain) setAgents([]); // Clear agents before switching
         setTenantId(urlDomain);
         setDomain(urlDomain);
       }
       if (urlUser) setUserId(urlUser);
+      if (urlMemberId) setMemberId(urlMemberId);
     }
-  }, [searchParams]);
+  }, [searchParams, tenantId, setTenantId, setDomain, setAgents, setMemberId, setUserId]);
 
   // Authorization Check - DISABLED members logic (Everyone is admin for now)
   useEffect(() => {

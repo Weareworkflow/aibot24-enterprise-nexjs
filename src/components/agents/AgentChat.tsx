@@ -12,7 +12,8 @@ import {
 import {
   BrainCircuit,
   Settings2,
-  ArrowLeft
+  ArrowLeft,
+  Bell
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
@@ -22,6 +23,7 @@ import { updateOpenLinesBot } from '@/app/actions/bitrix-actions';
 
 import { IdentitySection } from "./AgentChat/IdentitySection";
 import { SystemPromptSection } from "./AgentChat/SystemPromptSection";
+import { AutomationSection } from "./AgentChat/AutomationSection";
 
 
 
@@ -121,7 +123,7 @@ export function AgentChat({ agent }: AgentChatProps) {
       <ScrollArea className="flex-1 modern-scroll" ref={scrollRef}>
         <div className="flex flex-col p-6">
           <Tabs defaultValue="identidad" className="w-full">
-            <TabsList className="grid w-full h-14 p-1.5 bg-card/50 backdrop-blur-xl border border-border/40 rounded-[1.5rem] shadow-sm mb-8 grid-cols-2">
+            <TabsList className="grid w-full h-14 p-1.5 bg-card/50 backdrop-blur-xl border border-border/40 rounded-[1.5rem] shadow-sm mb-8 grid-cols-3">
               <TabsTrigger
                 value="identidad"
                 className="rounded-xl gap-2 font-black uppercase text-[10px] tracking-widest data-[state=active]:bg-background data-[state=active]:shadow-lg"
@@ -135,6 +137,13 @@ export function AgentChat({ agent }: AgentChatProps) {
               >
                 <BrainCircuit className="h-4 w-4" />
                 System Prompt
+              </TabsTrigger>
+              <TabsTrigger
+                value="automation"
+                className="rounded-xl gap-2 font-black uppercase text-[10px] tracking-widest data-[state=active]:bg-background data-[state=active]:shadow-lg"
+              >
+                <Bell className="h-4 w-4" />
+                Automatización
               </TabsTrigger>
             </TabsList>
 
@@ -150,6 +159,12 @@ export function AgentChat({ agent }: AgentChatProps) {
                   agent={agent}
                   onUpdate={handleManualUpdate}
                 />
+              </div>
+            </TabsContent>
+
+            <TabsContent value="automation" className="mt-0 focus-visible:outline-none">
+              <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
+                <AutomationSection agent={agent} />
               </div>
             </TabsContent>
           </Tabs>

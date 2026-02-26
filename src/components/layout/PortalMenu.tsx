@@ -2,10 +2,11 @@
 "use client";
 
 import { useUIStore } from "@/lib/store";
-import { 
-  Settings, 
-  HelpCircle, 
-  MoreVertical
+import {
+  Settings,
+  HelpCircle,
+  MoreVertical,
+  Zap
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -24,9 +25,9 @@ export function PortalMenu() {
   const { tenantId, domain, language } = useUIStore();
   const router = useRouter();
   const t = translations[language].nav;
-  
-  const portalName = domain 
-    ? domain.split('.')[0].toUpperCase() 
+
+  const portalName = domain
+    ? domain.split('.')[0].toUpperCase()
     : (tenantId ? t.active_portal : t.anonymous);
 
   return (
@@ -43,11 +44,11 @@ export function PortalMenu() {
             <p className="text-[10px] font-bold text-muted-foreground lowercase tracking-tight truncate">{domain || "bitrix24.enterprise"}</p>
           </div>
         </DropdownMenuLabel>
-        
+
         <DropdownMenuSeparator className="bg-muted/50 mx-2 h-px" />
-        
+
         <DropdownMenuGroup className="p-1">
-          <DropdownMenuItem 
+          <DropdownMenuItem
             className="h-12 px-4 rounded-2xl gap-3 cursor-pointer focus:bg-muted group"
             onClick={() => router.push('/settings')}
           >
@@ -56,8 +57,18 @@ export function PortalMenu() {
             </div>
             <span className="text-[11px] font-black uppercase tracking-widest text-foreground">{t.settings}</span>
           </DropdownMenuItem>
-          
-          <DropdownMenuItem 
+
+          <DropdownMenuItem
+            className="h-12 px-4 rounded-2xl gap-3 cursor-pointer focus:bg-muted group"
+            onClick={() => router.push('/automations')}
+          >
+            <div className="h-8 w-8 rounded-xl bg-muted/50 flex items-center justify-center group-focus:bg-background transition-colors">
+              <Zap className="h-4 w-4 text-muted-foreground" />
+            </div>
+            <span className="text-[11px] font-black uppercase tracking-widest text-foreground">{t.automations}</span>
+          </DropdownMenuItem>
+
+          <DropdownMenuItem
             className="h-12 px-4 rounded-2xl gap-3 cursor-pointer focus:bg-muted group"
             onClick={() => router.push('/help')}
           >
