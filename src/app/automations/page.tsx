@@ -84,6 +84,24 @@ export default function AutomationsPage() {
         }
     };
 
+    const getConfigSummary = (template: any) => {
+        const { tipo_plantilla, configuracion } = template;
+        if (tipo_plantilla === "RECORDATORIO" && configuracion?.recordatorio) {
+            const { valor, unidad } = configuracion.recordatorio.activar_antes;
+            return `-${valor} ${unidad}`;
+        }
+        if (tipo_plantilla === "RETARGETING" && configuracion?.retargeting) {
+            const { valor, unidad } = configuracion.retargeting.esperar_despues_de_evento;
+            return `Espera ${valor} ${unidad}`;
+        }
+        if (tipo_plantilla === "INFORMATIVO" && configuracion?.informativo) {
+            const { modo, frecuencia } = configuracion.informativo;
+            if (modo === 'UNICO') return 'Envío Único';
+            if (frecuencia) return `${frecuencia.tipo} • ${frecuencia.hora}`;
+        }
+        return "-";
+    };
+
     return (
         <div className="flex flex-col min-h-screen bg-background">
             <Navbar />
@@ -166,12 +184,10 @@ export default function AutomationsPage() {
                                             </td>
                                             <td className="px-8 py-5 font-medium">
                                                 <div className="flex flex-col">
-                                                    <span className="text-xs text-foreground">{template.trigger_type}</span>
-                                                    {template.trigger_type === 'FRECUENTE' && (
-                                                        <span className="text-[10px] text-muted-foreground font-black uppercase tracking-tight">
-                                                            {template.frecuencia_tipo} • {template.hora_especifica}
-                                                        </span>
-                                                    )}
+                                                    <span className="text-xs text-foreground uppercase">{getConfigSummary(template)}</span>
+                                                    <span className="text-[10px] text-muted-foreground font-black uppercase tracking-tight">
+                                                        {template.estado ? "ACTIVO" : "INACTIVO"}
+                                                    </span>
                                                 </div>
                                             </td>
                                             <td className="px-8 py-5 text-right">

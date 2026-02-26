@@ -111,7 +111,17 @@ export const translations = {
       trigger_before: "Antes del Evento",
       trigger_after: "Después del Evento",
       trigger_freq: "Frecuente / Ciclo",
-      trigger_scheduled: "Programado (Fecha Única)"
+      trigger_scheduled: "Programado (Fecha Única)",
+      unit_minutes: "Minutos",
+      unit_hours: "Horas",
+      unit_days: "Días",
+      mode_single: "Envío Único",
+      mode_frequent: "Frecuente",
+      wait_time: "Tiempo de Espera",
+      stop_condition: "Condición de Parada",
+      max_retries: "Intentos Máximos",
+      date_fixed: "Fecha Fija",
+      execution_day: "Día de Ejecución"
     }
   },
   en: {
@@ -226,7 +236,17 @@ export const translations = {
       trigger_before: "Before Event",
       trigger_after: "After Event",
       trigger_freq: "Frequent / Cycle",
-      trigger_scheduled: "Scheduled (One-time)"
+      trigger_scheduled: "Scheduled (One-time)",
+      unit_minutes: "Minutes",
+      unit_hours: "Hours",
+      unit_days: "Days",
+      mode_single: "Single Send",
+      mode_frequent: "Frequent",
+      wait_time: "Wait Time",
+      stop_condition: "Stop Condition",
+      max_retries: "Max Retries",
+      date_fixed: "Fixed Date",
+      execution_day: "Execution Day"
     }
   }
 };

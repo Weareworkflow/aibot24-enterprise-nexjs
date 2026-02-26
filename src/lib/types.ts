@@ -61,24 +61,49 @@ export interface AIBotMember {
   lastVisit: string;
 }
 export interface NotificationTemplate {
-  id: string;
+  id: string; // UUID managed in service
   tenantId: string;
-  key: string; // Clave única para referenciar desde triggers/AI (ej: 'RECORDATORIO_CITA')
   nombre: string;
   tipo_plantilla: 'RECORDATORIO' | 'RETARGETING' | 'INFORMATIVO';
-  canal: 'WHATSAPP' | 'PUSH' | 'EMAIL' | 'SMS';
-  // ... rest same
-  trigger_type: 'BEFORE' | 'AFTER' | 'FRECUENTE' | 'SCHEDULED' | 'EVENT';
-  frecuencia_tipo?: 'DIARIO' | 'SEMANAL' | 'MENSUAL';
-  dia_ejecucion: string;
-  hora_especifica: string;
-  mensaje_json: {
+  canal: 'PUSH' | 'WHATSAPP' | 'EMAIL' | 'SMS';
+  estado: boolean;
+
+  configuracion: {
+    // TIPO: RECORDATORIO
+    recordatorio?: {
+      activar_antes: {
+        valor: number;
+        unidad: 'MINUTES' | 'HOURS' | 'DAYS';
+      };
+    };
+
+    // TIPO: RETARGETING
+    retargeting?: {
+      esperar_despues_de_evento: {
+        valor: number;
+        unidad: 'MINUTES' | 'HOURS' | 'DAYS';
+      };
+      condicion_parada: string;
+      intentos_maximos: number;
+    };
+
+    // TIPO: INFORMATIVO
+    informativo?: {
+      modo: 'UNICO' | 'FRECUENTE';
+      fecha_fija?: string; // ISODate
+      frecuencia?: {
+        tipo: 'DIARIO' | 'SEMANAL' | 'MENSUAL';
+        hora: string; // "08:30"
+        dia_ejecucion: string; // "MONDAY" o "1"
+      };
+    };
+  };
+
+  contenido: {
     titulo: string;
     cuerpo: string;
-    [key: string]: any;
   };
-  condicion_parada?: string;
-  active: boolean;
+
   createdAt: string;
   updatedAt: string;
 }
