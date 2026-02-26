@@ -10,9 +10,10 @@ export interface AIAgent {
   company: string; // Empresa / Sector (WORK_COMPANY en Bitrix)
   color: string;
   systemPrompt: string; // Prompt específico del agente (Nuevos)
-  systemPromptRegistered: string; // Prompt específico del agente (Registrados)
+  systemPromptRegistered?: string; // Prompt específico del agente (Registrados)
   isActive: boolean;
   bitrixBotId: number; // ID obligatorio asignado por Bitrix24
+  bitrixBotCode: string; // CODE único usado en imbot.register
   avatar?: string; // Base64 image
 }
 

@@ -165,8 +165,9 @@ export async function registerBitrixBot(domain: string, agent: AIAgent) {
     return { error: "Agent ID is required for registration", error_description: "Missing Agent ID" };
   }
 
-  // Ensure CODE doesn't have redundant prefixes
-  const cleanCode = agent.id.includes('bot_') ? agent.id : `bot_${agent.id}`;
+  // Use the persisted code if available, otherwise fallback to ID-based generation
+  const codeToUse = agent.bitrixBotCode || (agent.id.includes('bot_') ? agent.id : `bot_${agent.id}`);
+  const cleanCode = codeToUse;
 
   const params: any = {
     CODE: cleanCode,

@@ -33,10 +33,11 @@ export async function deployAgent(domain: string, config: { name: string, role: 
     // We use a DETERMINISTIC CODE based on the name. 
     // This makes the call idempotent: if it retries due to net::ERR_NETWORK_CHANGED, 
     // Bitrix will return the existing bot instead of creating a new one.
-    const cleanName = config.name.toLowerCase().replace(/[^a-z0-9]/g, '_');
-    const deterministicId = `${cleanName}_${domain.replace(/\./g, '_')}`;
+    const normalizedDomain = domain.split('.')[0].substring(0, 15);
+    const cleanName = config.name.toLowerCase().replace(/[^a-z0-9]/g, '').substring(0, 10);
+    const deterministicId = `bot_${cleanName}_${normalizedDomain}`;
 
-    console.log(`[DeployAgent] Registering bot with deterministic ID: ${deterministicId}`);
+    console.log(`[DeployAgent] Registering bot with deterministic ID: ${deterministicId} (Length: ${deterministicId.length})`);
 
     const bitrixResult = await registerBot(domain, {
       name: config.name,
@@ -71,7 +72,8 @@ export async function deployAgent(domain: string, config: { name: string, role: 
       systemPrompt: aiResponse.systemPrompt || "",
       color: config.color,
       isActive: true,
-      bitrixBotId: botIdToUse
+      bitrixBotId: botIdToUse,
+      bitrixBotCode: deterministicId
     };
 
     await db.collection('agents').insertOne({
