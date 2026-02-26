@@ -15,6 +15,26 @@ export interface AIAgent {
   bitrixBotId: number; // ID obligatorio asignado por Bitrix24
   bitrixBotCode: string; // CODE único usado en imbot.register
   avatar?: string; // Base64 image
+  integrations?: AgentIntegration[];
+}
+
+export interface AgentIntegration {
+  id: string;
+  provider: 'OUTLOOK' | string;
+  isActive: boolean;
+  config: {
+    clientId?: string;
+    clientSecret?: string;
+    tenantId?: string;
+    assignments?: {
+      userId: string;
+      userEmail: string;
+      userName: string;
+      calendarId: string;
+      calendarName: string;
+    }[];
+    [key: string]: any;
+  };
 }
 
 export interface AgentMetrics {
