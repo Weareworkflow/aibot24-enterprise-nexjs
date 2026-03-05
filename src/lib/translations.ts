@@ -6,8 +6,7 @@ export const translations = {
       settings: "Configuración",
       help: "Ayuda",
       anonymous: "Sesión Anónima",
-      active_portal: "Portal Activo",
-      automations: "Automatizaciones"
+      active_portal: "Portal Activo"
     },
     dashboard: {
       title: "Panel Operativo",
@@ -84,45 +83,6 @@ export const translations = {
       contact_btn: "SOLICITAR ASISTENCIA",
       version: "Protocolo de ayuda actualizado v3.1"
     },
-    automations: {
-      title: "Centro de Automatizaciones",
-      new_template: "Nueva Automatización",
-      edit_template: "Editar Plantilla",
-      no_templates: "Sin Automatizaciones",
-      no_templates_desc: "Configura flujos de notificaciones inteligentes (Recordatorios, Targeting, Informativas) para tu flota.",
-      table_name: "Nombre",
-      table_type: "Tipo",
-      table_channel: "Canal",
-      table_trigger: "Disparador",
-      table_actions: "Acciones",
-      form_name: "Nombre de la Plantilla",
-      form_type: "Tipo de Plantilla",
-      form_channel: "Canal de Envío",
-      form_trigger: "Tipo de Disparador",
-      form_freq: "Frecuencia",
-      form_day: "Día de Ejecución",
-      form_hour: "Hora Específica",
-      form_message: "Contenido del Mensaje (JSON)",
-      form_stop: "Condición de Parada",
-      save_btn: "Guardar Automatización",
-      freq_daily: "Diario",
-      freq_weekly: "Semanal",
-      freq_monthly: "Mensual",
-      trigger_before: "Antes del Evento",
-      trigger_after: "Después del Evento",
-      trigger_freq: "Frecuente / Ciclo",
-      trigger_scheduled: "Programado (Fecha Única)",
-      unit_minutes: "Minutos",
-      unit_hours: "Horas",
-      unit_days: "Días",
-      mode_single: "Envío Único",
-      mode_frequent: "Frecuente",
-      wait_time: "Tiempo de Espera",
-      stop_condition: "Condición de Parada",
-      max_retries: "Intentos Máximos",
-      date_fixed: "Fecha Fija",
-      execution_day: "Día de Ejecución"
-    }
   },
   en: {
     nav: {
@@ -131,8 +91,7 @@ export const translations = {
       settings: "Settings",
       help: "Help",
       anonymous: "Anonymous Session",
-      active_portal: "Active Portal",
-      automations: "Automations"
+      active_portal: "Active Portal"
     },
     dashboard: {
       title: "Operations Dashboard",
@@ -209,44 +168,5 @@ export const translations = {
       contact_btn: "REQUEST ASSISTANCE",
       version: "Help protocol updated v3.1"
     },
-    automations: {
-      title: "Automation Center",
-      new_template: "New Automation",
-      edit_template: "Edit Template",
-      no_templates: "No Automations",
-      no_templates_desc: "Setup intelligent notification flows (Reminders, Targeting, Information) for your fleet.",
-      table_name: "Name",
-      table_type: "Type",
-      table_channel: "Channel",
-      table_trigger: "Trigger",
-      table_actions: "Actions",
-      form_name: "Template Name",
-      form_type: "Template Type",
-      form_channel: "Delivery Channel",
-      form_trigger: "Trigger Type",
-      form_freq: "Frequency",
-      form_day: "Execution Day",
-      form_hour: "Specific Hour",
-      form_message: "Message Content (JSON)",
-      form_stop: "Stop Condition",
-      save_btn: "Save Automation",
-      freq_daily: "Daily",
-      freq_weekly: "Weekly",
-      freq_monthly: "Monthly",
-      trigger_before: "Before Event",
-      trigger_after: "After Event",
-      trigger_freq: "Frequent / Cycle",
-      trigger_scheduled: "Scheduled (One-time)",
-      unit_minutes: "Minutes",
-      unit_hours: "Hours",
-      unit_days: "Days",
-      mode_single: "Single Send",
-      mode_frequent: "Frequent",
-      wait_time: "Wait Time",
-      stop_condition: "Stop Condition",
-      max_retries: "Max Retries",
-      date_fixed: "Fixed Date",
-      execution_day: "Execution Day"
-    }
   }
 };

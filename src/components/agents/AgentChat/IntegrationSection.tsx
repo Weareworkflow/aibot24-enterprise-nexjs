@@ -61,12 +61,16 @@ export function IntegrationSection({ agent, onUpdate }: IntegrationSectionProps)
 
     const [users, setUsers] = useState<any[]>([]);
     const [search, setSearch] = useState("");
+    const [advisorSearch, setAdvisorSearch] = useState("");
     const [calendars, setCalendars] = useState<any[]>([]);
 
     // State for the new assignment flow
     const [isAddingAssignment, setIsAddingAssignment] = useState(false);
     const [selectedUser, setSelectedUser] = useState<any>(null);
     const [selectedCalendar, setSelectedCalendar] = useState<any>(null);
+
+    // State for configuration mode
+    const [isEditingConfig, setIsEditingConfig] = useState(false);
 
     // Find Outlook integration from the list
     const outlookIntegration = integrations.find(i => i.provider === "OUTLOOK") || {
@@ -75,6 +79,8 @@ export function IntegrationSection({ agent, onUpdate }: IntegrationSectionProps)
         isActive: false,
         config: { assignments: [] }
     };
+
+    const isConfigured = !!(outlookIntegration.config.clientId && outlookIntegration.config.clientSecret && outlookIntegration.config.tenantId);
 
     const updateOutlookConfig = (newConfig: any) => {
         setIntegrations(prev => prev.map(i =>
@@ -230,10 +236,13 @@ export function IntegrationSection({ agent, onUpdate }: IntegrationSectionProps)
                 </button>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
                 {/* Azure Credentials (Standard for the provider) */}
-                <div className="lg:col-span-1">
-                    <Card className="bg-card border border-border/40 rounded-[2.5rem] overflow-hidden shadow-sm h-fit sticky top-6">
+                <div className={cn("lg:col-span-1 transition-all duration-500", !isConfigured || isEditingConfig ? "lg:col-span-4" : "lg:col-span-1")}>
+                    <Card className={cn(
+                        "bg-card border border-border/40 rounded-[2.5rem] overflow-hidden shadow-sm h-fit transition-all duration-500",
+                        (!isConfigured || isEditingConfig) ? "border-secondary/30 shadow-xl shadow-secondary/5" : "sticky top-6"
+                    )}>
                         <CardHeader className="p-6 border-b bg-muted/5 border-border/40 flex flex-row items-center justify-between">
                             <div className="flex items-center gap-4">
                                 <div className="p-3 rounded-2xl bg-blue-500/10">
@@ -244,204 +253,273 @@ export function IntegrationSection({ agent, onUpdate }: IntegrationSectionProps)
                                     <p className="text-[9px] text-muted-foreground font-bold uppercase tracking-widest mt-0.5">Credenciales Globales</p>
                                 </div>
                             </div>
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={toggleOutlookActive}
-                                className={cn(
-                                    "rounded-full h-8 w-8 transition-all",
-                                    outlookIntegration.isActive ? "text-green-500 bg-green-500/10" : "text-muted-foreground bg-muted"
+                            <div className="flex items-center gap-2">
+                                {isConfigured && (
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => setIsEditingConfig(!isEditingConfig)}
+                                        className="h-8 px-3 rounded-xl text-[9px] font-black uppercase tracking-widest"
+                                    >
+                                        {isEditingConfig ? "Cerrar" : "Modificar"}
+                                    </Button>
                                 )}
-                            >
-                                <Power className="h-4 w-4" />
-                            </Button>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={toggleOutlookActive}
+                                    className={cn(
+                                        "rounded-full h-8 w-8 transition-all",
+                                        outlookIntegration.isActive ? "text-green-500 bg-green-500/10" : "text-muted-foreground bg-muted"
+                                    )}
+                                >
+                                    <Power className="h-4 w-4" />
+                                </Button>
+                            </div>
                         </CardHeader>
-                        <CardContent className="p-6 space-y-5">
-                            <div className="space-y-1.5">
-                                <Label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground ml-1">Client ID</Label>
-                                <Input
-                                    value={outlookIntegration.config.clientId || ""}
-                                    onChange={(e) => updateOutlookConfig({ clientId: e.target.value })}
-                                    className="bg-muted/20 border-border/40 rounded-xl h-10 text-[10px] font-bold"
-                                    placeholder="ID de aplicación"
-                                />
-                            </div>
-                            <div className="space-y-1.5">
-                                <Label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground ml-1">Client Secret</Label>
-                                <Input
-                                    type="password"
-                                    value={outlookIntegration.config.clientSecret || ""}
-                                    onChange={(e) => updateOutlookConfig({ clientSecret: e.target.value })}
-                                    className="bg-muted/20 border-border/40 rounded-xl h-10 text-[10px] font-bold"
-                                    placeholder="Secreto de cliente"
-                                />
-                            </div>
-                            <div className="space-y-1.5">
-                                <Label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground ml-1">Tenant ID</Label>
-                                <Input
-                                    value={outlookIntegration.config.tenantId || ""}
-                                    onChange={(e) => updateOutlookConfig({ tenantId: e.target.value })}
-                                    className="bg-muted/20 border-border/40 rounded-xl h-10 text-[10px] font-bold"
-                                    placeholder="ID de inquilino"
-                                />
-                            </div>
+                        <CardContent className={cn("p-6 transition-all duration-500", (!isConfigured || isEditingConfig) ? "space-y-5" : "space-y-3")}>
+                            {(!isConfigured || isEditingConfig) ? (
+                                <>
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                        <div className="space-y-1.5">
+                                            <Label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground ml-1">Client ID</Label>
+                                            <Input
+                                                value={outlookIntegration.config.clientId || ""}
+                                                onChange={(e) => updateOutlookConfig({ clientId: e.target.value })}
+                                                className="bg-muted/20 border-border/40 rounded-xl h-12 text-[10px] font-bold"
+                                                placeholder="ID de aplicación"
+                                            />
+                                        </div>
+                                        <div className="space-y-1.5">
+                                            <Label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground ml-1">Client Secret</Label>
+                                            <Input
+                                                type="password"
+                                                value={outlookIntegration.config.clientSecret || ""}
+                                                onChange={(e) => updateOutlookConfig({ clientSecret: e.target.value })}
+                                                className="bg-muted/20 border-border/40 rounded-xl h-12 text-[10px] font-bold"
+                                                placeholder="Secreto de cliente"
+                                            />
+                                        </div>
+                                        <div className="space-y-1.5">
+                                            <Label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground ml-1">Tenant ID</Label>
+                                            <Input
+                                                value={outlookIntegration.config.tenantId || ""}
+                                                onChange={(e) => updateOutlookConfig({ tenantId: e.target.value })}
+                                                className="bg-muted/20 border-border/40 rounded-xl h-12 text-[10px] font-bold"
+                                                placeholder="ID de inquilino"
+                                            />
+                                        </div>
+                                    </div>
+                                    {isEditingConfig && (
+                                        <div className="pt-2 flex justify-end">
+                                            <Button
+                                                size="sm"
+                                                onClick={() => setIsEditingConfig(false)}
+                                                className="bg-secondary text-white rounded-xl h-10 px-6 text-[9px] font-black uppercase tracking-widest shadow-lg shadow-secondary/20"
+                                            >
+                                                Confirmar Cambios
+                                            </Button>
+                                        </div>
+                                    )}
+                                </>
+                            ) : (
+                                <div className="space-y-3 py-2">
+                                    <div className="flex items-center justify-between p-3 rounded-2xl bg-muted/30 border border-border/20">
+                                        <span className="text-[8px] font-black uppercase tracking-widest text-muted-foreground/60">Status</span>
+                                        <Badge variant="outline" className="bg-green-500/10 text-green-500 text-[8px] font-black tracking-widest border-none h-5 px-2">CONFIGURADO</Badge>
+                                    </div>
+                                    <div className="flex items-center justify-between p-3 rounded-2xl bg-muted/30 border border-border/20">
+                                        <span className="text-[8px] font-black uppercase tracking-widest text-muted-foreground/60">Endpoint</span>
+                                        <span className="text-[9px] font-bold text-foreground">Microsoft Graph API</span>
+                                    </div>
+                                </div>
+                            )}
                         </CardContent>
                     </Card>
                 </div>
 
                 {/* Assignments List and Management */}
-                <div className="lg:col-span-2 space-y-6">
-                    <div className="flex items-center justify-between px-2">
-                        <div className="flex items-center gap-3">
-                            <Users className="h-5 w-5 text-secondary" />
-                            <h3 className="text-sm font-black uppercase tracking-[0.15em]">Asignaciones de Calendario</h3>
+                {isConfigured && !isEditingConfig && (
+                    <div className="lg:col-span-3 space-y-6 animate-in fade-in slide-in-from-right-4 duration-700">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-2">
+                            <div className="flex items-center gap-3">
+                                <Users className="h-5 w-5 text-secondary" />
+                                <h3 className="text-sm font-black uppercase tracking-[0.15em]">Asesores y Calendarios</h3>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <div className="relative">
+                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground/40" />
+                                    <Input
+                                        value={advisorSearch}
+                                        onChange={(e) => setAdvisorSearch(e.target.value)}
+                                        placeholder="Filtrar asesores..."
+                                        className="pl-9 h-9 w-full sm:w-48 bg-muted/20 border-border/40 rounded-xl text-[10px] font-bold focus:ring-secondary/30"
+                                    />
+                                </div>
+                                {!isAddingAssignment && (
+                                    <Button
+                                        size="sm"
+                                        onClick={() => setIsAddingAssignment(true)}
+                                        className="rounded-xl h-9 bg-secondary hover:bg-secondary/90 text-white text-[9px] font-black uppercase tracking-widest transition-all hover:scale-105 active:scale-95"
+                                    >
+                                        <Plus className="h-3 w-3 mr-2" />
+                                        Agregar
+                                    </Button>
+                                )}
+                            </div>
                         </div>
-                        {!isAddingAssignment && (
-                            <Button
-                                size="sm"
-                                onClick={() => setIsAddingAssignment(true)}
-                                className="rounded-xl h-9 bg-secondary hover:bg-secondary/90 text-white text-[9px] font-black uppercase tracking-widest"
-                            >
-                                <Plus className="h-3 w-3 mr-2" />
-                                Agregar Asesor
-                            </Button>
-                        )}
-                    </div>
 
-                    {isAddingAssignment ? (
-                        <Card className="bg-card border-2 border-dashed border-secondary/30 rounded-[2.5rem] overflow-hidden animate-in slide-in-from-top-4 duration-500">
-                            <CardHeader className="p-6 border-b bg-secondary/5 border-secondary/10 flex flex-row items-center justify-between">
-                                <div className="flex items-center gap-3">
-                                    <UserPlus className="h-4 w-4 text-secondary" />
-                                    <span className="text-[10px] font-black uppercase tracking-widest">Nuevo Calendario Vinculado</span>
-                                </div>
-                                <Button variant="ghost" size="sm" onClick={() => { setIsAddingAssignment(false); setSelectedUser(null); }} className="h-8 rounded-xl text-[9px] font-bold uppercase">Cancelar</Button>
-                            </CardHeader>
-                            <CardContent className="p-8 space-y-6">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div className="space-y-3">
-                                        <Label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground ml-1">1. Buscar Asesor</Label>
-                                        <div className="relative">
-                                            <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground/40" />
-                                            <Input
-                                                value={search}
-                                                onChange={(e) => {
-                                                    setSearch(e.target.value);
-                                                    handleSearchUsers(e.target.value);
-                                                }}
-                                                placeholder="Nombre o Email..."
-                                                className="pl-10 bg-muted/20 border-border/40 rounded-xl h-10 text-xs font-bold"
-                                            />
-                                            {searchingUsers && <Loader2 className="absolute right-3 top-2.5 h-4 w-4 animate-spin text-secondary" />}
-                                        </div>
-                                        <div className="border border-border/40 rounded-xl bg-muted/5 overflow-hidden shadow-inner">
-                                            <ScrollArea className="h-32">
-                                                <div className="p-2 space-y-1">
-                                                    {users.length === 0 && !searchingUsers && search && (
-                                                        <p className="text-[9px] text-center p-4 text-muted-foreground uppercase font-black tracking-widest">Sin resultados</p>
-                                                    )}
-                                                    {users.map(u => (
-                                                        <button
-                                                            key={u.id}
-                                                            onClick={() => { setSelectedUser(u); handleFetchCalendars(u.email); }}
-                                                            className={cn(
-                                                                "w-full flex items-center gap-2 p-2 rounded-lg text-left transition-all",
-                                                                selectedUser?.id === u.id ? "bg-secondary text-white" : "hover:bg-muted/50"
-                                                            )}
-                                                        >
-                                                            <Avatar className="h-6 w-6">
-                                                                <AvatarImage src={u.avatar} />
-                                                                <AvatarFallback className="text-[8px]">{u.name.charAt(0)}</AvatarFallback>
-                                                            </Avatar>
-                                                            <div className="overflow-hidden">
-                                                                <p className="text-[9px] font-black truncate">{u.name}</p>
-                                                                <p className="text-[7px] truncate opacity-60">{u.email}</p>
-                                                            </div>
-                                                        </button>
-                                                    ))}
-                                                </div>
-                                            </ScrollArea>
-                                        </div>
+                        {isAddingAssignment ? (
+                            <Card className="bg-card border-2 border-dashed border-secondary/30 rounded-[2.5rem] overflow-hidden animate-in slide-in-from-top-4 duration-500 shadow-2xl shadow-secondary/5">
+                                <CardHeader className="p-6 border-b bg-secondary/5 border-secondary/10 flex flex-row items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <UserPlus className="h-4 w-4 text-secondary" />
+                                        <span className="text-[10px] font-black uppercase tracking-widest">Vincular Nuevo Asesor</span>
                                     </div>
-
-                                    <div className="space-y-3">
-                                        <Label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground ml-1">2. Seleccionar Calendario</Label>
-                                        <Select
-                                            disabled={!selectedUser || fetchingCalendars}
-                                            onValueChange={(val) => {
-                                                const cal = calendars.find(c => c.id === val);
-                                                setSelectedCalendar(cal);
-                                            }}
-                                        >
-                                            <SelectTrigger className="bg-muted/20 border-border/40 rounded-xl h-10 text-xs font-bold">
-                                                <SelectValue placeholder={fetchingCalendars ? "Cargando..." : "Elige un calendario"} />
-                                            </SelectTrigger>
-                                            <SelectContent className="rounded-xl border-border/40">
-                                                {calendars.map(c => (
-                                                    <SelectItem key={c.id} value={c.id} className="text-[10px] font-bold">
-                                                        {c.name} {c.isDefault && "(Principal)"}
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-
-                                        <div className="pt-4">
-                                            <Button
-                                                disabled={!selectedUser || !selectedCalendar}
-                                                onClick={handleAddAssignment}
-                                                className="w-full h-10 bg-secondary hover:bg-secondary/90 text-white rounded-xl text-[9px] font-black uppercase tracking-widest shadow-lg shadow-secondary/20"
-                                            >
-                                                Confirmar Asignación
-                                            </Button>
+                                    <Button variant="ghost" size="sm" onClick={() => { setIsAddingAssignment(false); setSelectedUser(null); }} className="h-8 rounded-xl text-[9px] font-bold uppercase transition-colors hover:bg-secondary/10 hover:text-secondary">Cancelar</Button>
+                                </CardHeader>
+                                <CardContent className="p-8 space-y-6">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                        <div className="space-y-4">
+                                            <Label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground ml-1">1. Seleccionar Empleado</Label>
+                                            <div className="relative">
+                                                <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground/40" />
+                                                <Input
+                                                    value={search}
+                                                    onChange={(e) => { setSearch(e.target.value); handleSearchUsers(e.target.value); }}
+                                                    placeholder="Buscar en Bitrix24..."
+                                                    className="pl-10 bg-muted/20 border-border/40 rounded-xl h-11 text-xs font-bold focus:ring-secondary/30"
+                                                />
+                                                {searchingUsers && <Loader2 className="absolute right-3 top-2.5 h-4 w-4 animate-spin text-muted-foreground" />}
+                                            </div>
+                                            <div className="border border-border/40 rounded-[1.5rem] bg-muted/5 overflow-hidden shadow-inner">
+                                                <ScrollArea className="h-48">
+                                                    <div className="p-2 space-y-1">
+                                                        {users.map(u => (
+                                                            <button
+                                                                key={u.id}
+                                                                onClick={() => { setSelectedUser(u); handleFetchCalendars(u.email); }}
+                                                                className={cn(
+                                                                    "w-full flex items-center gap-3 p-3 rounded-2xl text-left transition-all",
+                                                                    selectedUser?.id === u.id ? "bg-secondary text-white shadow-lg shadow-secondary/20" : "hover:bg-muted/50"
+                                                                )}
+                                                            >
+                                                                <Avatar className="h-8 w-8 border-2 border-background/20">
+                                                                    <AvatarImage src={u.avatar} />
+                                                                    <AvatarFallback className="text-[10px] font-black">{u.name.charAt(0)}</AvatarFallback>
+                                                                </Avatar>
+                                                                <div className="overflow-hidden">
+                                                                    <p className="text-[10px] font-black truncate leading-tight">{u.name}</p>
+                                                                    <p className="text-[8px] truncate opacity-80 font-medium">{u.email}</p>
+                                                                </div>
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                </ScrollArea>
+                                            </div>
                                         </div>
-                                    </div>
-                                </div>
-                            </CardContent>
-                        </Card>
-                    ) : null}
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {(outlookIntegration.config?.assignments || []).length > 0 ? (
-                            (outlookIntegration.config?.assignments || []).map((as: any) => (
-                                <Card key={as.userId} className="bg-card border border-border/40 rounded-[1.5rem] overflow-hidden shadow-sm hover:shadow-md transition-all group">
-                                    <div className="p-4 flex items-center justify-between">
-                                        <div className="flex items-center gap-3">
-                                            <Avatar className="h-10 w-10 border-2 border-secondary/10">
-                                                <AvatarFallback className="bg-secondary/5 text-secondary text-xs font-black">
-                                                    {as.userName.charAt(0)}
-                                                </AvatarFallback>
-                                            </Avatar>
-                                            <div>
-                                                <h4 className="text-[10px] font-black uppercase tracking-widest text-foreground">{as.userName}</h4>
-                                                <div className="flex items-center gap-2 mt-0.5">
-                                                    <Badge variant="outline" className="p-0 border-none text-[8px] text-muted-foreground lowercase font-medium">{as.userEmail}</Badge>
-                                                </div>
-                                                <div className="flex items-center gap-1.5 mt-1.5 text-secondary">
-                                                    <Calendar className="h-3 w-3" />
-                                                    <span className="text-[8px] font-black uppercase tracking-widest">{as.calendarName}</span>
+                                        <div className="space-y-4">
+                                            <Label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground ml-1">2. Vincular Calendario</Label>
+                                            <div className="min-h-[140px] flex flex-col justify-between pt-1">
+                                                <Select
+                                                    disabled={!selectedUser || fetchingCalendars}
+                                                    onValueChange={(val) => {
+                                                        const cal = calendars.find(c => c.id === val);
+                                                        setSelectedCalendar(cal);
+                                                    }}
+                                                >
+                                                    <SelectTrigger className="bg-muted/20 border-border/40 rounded-xl h-11 text-xs font-bold focus:ring-secondary/30 transition-all">
+                                                        <SelectValue placeholder={fetchingCalendars ? "Sincronizando..." : "Selecciona un calendario de Outlook"} />
+                                                    </SelectTrigger>
+                                                    <SelectContent className="rounded-xl border-border/40">
+                                                        {calendars.map(c => (
+                                                            <SelectItem key={c.id} value={c.id} className="text-[10px] font-bold rounded-lg my-1">
+                                                                <div className="flex items-center gap-2">
+                                                                    <Calendar className="h-3 w-3 text-secondary/60" />
+                                                                    {c.name} {c.isDefault && "(Principal)"}
+                                                                </div>
+                                                            </SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+
+                                                <div className="pt-8">
+                                                    <Button
+                                                        disabled={!selectedUser || !selectedCalendar}
+                                                        onClick={handleAddAssignment}
+                                                        className="w-full h-12 bg-secondary hover:bg-secondary/90 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-xl shadow-secondary/20 transition-all hover:scale-[1.02] active:scale-95"
+                                                    >
+                                                        Finalizar Vinculación
+                                                    </Button>
                                                 </div>
                                             </div>
                                         </div>
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            onClick={() => handleRemoveAssignment(as.userId)}
-                                            className="h-8 w-8 rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 opacity-0 group-hover:opacity-100 transition-opacity"
-                                        >
-                                            <Trash2 className="h-4 w-4" />
-                                        </Button>
                                     </div>
-                                </Card>
-                            ))
-                        ) : !isAddingAssignment ? (
-                            <div className="col-span-2 p-12 text-center bg-muted/5 border-2 border-dashed border-border/40 rounded-[2.5rem]">
-                                <Users className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
-                                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">No hay asesores asignados</p>
-                                <p className="text-[8px] text-muted-foreground/50 uppercase tracking-widest mt-1">Haz clic en 'Agregar Asesor' para gestionar su disponibilidad.</p>
-                            </div>
+                                </CardContent>
+                            </Card>
                         ) : null}
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            {(outlookIntegration.config.assignments || []).length > 0 ? (
+                                (outlookIntegration.config.assignments || [])
+                                    .filter((as: any) =>
+                                        as.userName.toLowerCase().includes(advisorSearch.toLowerCase()) ||
+                                        as.userEmail.toLowerCase().includes(advisorSearch.toLowerCase())
+                                    )
+                                    .map((as: any) => (
+                                        <Card key={as.userId} className="bg-card border border-border/40 rounded-[2rem] overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 group border-l-4 border-l-secondary/40">
+                                            <div className="p-5 flex items-center justify-between">
+                                                <div className="flex items-center gap-4">
+                                                    <div className="relative">
+                                                        <Avatar className="h-12 w-12 border-2 border-secondary/10 shadow-sm transition-transform group-hover:scale-105">
+                                                            <AvatarFallback className="bg-secondary/5 text-secondary text-sm font-black">
+                                                                {as.userName.charAt(0)}
+                                                            </AvatarFallback>
+                                                        </Avatar>
+                                                        <div className="absolute -bottom-1 -right-1 bg-green-500 h-3.5 w-3.5 rounded-full border-2 border-background shadow-sm" />
+                                                    </div>
+                                                    <div>
+                                                        <h4 className="text-[11px] font-black uppercase tracking-widest text-foreground leading-tight group-hover:text-secondary transition-colors">{as.userName}</h4>
+                                                        <div className="flex items-center gap-2 mt-1">
+                                                            <Badge variant="outline" className="p-0 border-none bg-transparent text-[8px] text-muted-foreground lowercase font-semibold opacity-70">{as.userEmail}</Badge>
+                                                        </div>
+                                                        <div className="flex items-center gap-2 mt-2 px-2 py-1 bg-secondary/5 rounded-lg w-fit">
+                                                            <Calendar className="h-3 w-3 text-secondary" />
+                                                            <span className="text-[8px] font-black uppercase tracking-widest text-secondary">{as.calendarName}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    onClick={() => handleRemoveAssignment(as.userId)}
+                                                    className="h-10 w-10 rounded-2xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 opacity-0 group-hover:opacity-100 transition-all"
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                </Button>
+                                            </div>
+                                        </Card>
+                                    ))
+                            ) : !isAddingAssignment ? (
+                                <div className="col-span-1 md:col-span-2 p-16 text-center bg-muted/5 border-2 border-dashed border-border/40 rounded-[3rem] transition-colors hover:bg-muted/10">
+                                    <div className="bg-muted/20 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6">
+                                        <Users className="h-8 w-8 text-muted-foreground/30" />
+                                    </div>
+                                    <p className="text-xs font-black uppercase tracking-[0.2em] text-foreground">Escuadrón No Asignado</p>
+                                    <p className="text-[9px] text-muted-foreground font-bold uppercase tracking-widest mt-2 max-w-[280px] mx-auto leading-relaxed">Configura el primer asesor para habilitar la toma de citas inteligente a través de Outlook.</p>
+                                    <Button
+                                        variant="outline"
+                                        onClick={() => setIsAddingAssignment(true)}
+                                        className="mt-6 rounded-xl border-secondary/30 text-secondary hover:bg-secondary hover:text-white px-6 text-[9px] font-black uppercase tracking-widest"
+                                    >
+                                        Comenzar Ahora
+                                    </Button>
+                                </div>
+                            ) : null}
+                        </div>
                     </div>
-                </div>
+                )}
             </div>
         </div>
     );
