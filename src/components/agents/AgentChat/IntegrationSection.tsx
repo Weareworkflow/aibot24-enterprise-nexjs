@@ -47,17 +47,33 @@ export function IntegrationSection({ agent, onUpdate }: IntegrationSectionProps)
     const [fetchingCalendars, setFetchingCalendars] = useState(false);
     const [searchingUsers, setSearchingUsers] = useState(false);
 
-    // Initialize integrations array if not present
-    const [integrations, setIntegrations] = useState<AgentIntegration[]>(
-        agent.integrations && agent.integrations.length > 0
-            ? agent.integrations
-            : [{
+    // Initialize integrations array if not present or missing providers
+    const [integrations, setIntegrations] = useState<AgentIntegration[]>(() => {
+        const existing = agent.integrations || [];
+        const hasOutlook = existing.some(i => i.provider === "OUTLOOK");
+        const hasGoogle = existing.some(i => i.provider === "GOOGLE");
+
+        const initial = [...existing];
+        if (!hasOutlook) {
+            initial.push({
                 id: "outlook-primary",
                 provider: "OUTLOOK",
                 isActive: false,
                 config: { assignments: [] }
-            }]
-    );
+            });
+        }
+        if (!hasGoogle) {
+            initial.push({
+                id: "google-primary",
+                provider: "GOOGLE",
+                isActive: false,
+                config: { assignments: [] }
+            });
+        }
+        return initial;
+    });
+
+    const [activeTab, setActiveTab] = useState<'OUTLOOK' | 'GOOGLE'>('OUTLOOK');
 
     const [users, setUsers] = useState<any[]>([]);
     const [search, setSearch] = useState("");
@@ -72,25 +88,27 @@ export function IntegrationSection({ agent, onUpdate }: IntegrationSectionProps)
     // State for configuration mode
     const [isEditingConfig, setIsEditingConfig] = useState(false);
 
-    // Find Outlook integration from the list
-    const outlookIntegration = integrations.find(i => i.provider === "OUTLOOK") || {
-        id: "outlook-primary",
-        provider: "OUTLOOK",
+    // Find current integration from the list based on active tab
+    const currentIntegration = integrations.find(i => i.provider === activeTab) || {
+        id: `${activeTab.toLowerCase()}-primary`,
+        provider: activeTab,
         isActive: false,
         config: { assignments: [] }
     };
 
-    const isConfigured = !!(outlookIntegration.config.clientId && outlookIntegration.config.clientSecret && outlookIntegration.config.tenantId);
+    const isConfigured = activeTab === "OUTLOOK"
+        ? !!(currentIntegration.config.clientId && currentIntegration.config.clientSecret && currentIntegration.config.tenantId)
+        : !!(currentIntegration.config.clientEmail && currentIntegration.config.privateKey && currentIntegration.config.projectId);
 
-    const updateOutlookConfig = (newConfig: any) => {
+    const updateCurrentConfig = (newConfig: any) => {
         setIntegrations(prev => prev.map(i =>
-            i.provider === "OUTLOOK" ? { ...i, config: { ...i.config, ...newConfig } } : i
+            i.provider === activeTab ? { ...i, config: { ...i.config, ...newConfig } } : i
         ));
     };
 
-    const toggleOutlookActive = () => {
+    const toggleCurrentActive = () => {
         setIntegrations(prev => prev.map(i =>
-            i.provider === "OUTLOOK" ? { ...i, isActive: !i.isActive } : i
+            i.provider === activeTab ? { ...i, isActive: !i.isActive } : i
         ));
     };
 
@@ -114,39 +132,43 @@ export function IntegrationSection({ agent, onUpdate }: IntegrationSectionProps)
     }, [handleSearchUsers]);
 
     const handleFetchCalendars = async (email: string) => {
-        const config = outlookIntegration.config;
-        if (!config.clientId || !config.clientSecret || !config.tenantId || !email) {
-            toast({
-                title: "Credenciales Faltantes",
-                description: "Por favor, completa las credenciales de Azure primero.",
-                variant: "destructive",
-            });
-            return;
+        const config = currentIntegration.config;
+
+        if (activeTab === "OUTLOOK") {
+            if (!config.clientId || !config.clientSecret || !config.tenantId || !email) {
+                toast({ title: "Credenciales Faltantes", description: "Por favor, completa las credenciales de Azure primero.", variant: "destructive" });
+                return;
+            }
+        } else {
+            if (!config.clientEmail || !config.privateKey || !email) {
+                toast({ title: "Credenciales Faltantes", description: "Por favor, completa las credenciales de Google primero.", variant: "destructive" });
+                return;
+            }
         }
 
         setFetchingCalendars(true);
         try {
-            const res = await fetch("/api/outlook/calendars", {
+            const url = activeTab === "OUTLOOK" ? "/api/outlook/calendars" : "/api/google/calendars";
+            const body = activeTab === "OUTLOOK"
+                ? { clientId: config.clientId, clientSecret: config.clientSecret, tenantId: config.tenantId, userEmail: email }
+                : { clientEmail: config.clientEmail, privateKey: config.privateKey, projectId: config.projectId, userEmail: email };
+
+            const res = await fetch(url, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    clientId: config.clientId,
-                    clientSecret: config.clientSecret,
-                    tenantId: config.tenantId,
-                    userEmail: email,
-                }),
+                body: JSON.stringify(body),
             });
 
             if (!res.ok) {
                 const errData = await res.json();
-                throw new Error(errData.error || "Error al obtener calendarios");
+                throw new Error(errData.error || `Error al obtener calendarios de ${activeTab}`);
             }
 
             const data = await res.json();
             setCalendars(data);
         } catch (err: any) {
             toast({
-                title: "Error Outlook",
+                title: `Error ${activeTab}`,
                 description: err.message,
                 variant: "destructive",
             });
@@ -155,7 +177,7 @@ export function IntegrationSection({ agent, onUpdate }: IntegrationSectionProps)
         }
     };
 
-    const handleAddAssignment = () => {
+    const handleAddAssignment = async () => {
         if (!selectedUser || !selectedCalendar) return;
 
         const newAssignment = {
@@ -166,7 +188,7 @@ export function IntegrationSection({ agent, onUpdate }: IntegrationSectionProps)
             calendarName: selectedCalendar.name
         };
 
-        const currentAssignments = outlookIntegration.config.assignments || [];
+        const currentAssignments = currentIntegration.config.assignments || [];
 
         // Check if user already assigned
         if (currentAssignments.some((a: any) => a.userId === newAssignment.userId)) {
@@ -178,31 +200,54 @@ export function IntegrationSection({ agent, onUpdate }: IntegrationSectionProps)
             return;
         }
 
-        updateOutlookConfig({
-            assignments: [...currentAssignments, newAssignment]
-        });
+        const newAssignments = [...currentAssignments, newAssignment];
 
-        // Reset flow
-        setIsAddingAssignment(false);
-        setSelectedUser(null);
-        setSelectedCalendar(null);
-        setSearch("");
-        setCalendars([]);
+        // Update local state first for responsiveness
+        const nextIntegrations = integrations.map(i =>
+            i.provider === activeTab ? { ...i, config: { ...i.config, assignments: newAssignments } } : i
+        );
+        setIntegrations(nextIntegrations);
+
+        // Save immediately
+        try {
+            await onUpdate({ integrations: nextIntegrations }, `Asesor vinculado (${activeTab})`);
+
+            // Reset flow only on success
+            setIsAddingAssignment(false);
+            setSelectedUser(null);
+            setSelectedCalendar(null);
+            setSearch("");
+            setCalendars([]);
+        } catch (err) {
+            // Error handled by onUpdate
+        }
     };
 
-    const handleRemoveAssignment = (userId: string) => {
-        const currentAssignments = outlookIntegration.config.assignments || [];
-        updateOutlookConfig({
-            assignments: currentAssignments.filter((a: any) => a.userId !== userId)
-        });
+    const handleRemoveAssignment = async (userId: string) => {
+        const currentAssignments = currentIntegration.config.assignments || [];
+        const newAssignments = currentAssignments.filter((a: any) => a.userId !== userId);
+
+        // Update local state
+        const nextIntegrations = integrations.map(i =>
+            i.provider === activeTab ? { ...i, config: { ...i.config, assignments: newAssignments } } : i
+        );
+        setIntegrations(nextIntegrations);
+
+        // Save immediately
+        try {
+            await onUpdate({ integrations: nextIntegrations }, `Asesor removido (${activeTab})`);
+        } catch (err) {
+            // Error handled by onUpdate
+        }
     };
 
-    const handleSave = async () => {
+    const handleSaveConfig = async () => {
         setLoading(true);
         try {
             await onUpdate({
                 integrations
-            }, "Configuración de Integraciones");
+            }, "Configuración de Azure");
+            setIsEditingConfig(false);
         } catch (err: any) {
             // Error handled by onUpdate
         } finally {
@@ -211,34 +256,31 @@ export function IntegrationSection({ agent, onUpdate }: IntegrationSectionProps)
     };
 
     return (
-        <div className="space-y-8 animate-in fade-in duration-700">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                    <h2 className="text-xl font-headline font-bold text-foreground">Gestión de Integraciones</h2>
-                    <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-[0.2em] mt-1">Configuración de proveedores y asignaciones de calendario</p>
-                </div>
-                <Button
-                    onClick={handleSave}
-                    disabled={loading}
-                    className="bg-secondary hover:bg-secondary/90 text-white rounded-2xl h-12 px-6 text-[10px] font-black uppercase tracking-widest shadow-xl shadow-secondary/20 transition-all hover:scale-[1.02]"
-                >
-                    {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
-                    Guardar Cambios
-                </Button>
-            </div>
-
+        <div className="space-y-6 animate-in fade-in duration-700">
             <div className="flex gap-4 p-1 bg-muted/20 rounded-2xl w-fit">
-                <button className="px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all bg-secondary text-white shadow-lg">
-                    Outlook
+                <button
+                    onClick={() => { setActiveTab('OUTLOOK'); setIsEditingConfig(false); setIsAddingAssignment(false); }}
+                    className={cn(
+                        "px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
+                        activeTab === 'OUTLOOK' ? "bg-secondary text-white shadow-lg" : "text-muted-foreground hover:bg-muted/30"
+                    )}
+                >
+                    Outlook Calendar
                 </button>
-                <button className="px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-50 cursor-not-allowed" disabled>
-                    Google
+                <button
+                    onClick={() => { setActiveTab('GOOGLE'); setIsEditingConfig(false); setIsAddingAssignment(false); }}
+                    className={cn(
+                        "px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
+                        activeTab === 'GOOGLE' ? "bg-secondary text-white shadow-lg" : "text-muted-foreground hover:bg-muted/30"
+                    )}
+                >
+                    Google Calendar
                 </button>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            <div className="flex flex-col gap-8">
                 {/* Azure Credentials (Standard for the provider) */}
-                <div className={cn("lg:col-span-1 transition-all duration-500", !isConfigured || isEditingConfig ? "lg:col-span-4" : "lg:col-span-1")}>
+                <div className="w-full transition-all duration-500">
                     <Card className={cn(
                         "bg-card border border-border/40 rounded-[2.5rem] overflow-hidden shadow-sm h-fit transition-all duration-500",
                         (!isConfigured || isEditingConfig) ? "border-secondary/30 shadow-xl shadow-secondary/5" : "sticky top-6"
@@ -267,10 +309,10 @@ export function IntegrationSection({ agent, onUpdate }: IntegrationSectionProps)
                                 <Button
                                     variant="ghost"
                                     size="icon"
-                                    onClick={toggleOutlookActive}
+                                    onClick={toggleCurrentActive}
                                     className={cn(
                                         "rounded-full h-8 w-8 transition-all",
-                                        outlookIntegration.isActive ? "text-green-500 bg-green-500/10" : "text-muted-foreground bg-muted"
+                                        currentIntegration.isActive ? "text-green-500 bg-green-500/10" : "text-muted-foreground bg-muted"
                                     )}
                                 >
                                     <Power className="h-4 w-4" />
@@ -281,46 +323,80 @@ export function IntegrationSection({ agent, onUpdate }: IntegrationSectionProps)
                             {(!isConfigured || isEditingConfig) ? (
                                 <>
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                        <div className="space-y-1.5">
-                                            <Label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground ml-1">Client ID</Label>
-                                            <Input
-                                                value={outlookIntegration.config.clientId || ""}
-                                                onChange={(e) => updateOutlookConfig({ clientId: e.target.value })}
-                                                className="bg-muted/20 border-border/40 rounded-xl h-12 text-[10px] font-bold"
-                                                placeholder="ID de aplicación"
-                                            />
-                                        </div>
-                                        <div className="space-y-1.5">
-                                            <Label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground ml-1">Client Secret</Label>
-                                            <Input
-                                                type="password"
-                                                value={outlookIntegration.config.clientSecret || ""}
-                                                onChange={(e) => updateOutlookConfig({ clientSecret: e.target.value })}
-                                                className="bg-muted/20 border-border/40 rounded-xl h-12 text-[10px] font-bold"
-                                                placeholder="Secreto de cliente"
-                                            />
-                                        </div>
-                                        <div className="space-y-1.5">
-                                            <Label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground ml-1">Tenant ID</Label>
-                                            <Input
-                                                value={outlookIntegration.config.tenantId || ""}
-                                                onChange={(e) => updateOutlookConfig({ tenantId: e.target.value })}
-                                                className="bg-muted/20 border-border/40 rounded-xl h-12 text-[10px] font-bold"
-                                                placeholder="ID de inquilino"
-                                            />
-                                        </div>
+                                        {activeTab === "OUTLOOK" ? (
+                                            <>
+                                                <div className="space-y-1.5">
+                                                    <Label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground ml-1">Client ID</Label>
+                                                    <Input
+                                                        value={currentIntegration.config.clientId || ""}
+                                                        onChange={(e) => updateCurrentConfig({ clientId: e.target.value })}
+                                                        className="bg-muted/20 border-border/40 rounded-xl h-12 text-[10px] font-bold"
+                                                        placeholder="ID de aplicación"
+                                                    />
+                                                </div>
+                                                <div className="space-y-1.5">
+                                                    <Label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground ml-1">Client Secret</Label>
+                                                    <Input
+                                                        type="password"
+                                                        value={currentIntegration.config.clientSecret || ""}
+                                                        onChange={(e) => updateCurrentConfig({ clientSecret: e.target.value })}
+                                                        className="bg-muted/20 border-border/40 rounded-xl h-12 text-[10px] font-bold"
+                                                        placeholder="Secreto de cliente"
+                                                    />
+                                                </div>
+                                                <div className="space-y-1.5">
+                                                    <Label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground ml-1">Tenant ID</Label>
+                                                    <Input
+                                                        value={currentIntegration.config.tenantId || ""}
+                                                        onChange={(e) => updateCurrentConfig({ tenantId: e.target.value })}
+                                                        className="bg-muted/20 border-border/40 rounded-xl h-12 text-[10px] font-bold"
+                                                        placeholder="ID de inquilino"
+                                                    />
+                                                </div>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <div className="space-y-1.5">
+                                                    <Label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground ml-1">Client Email</Label>
+                                                    <Input
+                                                        value={currentIntegration.config.clientEmail || ""}
+                                                        onChange={(e) => updateCurrentConfig({ clientEmail: e.target.value })}
+                                                        className="bg-muted/20 border-border/40 rounded-xl h-12 text-[10px] font-bold"
+                                                        placeholder="email@project.iam.gserviceaccount.com"
+                                                    />
+                                                </div>
+                                                <div className="space-y-1.5">
+                                                    <Label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground ml-1">Project ID</Label>
+                                                    <Input
+                                                        value={currentIntegration.config.projectId || ""}
+                                                        onChange={(e) => updateCurrentConfig({ projectId: e.target.value })}
+                                                        className="bg-muted/20 border-border/40 rounded-xl h-12 text-[10px] font-bold"
+                                                        placeholder="id-del-proyecto"
+                                                    />
+                                                </div>
+                                                <div className="space-y-1.5 md:col-span-3">
+                                                    <Label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground ml-1">Private Key (RSA)</Label>
+                                                    <textarea
+                                                        value={currentIntegration.config.privateKey || ""}
+                                                        onChange={(e) => updateCurrentConfig({ privateKey: e.target.value })}
+                                                        className="w-full bg-muted/20 border border-border/40 rounded-2xl p-4 text-[10px] font-mono font-bold focus:outline-none focus:ring-1 focus:ring-secondary/30 min-h-[120px]"
+                                                        placeholder="-----BEGIN PRIVATE KEY-----..."
+                                                    />
+                                                </div>
+                                            </>
+                                        )}
                                     </div>
-                                    {isEditingConfig && (
-                                        <div className="pt-2 flex justify-end">
-                                            <Button
-                                                size="sm"
-                                                onClick={() => setIsEditingConfig(false)}
-                                                className="bg-secondary text-white rounded-xl h-10 px-6 text-[9px] font-black uppercase tracking-widest shadow-lg shadow-secondary/20"
-                                            >
-                                                Confirmar Cambios
-                                            </Button>
-                                        </div>
-                                    )}
+                                    <div className="pt-2 flex justify-end">
+                                        <Button
+                                            size="sm"
+                                            onClick={handleSaveConfig}
+                                            disabled={loading}
+                                            className="bg-secondary text-white rounded-xl h-10 px-6 text-[9px] font-black uppercase tracking-widest shadow-lg shadow-secondary/20 transition-all hover:scale-[1.02]"
+                                        >
+                                            {loading ? <Loader2 className="h-3 w-3 animate-spin mr-2" /> : <Save className="h-3 w-3 mr-2" />}
+                                            Guardar Configuración
+                                        </Button>
+                                    </div>
                                 </>
                             ) : (
                                 <div className="space-y-3 py-2">
@@ -329,8 +405,8 @@ export function IntegrationSection({ agent, onUpdate }: IntegrationSectionProps)
                                         <Badge variant="outline" className="bg-green-500/10 text-green-500 text-[8px] font-black tracking-widest border-none h-5 px-2">CONFIGURADO</Badge>
                                     </div>
                                     <div className="flex items-center justify-between p-3 rounded-2xl bg-muted/30 border border-border/20">
-                                        <span className="text-[8px] font-black uppercase tracking-widest text-muted-foreground/60">Endpoint</span>
-                                        <span className="text-[9px] font-bold text-foreground">Microsoft Graph API</span>
+                                        <span className="text-[8px] font-black uppercase tracking-widest text-muted-foreground/60">Provider</span>
+                                        <span className="text-[9px] font-bold text-foreground">{activeTab === "OUTLOOK" ? "Microsoft Graph" : "Google Calendar v3"}</span>
                                     </div>
                                 </div>
                             )}
@@ -340,7 +416,7 @@ export function IntegrationSection({ agent, onUpdate }: IntegrationSectionProps)
 
                 {/* Assignments List and Management */}
                 {isConfigured && !isEditingConfig && (
-                    <div className="lg:col-span-3 space-y-6 animate-in fade-in slide-in-from-right-4 duration-700">
+                    <div className="w-full space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-2">
                             <div className="flex items-center gap-3">
                                 <Users className="h-5 w-5 text-secondary" />
@@ -430,14 +506,14 @@ export function IntegrationSection({ agent, onUpdate }: IntegrationSectionProps)
                                                     }}
                                                 >
                                                     <SelectTrigger className="bg-muted/20 border-border/40 rounded-xl h-11 text-xs font-bold focus:ring-secondary/30 transition-all">
-                                                        <SelectValue placeholder={fetchingCalendars ? "Sincronizando..." : "Selecciona un calendario de Outlook"} />
+                                                        <SelectValue placeholder={fetchingCalendars ? "Sincronizando..." : `Selecciona un calendario de ${activeTab === "OUTLOOK" ? "Outlook" : "Google"}`} />
                                                     </SelectTrigger>
                                                     <SelectContent className="rounded-xl border-border/40">
                                                         {calendars.map(c => (
                                                             <SelectItem key={c.id} value={c.id} className="text-[10px] font-bold rounded-lg my-1">
                                                                 <div className="flex items-center gap-2">
                                                                     <Calendar className="h-3 w-3 text-secondary/60" />
-                                                                    {c.name} {c.isDefault && "(Principal)"}
+                                                                    <span className="truncate max-w-[200px]">{c.name}</span> {c.isDefault && "(Principal)"}
                                                                 </div>
                                                             </SelectItem>
                                                         ))}
@@ -461,8 +537,8 @@ export function IntegrationSection({ agent, onUpdate }: IntegrationSectionProps)
                         ) : null}
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                            {(outlookIntegration.config.assignments || []).length > 0 ? (
-                                (outlookIntegration.config.assignments || [])
+                            {(currentIntegration.config.assignments || []).length > 0 ? (
+                                (currentIntegration.config.assignments || [])
                                     .filter((as: any) =>
                                         as.userName.toLowerCase().includes(advisorSearch.toLowerCase()) ||
                                         as.userEmail.toLowerCase().includes(advisorSearch.toLowerCase())
@@ -507,7 +583,9 @@ export function IntegrationSection({ agent, onUpdate }: IntegrationSectionProps)
                                         <Users className="h-8 w-8 text-muted-foreground/30" />
                                     </div>
                                     <p className="text-xs font-black uppercase tracking-[0.2em] text-foreground">Escuadrón No Asignado</p>
-                                    <p className="text-[9px] text-muted-foreground font-bold uppercase tracking-widest mt-2 max-w-[280px] mx-auto leading-relaxed">Configura el primer asesor para habilitar la toma de citas inteligente a través de Outlook.</p>
+                                    <p className="text-[9px] text-muted-foreground font-bold uppercase tracking-widest mt-2 max-w-[280px] mx-auto leading-relaxed">
+                                        Configura el primer asesor para habilitar la toma de citas inteligente a través de {activeTab === "OUTLOOK" ? "Outlook" : "Google Calendar"}.
+                                    </p>
                                     <Button
                                         variant="outline"
                                         onClick={() => setIsAddingAssignment(true)}

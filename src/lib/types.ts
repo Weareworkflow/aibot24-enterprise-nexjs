@@ -16,13 +16,19 @@ export interface AIAgent {
   bitrixBotCode: string; // CODE único usado en imbot.register
   avatar?: string; // Base64 image
   integrations?: AgentIntegration[];
+  managedFields?: {
+    leads?: string[];
+    contacts?: string[];
+    deals?: string[];
+    companies?: string[];
+  };
   createdAt?: string;
   updatedAt?: string;
 }
 
 export interface AgentIntegration {
   id: string;
-  provider: 'OUTLOOK' | string;
+  provider: 'OUTLOOK' | 'GOOGLE' | string;
   isActive: boolean;
   config: {
     clientId?: string;
