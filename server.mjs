@@ -28,7 +28,9 @@ app.use(
 // more aggressive with this caching.
 app.use(express.static("build/client", { maxAge: "1h" }));
 
-app.use(morgan("tiny"));
+app.use(morgan("tiny", {
+    skip: (req) => req.url === "/api/health"
+}));
 
 // SPECIAL BITRIX24 HANDLER:
 // Bitrix24 launches apps via POST. Remix blocks cross-origin POSTs to actions with a CSRF error.
@@ -55,7 +57,7 @@ app.post("/", express.urlencoded({ extended: true }), (req, res, next) => {
 });
 
 app.all(
-    "*",
+    "(.*)",
     createRequestHandler({
         build: await import(BUILD_PATH),
         mode: process.env.NODE_ENV,
