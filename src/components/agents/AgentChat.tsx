@@ -19,8 +19,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 import { useToast } from "@/hooks/use-toast";
 
-import { updateOpenLinesBot } from '@/app/actions/bitrix-actions';
-
 import { IdentitySection } from "./AgentChat/IdentitySection";
 import { SystemPromptSection } from "./AgentChat/SystemPromptSection";
 import { IntegrationSection } from "./AgentChat/IntegrationSection";
@@ -37,7 +35,7 @@ interface AgentChatProps {
 export function AgentChat({ agent }: AgentChatProps) {
 
   const scrollRef = useRef<HTMLDivElement>(null);
-  const router = useRouter();
+  const navigate = useNavigate();
   const { toast } = useToast();
   const { updateAgentLocal } = useUIStore();
 
@@ -61,16 +59,7 @@ export function AgentChat({ agent }: AgentChatProps) {
         toast({ title: "Sincronizado", description: `${title} actualizado en tiempo real.` });
       }
 
-      // 2. Sincronizar con Bitrix si hay cambios de identidad
-      if (agent.bitrixBotId && agent.tenantId && (updates.name || updates.role || updates.avatar || updates.color)) {
-        const mergedAgent = { ...agent, ...updates };
-        updateOpenLinesBot(agent.tenantId, mergedAgent)
-          .then((res) => {
-            if (!res.success) console.warn("Bitrix Sync Warning:", res.error);
-            else console.log("Bitrix Sync Success");
-          })
-          .catch(err => console.error("Bitrix Sync Error:", err));
-      }
+      // La sincronización con Bitrix ahora se maneja en el servidor (PUT /api/agents/${agent.id})
     } catch (error: any) {
       console.error("Update Error:", error);
       toast({
@@ -90,7 +79,7 @@ export function AgentChat({ agent }: AgentChatProps) {
             variant="ghost"
             size="icon"
             className="h-11 w-11 flex items-center justify-center bg-muted/50 rounded-2xl hover:bg-foreground hover:text-background transition-all shadow-sm border border-border"
-            onClick={() => router.push('/')}
+            onClick={() => navigate('/')}
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
