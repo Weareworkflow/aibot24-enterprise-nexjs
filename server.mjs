@@ -28,6 +28,9 @@ app.use(
 // more aggressive with this caching.
 app.use(express.static("build/client", { maxAge: "1h" }));
 
+// SILENCE HEALTH CHECKS IMMEDIATELY
+app.get("/api/health", (req, res) => res.status(200).send("ok"));
+
 app.use(morgan("tiny", {
     skip: (req) => req.url === "/api/health"
 }));
@@ -56,8 +59,7 @@ app.post("/", express.urlencoded({ extended: true }), (req, res, next) => {
     return res.redirect(303, `/?${newParams.toString()}`);
 });
 
-app.all(
-    "(.*)",
+app.use(
     createRequestHandler({
         build: await import(BUILD_PATH),
         mode: process.env.NODE_ENV,
