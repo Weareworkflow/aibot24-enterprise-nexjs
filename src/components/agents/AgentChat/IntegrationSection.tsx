@@ -303,7 +303,7 @@ export function IntegrationSection({ agent, onUpdate }: IntegrationSectionProps)
                                 className="rounded-xl h-9 bg-secondary hover:bg-secondary/90 text-white text-[9px] font-black uppercase tracking-widest"
                             >
                                 <Plus className="h-3 w-3 mr-2" />
-                                Agregar Empleado
+                                Agregar Asesor
                             </Button>
                         )}
                     </div>
@@ -320,20 +320,26 @@ export function IntegrationSection({ agent, onUpdate }: IntegrationSectionProps)
                             <CardContent className="p-8 space-y-6">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div className="space-y-3">
-                                        <Label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground ml-1">1. Buscar Empleado</Label>
+                                        <Label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground ml-1">1. Buscar Asesor</Label>
                                         <div className="relative">
                                             <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground/40" />
                                             <Input
                                                 value={search}
-                                                onChange={(e) => { setSearch(e.target.value); handleSearchUsers(e.target.value); }}
-                                                placeholder="Nombre..."
+                                                onChange={(e) => {
+                                                    setSearch(e.target.value);
+                                                    handleSearchUsers(e.target.value);
+                                                }}
+                                                placeholder="Nombre o Email..."
                                                 className="pl-10 bg-muted/20 border-border/40 rounded-xl h-10 text-xs font-bold"
                                             />
-                                            {searchingUsers && <Loader2 className="absolute right-3 top-2.5 h-4 w-4 animate-spin text-muted-foreground" />}
+                                            {searchingUsers && <Loader2 className="absolute right-3 top-2.5 h-4 w-4 animate-spin text-secondary" />}
                                         </div>
-                                        <div className="border border-border/40 rounded-xl bg-muted/5 overflow-hidden">
+                                        <div className="border border-border/40 rounded-xl bg-muted/5 overflow-hidden shadow-inner">
                                             <ScrollArea className="h-32">
-                                                <div className="p-1 space-y-1">
+                                                <div className="p-2 space-y-1">
+                                                    {users.length === 0 && !searchingUsers && search && (
+                                                        <p className="text-[9px] text-center p-4 text-muted-foreground uppercase font-black tracking-widest">Sin resultados</p>
+                                                    )}
                                                     {users.map(u => (
                                                         <button
                                                             key={u.id}
@@ -395,8 +401,8 @@ export function IntegrationSection({ agent, onUpdate }: IntegrationSectionProps)
                     ) : null}
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {(outlookIntegration.config.assignments || []).length > 0 ? (
-                            outlookIntegration.config.assignments.map((as: any) => (
+                        {(outlookIntegration.config?.assignments || []).length > 0 ? (
+                            (outlookIntegration.config?.assignments || []).map((as: any) => (
                                 <Card key={as.userId} className="bg-card border border-border/40 rounded-[1.5rem] overflow-hidden shadow-sm hover:shadow-md transition-all group">
                                     <div className="p-4 flex items-center justify-between">
                                         <div className="flex items-center gap-3">
@@ -408,7 +414,7 @@ export function IntegrationSection({ agent, onUpdate }: IntegrationSectionProps)
                                             <div>
                                                 <h4 className="text-[10px] font-black uppercase tracking-widest text-foreground">{as.userName}</h4>
                                                 <div className="flex items-center gap-2 mt-0.5">
-                                                    <Badge variant="ghost" className="p-0 text-[8px] text-muted-foreground lowercase font-medium">{as.userEmail}</Badge>
+                                                    <Badge variant="outline" className="p-0 border-none text-[8px] text-muted-foreground lowercase font-medium">{as.userEmail}</Badge>
                                                 </div>
                                                 <div className="flex items-center gap-1.5 mt-1.5 text-secondary">
                                                     <Calendar className="h-3 w-3" />
@@ -430,8 +436,8 @@ export function IntegrationSection({ agent, onUpdate }: IntegrationSectionProps)
                         ) : !isAddingAssignment ? (
                             <div className="col-span-2 p-12 text-center bg-muted/5 border-2 border-dashed border-border/40 rounded-[2.5rem]">
                                 <Users className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
-                                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">No hay empleados asignados</p>
-                                <p className="text-[8px] text-muted-foreground/50 uppercase tracking-widest mt-1">Haz clic en 'Agregar Empleado' para gestionar su disponibilidad.</p>
+                                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">No hay asesores asignados</p>
+                                <p className="text-[8px] text-muted-foreground/50 uppercase tracking-widest mt-1">Haz clic en 'Agregar Asesor' para gestionar su disponibilidad.</p>
                             </div>
                         ) : null}
                     </div>

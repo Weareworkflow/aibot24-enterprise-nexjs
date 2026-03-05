@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useMemo } from "react";
@@ -6,7 +5,7 @@ import { AIAgent } from "@/lib/types";
 import { AgentCard } from "@/components/dashboard/AgentCard";
 import { Loader2, Database, SearchX, Sparkles, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
+import { Link } from "@remix-run/react";
 import { useUIStore } from "@/lib/store";
 
 interface AgentListProps {
@@ -21,16 +20,16 @@ export function AgentList({ agents, loading, error, tenantId }: AgentListProps) 
 
   const filteredAgents = useMemo(() => {
     if (!agents) return [];
-    
-    const sorted = [...agents].sort((a, b) => 
-      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+
+    const sorted = [...agents].sort((a, b) =>
+      new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
     );
 
     const q = searchQuery.toLowerCase().trim();
     if (!q) return sorted;
 
     return sorted.filter(agent => {
-      const matchesText = 
+      const matchesText =
         agent.name.toLowerCase().includes(q) ||
         agent.role.toLowerCase().includes(q) ||
         agent.company.toLowerCase().includes(q);
@@ -90,8 +89,8 @@ export function AgentList({ agents, loading, error, tenantId }: AgentListProps) 
         <div className="space-y-1">
           <p className="text-muted-foreground font-black uppercase tracking-widest text-[10px]">No hay agentes que coincidan con "{searchQuery}"</p>
         </div>
-        <Button 
-          variant="link" 
+        <Button
+          variant="link"
           onClick={() => setSearchQuery('')}
           className="text-secondary text-[10px] font-black uppercase tracking-widest"
         >

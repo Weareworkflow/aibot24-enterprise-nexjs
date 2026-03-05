@@ -17,7 +17,7 @@ import {
   Calendar,
   ArrowRightLeft
 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useNavigate } from "@remix-run/react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { unregisterOpenLinesBot } from '@/app/actions/bitrix-actions';
@@ -42,7 +42,7 @@ interface AgentCardProps {
 }
 
 export function AgentCard({ agent }: AgentCardProps) {
-  const router = useRouter();
+  const navigate = useNavigate();
   const { toast } = useToast();
   const isActive = agent.isActive !== false;
   const { userRole, updateAgentLocal } = useUIStore();
@@ -53,7 +53,7 @@ export function AgentCard({ agent }: AgentCardProps) {
 
   const handleCardClick = () => {
     if (userRole === 'viewer') return;
-    router.push(`/agents/${agent.id}`);
+    navigate(`/agents/${agent.id}`);
   };
 
   const handleToggleActive = async (e: React.MouseEvent) => {

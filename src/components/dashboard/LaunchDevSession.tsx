@@ -1,10 +1,9 @@
-
 "use client";
 
 import { useUIStore } from "@/lib/store";
 import { Button } from "@/components/ui/button";
 import { LayoutDashboard } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useNavigate } from "@remix-run/react";
 import { useToast } from "@/hooks/use-toast";
 
 interface LaunchDevSessionProps {
@@ -13,7 +12,7 @@ interface LaunchDevSessionProps {
 
 export function LaunchDevSession({ memberId }: LaunchDevSessionProps) {
   const { setTenantId } = useUIStore();
-  const router = useRouter();
+  const navigate = useNavigate();
   const { toast } = useToast();
 
   const handleLaunch = () => {
@@ -22,11 +21,11 @@ export function LaunchDevSession({ memberId }: LaunchDevSessionProps) {
       title: "Sesión Vinculada",
       description: `Usando Portal: ${memberId.substring(0, 8)}...`,
     });
-    router.push("/");
+    navigate("/");
   };
 
   return (
-    <Button 
+    <Button
       onClick={handleLaunch}
       className="pill-rounded bg-secondary hover:bg-secondary/90 text-white font-black text-[10px] uppercase tracking-widest h-12 px-8 gap-2 shadow-lg shadow-secondary/20"
     >

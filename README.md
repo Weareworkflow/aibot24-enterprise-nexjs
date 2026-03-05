@@ -3,7 +3,7 @@
 Esta es una solución profesional para la creación y gestión de agentes de IA integrados en el ecosistema de Bitrix24, utilizando una arquitectura moderna y escalable.
 
 ## Tecnologías Principales
-- **Framework**: Next.js 15 (App Router)
+- **Framework**: Remix + Vite (Modern SSR Architecture)
 - **Base de Datos**: MongoDB (Motor central de datos)
 - **IA**: Vercel AI SDK + OpenAI (GPT-4o)
 - **Estilos**: Tailwind CSS + ShadCN UI

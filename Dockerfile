@@ -1,24 +1,22 @@
-FROM node:20-alpine
-
+# Build Stage
+FROM node:20-slim AS builder
 WORKDIR /app
-
-# Install dependencies
-COPY package.json package-lock.json* ./
-RUN npm install
-
-# Copy source code and build
+COPY package*.json ./
+RUN npm install --legacy-peer-deps
 COPY . .
-
-# Next.js telemetry (optional: disable for privacy)
-ENV NEXT_TELEMETRY_DISABLED=1
-
-# Build the application
 RUN npm run build
 
-# Start the application
+# Production Stage
+FROM node:20-slim
+WORKDIR /app
+COPY --from=builder /app/package*.json ./
+RUN npm install --production --legacy-peer-deps
+COPY --from=builder /app/build ./build
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/package.json ./package.json
+
 EXPOSE 9002
 ENV PORT=9002
-ENV HOSTNAME="0.0.0.0"
+ENV NODE_ENV=production
 
 CMD ["npm", "start"]
-

@@ -34,6 +34,10 @@ export async function ensureIndexes(db: Db) {
         await db.collection('notification_templates').createIndex({ id: 1 }, { unique: true });
         await db.collection('notification_templates').createIndex({ tenantId: 1 });
 
+        // Index for audit_logs
+        console.log('[Database] Ensuring indexes for audit_logs...');
+        await db.collection('audit_logs').createIndex({ tenantId: 1, timestamp: -1 });
+
         console.log('✅ [Database] Indexes verified.');
     } catch (error) {
         console.error('❌ [Database] Error ensuring indexes:', error);

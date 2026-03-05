@@ -9,13 +9,15 @@ export interface AIAgent {
   role: string; // Rol en Bitrix (WORK_POSITION)
   company: string; // Empresa / Sector (WORK_COMPANY en Bitrix)
   color: string;
-  systemPrompt: string; // Prompt específico del agente (Nuevos)
-  systemPromptRegistered?: string; // Prompt específico del agente (Registrados)
+  systemPrompt: string; // Prompt maestro del agente
+  // systemPromptRegistered?: string; // DEPRECATED: Se usa un solo prompt maestro
   isActive: boolean;
   bitrixBotId: number; // ID obligatorio asignado por Bitrix24
   bitrixBotCode: string; // CODE único usado en imbot.register
   avatar?: string; // Base64 image
   integrations?: AgentIntegration[];
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface AgentIntegration {
@@ -59,6 +61,8 @@ export interface BitrixInstallation {
   expiresIn: number;
   clientSecret?: string;
   clientId?: string; // Credenciales técnicas
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface AppConfig {
@@ -66,6 +70,7 @@ export interface AppConfig {
   theme: 'light' | 'dark';
   language: 'es' | 'en';
   tenantId: string; // Dominio del portal, ej: workflowteams.bitrix24.es
+  updatedAt?: string;
 }
 
 export type UserRole = 'admin' | 'editor' | 'viewer';
@@ -142,4 +147,15 @@ export interface WorkflowTrigger {
   activo: boolean;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface AuditLog {
+  id: string;
+  tenantId: string;
+  userId?: string;
+  action: string; // 'CREATE_AGENT', 'UPDATE_PROMPT', etc.
+  entityType: 'AGENT' | 'INSTALLATION' | 'CONFIG';
+  entityId: string;
+  details: any;
+  timestamp: string;
 }

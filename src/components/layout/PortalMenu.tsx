@@ -18,12 +18,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { useRouter } from "next/navigation";
+import { useNavigate } from "@remix-run/react";
 import { translations } from "@/lib/translations";
 
 export function PortalMenu() {
   const { tenantId, domain, language } = useUIStore();
-  const router = useRouter();
+  const navigate = useNavigate();
   const t = translations[language].nav;
 
   const portalName = domain
@@ -50,7 +50,7 @@ export function PortalMenu() {
         <DropdownMenuGroup className="p-1">
           <DropdownMenuItem
             className="h-12 px-4 rounded-2xl gap-3 cursor-pointer focus:bg-muted group"
-            onClick={() => router.push('/settings')}
+            onClick={() => navigate('/settings')}
           >
             <div className="h-8 w-8 rounded-xl bg-muted/50 flex items-center justify-center group-focus:bg-background transition-colors">
               <Settings className="h-4 w-4 text-muted-foreground" />
@@ -61,7 +61,7 @@ export function PortalMenu() {
 
           <DropdownMenuItem
             className="h-12 px-4 rounded-2xl gap-3 cursor-pointer focus:bg-muted group"
-            onClick={() => router.push('/help')}
+            onClick={() => navigate('/help')}
           >
             <div className="h-8 w-8 rounded-xl bg-muted/50 flex items-center justify-center group-focus:bg-background transition-colors">
               <HelpCircle className="h-4 w-4 text-muted-foreground" />

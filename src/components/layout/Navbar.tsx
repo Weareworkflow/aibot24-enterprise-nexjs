@@ -1,9 +1,8 @@
 
 "use client";
 
-import Link from "next/link";
+import { Link, useLocation } from "@remix-run/react";
 import { Plus, Search } from "lucide-react";
-import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Logo } from "./Logo";
@@ -14,7 +13,8 @@ import { useTheme } from "next-themes";
 import { useEffect } from "react";
 
 export function Navbar() {
-  const pathname = usePathname();
+  const location = useLocation();
+  const pathname = location.pathname;
   const { setTheme } = useTheme();
   const { searchQuery, setSearchQuery, language, appConfig } = useUIStore();
   const t = translations[language].nav;
